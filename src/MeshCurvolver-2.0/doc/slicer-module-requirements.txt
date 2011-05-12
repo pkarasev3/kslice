@@ -1,0 +1,40 @@
+Requirements for Modules
+The module is feature complete, it does everything that it advertises it can do
+
+The module has a test. See here for more information.
+
+Module has documentation on the Slicer wiki. Please use the template provided here to structure your page.
+
+Please add a pointer to the documentation on the Slicer wiki to the the Help tab of the module. See the Editor module in Slicer for an example.
+
+The contributor (and their manager/advisor), the lab (with labs/institution logo) and the funding source (with grant number, logo optional) are listed in the Acknowledgment tab of the module.
+Please see the Models module for an example. The people listed in the acknowledgement will be the primary people for support and maintenance relative of the module.
+
+Style Guide: All acknowledgment icons should be 100x100 pixels, preferably in png format.
+Accessing logos: Icons for BIRN, NAC, NA-MIC and IGT are included in Slicer3/Base/GUI//vtkSlicerBaseAcknowledgementLogoIcons.cxx/h and resources for them are in Slicer3/Base/GUI/Resources/vtkSlicerBaseAcknowledgementLogos_ImageData.h. The API for vtkSlicerModuleGUI provides access to these icons.
+Adding logos: Please add additional image resources and logo icons to these files as required in order to promote shared use (and to prevent duplication in the code.)
+
+Many modules are better suited to be downloadable extensions. The same module creation guidelines apply, but the actual implementation is done outside of the slicer source code repository.
+
+
+-----------------------------------
+
+Extensions for Downloading
+
+
+Slicer on NITRC
+Work is in progress to create infrastructure for searching and loading extensions. See Slicer3:Extensions for more information.
+This will allow contributors and software developers to post their own Slicer extensions and have them compiled against the "official" versions of Slicer.
+Users can browse these contributed extensions and install them on their own versions of Slicer.
+
+We are currently using NITRC as a repository for contributed extensions. As a general rule, we do not test them ourselves, it is the downloaders job to ensure that they do what they want them to do. Click here to see a listing of Slicer 3 extensions on NITRC.
+
+
+Extension manager dialog box
+To add extension modules to an installed binary of slicer:
+Use the View->Extension Manager menu option
+The dialog will be initialized with the URL to the extensions that have been compiled to match your binary of slicer.
+Note installing extensions from a different repository URL is likely to be unstable due to platform and software version differences.
+You can select a local install directory for your downloaded extensions (be sure to choose a directory with enough free space).
+Select the extensions you wish to install and click to download them. Installed extensions will be available when you restart slicer.
+To turn modules on or off, you can use the Module Settings page of the View->Application Settings dialog.

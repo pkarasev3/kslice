@@ -1,0 +1,22 @@
+'sparse field level set on polygon mesh' in matlab by Peter Karasev.
+
+Parts ripped from 1) code by Shawn Lankton and 2) C++ version by PK
+
+
+Run the 'sfls_test.m', watch the interface evolve on the surface. The default
+'force function' is rather dumb, just F = -z. Change this portion of code to implement
+your force function:
+
+F = -nv( Lz,3 ); % Force: function of data and geometry of phi
+dCFL = 0.3;
+phi( Lz ) = dCFL * F + phi( Lz ); % update phi along the level set phi = 0
+
+
+Above, nv is an M x 3 matrix with (x,y,z) vertex coordinates. Hence -nv(Lz,3) is
+the -z coordinate at vertices in the Lz list. 
+
+
+
+contact:  karasevpa@gmail.com
+
+webpage:  http://www.theveganrobot.com

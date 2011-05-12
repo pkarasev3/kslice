@@ -1,0 +1,336 @@
+<!DOCTYPE QtCreatorProject>
+<qtcreator>
+ <data>
+  <variable>ProjectExplorer.Project.ActiveTarget</variable>
+  <value type="int">0</value>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.EditorSettings</variable>
+  <valuemap type="QVariantMap">
+   <value key="EditorConfiguration.Codec" type="QByteArray">System</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.Target.0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">Desktop</value>
+   <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.DefaultCMakeTarget</value>
+   <value key="ProjectExplorer.Target.ActiveBuildConfiguration" type="int">0</value>
+   <value key="ProjectExplorer.Target.ActiveRunConfiguration" type="int">1</value>
+   <valuemap key="ProjectExplorer.Target.BuildConfiguration.0" type="QVariantMap">
+    <value key="CMakeProjectManager.CMakeBuildConfiguration.BuildDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug</value>
+    <value key="CMakeProjectManager.CMakeBuildConfiguration.MsvcVersion" type="QString"></value>
+    <valuemap key="ProjectExplorer.BuildConfiguration.BuildStep.0" type="QVariantMap">
+     <valuelist key="CMakeProjectManager.MakeStep.AdditionalArguments" type="QVariantList">
+      <value type="QString">-j8</value>
+     </valuelist>
+     <valuelist key="CMakeProjectManager.MakeStep.BuildTargets" type="QVariantList"/>
+     <value key="CMakeProjectManager.MakeStep.Clean" type="bool">false</value>
+     <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">Make</value>
+     <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.MakeStep</value>
+    </valuemap>
+    <value key="ProjectExplorer.BuildConfiguration.BuildStepsCount" type="int">1</value>
+    <valuemap key="ProjectExplorer.BuildConfiguration.CleanStep.0" type="QVariantMap">
+     <valuelist key="CMakeProjectManager.MakeStep.AdditionalArguments" type="QVariantList">
+      <value type="QString">clean</value>
+     </valuelist>
+     <valuelist key="CMakeProjectManager.MakeStep.BuildTargets" type="QVariantList"/>
+     <value key="CMakeProjectManager.MakeStep.Clean" type="bool">true</value>
+     <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">Make</value>
+     <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.MakeStep</value>
+    </valuemap>
+    <value key="ProjectExplorer.BuildConfiguration.CleanStepsCount" type="int">1</value>
+    <value key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment" type="bool">false</value>
+    <valuelist key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">all</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeBuildConfiguration</value>
+   </valuemap>
+   <value key="ProjectExplorer.Target.BuildConfigurationCount" type="int">1</value>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.0" type="QVariantMap">
+    <valuelist key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments" type="QVariantList"/>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.BaseEnvironmentBase" type="int">2</value>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.Executable" type="QString"></value>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="ProjectExplorer.CustomExecutableRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.UserName" type="QString"></value>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.UserSetName" type="bool">false</value>
+    <value key="ProjectExplorer.CustomExecutableRunConfiguration.WorkingDirectory" type="QString">$BUILDDIR</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">Custom Executable</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">ProjectExplorer.CustomExecutableRunConfiguration</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.1" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">KViewer_desktop</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString">-I ../data/emorySE06.mha  -L  emory_ex1.mha</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/KViewer_desktop</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/scripts</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">KViewer_desktop</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.10" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">SurfaceFromPoints</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/SurfaceFromPoints</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">SurfaceFromPoints</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.11" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test1_MeshCurvolverBasic</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test1_MeshCurvolverBasic</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test1_MeshCurvolverBasic</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.12" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test2_MeshCurvolverComputeGeometry</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test2_MeshCurvolverComputeGeometry</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test2_MeshCurvolverComputeGeometry</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.13" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test3_MeshCurvolverInitLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test3_MeshCurvolverInitLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test3_MeshCurvolverInitLevelset</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.14" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test4_MeshCurvolverGlyphs</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test4_MeshCurvolverGlyphs</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test4_MeshCurvolverGlyphs</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.15" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test5_MeshCurvolverDistanceFuncs</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test5_MeshCurvolverDistanceFuncs</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test5_MeshCurvolverDistanceFuncs</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.16" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test6_MeshCurvolverInitLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test6_MeshCurvolverInitLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test6_MeshCurvolverInitLevelset</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.17" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test7_MeshCurvolverEvolveLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test7_MeshCurvolverEvolveLevelset</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test7_MeshCurvolverEvolveLevelset</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.18" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">qtGUI_Demo</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/qtGUI_Demo</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">qtGUI_Demo</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.19" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">VolumeRenderVTKDemo</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/VolumeRenderVTKDemo</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">VolumeRenderVTKDemo</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.2" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">Model3D</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/Model3D</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">Model3D</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.20" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">MakeVTPandShow3D</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString">foo.mha</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/MakeVTPandShow3D</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/scripts</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">MakeVTPandShow3D</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.21" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">LabelMapAsImplicitFunction</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/LabelMapAsImplicitFunction</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">LabelMapAsImplicitFunction</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.22" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">MultiLabelVolumeRender</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/MultiLabelVolumeRender</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">MultiLabelVolumeRender</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.3" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">DemoVTKVolumeRender</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/DemoVTKVolumeRender</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">DemoVTKVolumeRender (disabled)</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.4" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">MHADecompressor</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/MHADecompressor</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">MHADecompressor</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.5" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">dicom2mha</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/dicom2mha</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">dicom2mha</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.6" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">ksegmentor_test1</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/ksegmentor_test1</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">ksegmentor_test1</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.7" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">test2_gao3d_rss</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/test2_gao3d_rss</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">test2_gao3d_rss</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.8" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">DemoStandaloneMeshCurvolver</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/DemoStandaloneMeshCurvolver</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">DemoStandaloneMeshCurvolver</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.9" type="QVariantMap">
+    <value key="CMakeProjectManager.BaseEnvironmentBase" type="int">2</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguation.Title" type="QString">SurfaceCurvatureNoGui</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Arguments" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.Target" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin/SurfaceCurvatureNoGui</value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UseTerminal" type="bool">false</value>
+    <valuelist key="CMakeProjectManager.CMakeRunConfiguration.UserEnvironmentChanges" type="QVariantList"/>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory" type="QString"></value>
+    <value key="CMakeProjectManager.CMakeRunConfiguration.WorkingDirectory" type="QString">/u4/home/pkarasev3/source/KSlice-dev/kslice/source/build.wolverine.debug/bin</value>
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">SurfaceCurvatureNoGui</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">CMakeProjectManager.CMakeRunConfiguration.</value>
+   </valuemap>
+   <value key="ProjectExplorer.Target.RunConfigurationCount" type="int">23</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.TargetCount</variable>
+  <value type="int">1</value>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
+  <value type="int">4</value>
+ </data>
+</qtcreator>
