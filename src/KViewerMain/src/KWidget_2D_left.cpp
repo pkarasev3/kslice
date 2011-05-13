@@ -52,12 +52,12 @@ namespace {
       cout << "attempting to use Image Range: "
            << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
     satLUT->SetTableRange (kv_opts->minIntensity, kv_opts->maxIntensity);
-    
+
     double mode0 = kv_data->intensityModes[0];
     double mode1 = kv_data->intensityModes[kv_data->intensityModes.size()-1];
     mode0        = mode0 / kv_opts->maxIntensity;
     mode1        = mode1 / kv_opts->maxIntensity;
-              
+
     satLUT->SetSaturationRange (0.0, 0.1);
     satLUT->SetHueRange (  0, 1);
     satLUT->SetValueRange (0, 1);
@@ -143,7 +143,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
                                   Ptr<KDataWarehouse> kv_data_input ) {
   // set Logger flags for test/debug
   SETLOG(KWidget_2D_left::VERBOSE,1)
-  
+
   // grab options and state variables from KViewer main app.
   kv_opts = kv_opts_input;
   kv_data = kv_data_input;
@@ -193,7 +193,7 @@ void KWidget_2D_left::CallbackMousePosition(vtkObject* obj)
 void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin ) {
   currentSliceIndex  = currSlice;
   imageReslicer->SetResliceAxesOrigin(  0,  0,  currSliceOrigin );
-  
+
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     multiLabelMaps[k]->labelReslicer->SetResliceAxesOrigin(  0,  0,  currSliceOrigin );
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
@@ -210,8 +210,8 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
   {
     IFLOG(VERBOSE, cout << "... attempting to write label map to file ...  " )
     stringstream label_index_ss;
-    label_index_ss << std::setw(4) << std::setfill('0') << label_idx << "_";
-    string labelmap_filename = label_index_ss.str() + labelmap_name_base;
+    label_index_ss << "_" << std::setw(4) << std::setfill('0') << label_idx;
+    string labelmap_filename = labelmap_name_base + label_index_ss.str() + ".mha";
 
     SP(vtkMetaImageWriter) labelWriter=   SP(vtkMetaImageWriter)::New();
     labelWriter->SetInput( multiLabelMaps[label_idx]->labelDataArray );
@@ -233,10 +233,7 @@ void KWidget_2D_left::SaveAsCurrentLabelMap( const std::string &fileName ) {
     ss.clear();
     ss << "kslice_" << fileName;
   }
-  bool ext_is_mha = (0 == std::string(".mha").compare(fileName.substr(fileName.size()-4,4)));
-  if( !ext_is_mha ) {
-    ss << ".mha" ;
-  }
+
   SaveLabelsInternal( ss );
 }
 
@@ -245,7 +242,7 @@ void KWidget_2D_left::SaveCurrentLabelMap( ) {
   time_t seconds;
   seconds = time(NULL);
   std::stringstream  ss;
-  ss << "KViewerSaved_LabelMap_" << seconds << ".mha" ;
+  ss << "KViewerSaved_LabelMap_" << seconds ;
   SaveLabelsInternal( ss );
 }
 
@@ -260,11 +257,11 @@ Multiple Label Maps
 *********************************************************************/
 
 
-void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo ) 
-{ /** for every labelmap, copy & paste from index A to index B, then update display */ 
+void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo )
+{ /** for every labelmap, copy & paste from index A to index B, then update display */
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     copySliceFromTo( multiLabelMaps[k]->labelDataArray, iFrom, iTo );
-    multiLabelMaps[k]->ksegmentor->copyIntegralDuringPaste( iFrom, iTo );  
+    multiLabelMaps[k]->ksegmentor->copyIntegralDuringPaste( iFrom, iTo );
   }
   UpdateMultiLabelMapDisplay();
 }
@@ -292,9 +289,9 @@ void KWidget_2D_left::AddNewLabelMap( )
 {
   bool bIsInitialization = ( 0 == multiLabelMaps.size() );
   Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
-  
+
   // give the label map handles to kv_opts, image volume, and this widget
-  labelMap->RegisterSourceWidget( this ); 
+  labelMap->RegisterSourceWidget( this );
   multiLabelMaps.push_back(labelMap);            // bag it in the array
   activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
 
@@ -302,7 +299,7 @@ void KWidget_2D_left::AddNewLabelMap( )
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
     UpdateMultiLabelMapDisplay( );
   }
-  
+
   // TODO: fire whatever it is that "slider callback" does to update
 
 }
@@ -380,7 +377,7 @@ void KWidget_2D_left::SetupLabelDisplay()  {
 //  // Gah, no we need to handle the UI crap here, not just receive data from elsewhere.
 //  // See the place where painting happens via mouse callback. That can send us an (x,y,z)
 //  // coord and we update the label map.
-  
+
 //  // Need to make sure activeLabelMapIndex is initialized to 0 somewhere.
 //  //labelMaps[activeLabelMapIndex].UpdateLabelMap(label_image_data);
 
