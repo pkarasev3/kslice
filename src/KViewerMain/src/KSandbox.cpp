@@ -1,10 +1,5 @@
 #include "KSandbox.h"
 #include "vtkImageCast.h"
-#include "itkImage.h"
-#include "itkImageToVTKImageFilter.h"
-#include "itkVTKImageToImageFilter.h"
-#include "itkImageDuplicator.h"
-#include "itkImageFileWriter.h"
 #include "vtkImageData.h"
 #include "vtkImageResample.h"
 #include "vtkLookupTable.h"
@@ -15,7 +10,16 @@
 #include "vtkImageGaussianSmooth.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#define SP( X )  vtkSmartPointer<X> 
+#define SP( X )  vtkSmartPointer<X>
+
+#define BE_EVIL  0
+#if BE_EVIL
+    #include "itkImage.h"
+    #include "itkImageToVTKImageFilter.h"
+    #include "itkVTKImageToImageFilter.h"
+    #include "itkImageDuplicator.h"
+    #include "itkImageFileWriter.h"
+#endif
 
 using std::vector;
 using namespace cv;
@@ -27,17 +31,17 @@ namespace vrcl  {
     vtkSmartPointer<vtkImageData> imgvol = vtkSmartPointer<vtkImageData>::New( );
     int dims[3];
     imageData->GetDimensions( dims );
-    
+
     imgvol->SetDimensions( dims[0],dims[1],dims[2] );
     imgvol->SetNumberOfScalarComponents(1);
-    
+
     double spc[3];
     imageData->GetSpacing( spc );
     imgvol->SetSpacing( spc );
     imgvol->SetOrigin( 0,0,0 );
     imgvol->SetScalarTypeToUnsignedShort( );
     imgvol->AllocateScalars( );
-  
+
     // Values stored 'linearly', slightly unsure about the orientation though.
     unsigned short*  outputPtr = (unsigned short *) imgvol->GetScalarPointer();
     short *inputPtr = static_cast<short*>( imageData->GetScalarPointer() );
@@ -49,10 +53,10 @@ namespace vrcl  {
       *outputPtr= nextvalue;
       *outputPtr++;
     }
-  
+
     return imgvol;
   }
-  
+
   void multiplyImageByLabels( vtkImageData* imgData, vtkImageData* lblData )
   {
     int dims[3];
@@ -67,11 +71,11 @@ namespace vrcl  {
       img[i] = ( lval > 0 ) * ival;
     }
   }
-  
+
   void compute_intensity_modes( vtkImageData* image, std::vector<double>& intensityModes )
   {
     double range[2];
-    image->GetScalarRange( range );   
+    image->GetScalarRange( range );
     vtkSmartPointer<vtkImageAccumulate> histogram =  vtkSmartPointer<vtkImageAccumulate>::New();
     histogram->SetInput( image );
     histogram->SetComponentExtent( 0, static_cast<int>(range[1])-static_cast<int>(range[0])-1,0,0,0,0 );
@@ -80,16 +84,16 @@ namespace vrcl  {
     histogram->SetIgnoreZero( 1 );
     histogram->Update();
     vtkSmartPointer<vtkImageData>  imhist = histogram->GetOutput( );
-        
+
     int numPts = imhist->GetNumberOfPoints();
     cout << "num histogram points: " << numPts << endl;
     int numKeep = 20; // how many modes to compute
-    
+
     unsigned short*  imhist_ptr = (unsigned short *) imhist->GetScalarPointer();
     intensityModes = std::vector<double>(numKeep);
     int min_k   = (int) range[1] * 0.1; // ignore the "almost zero" crap
-    
-    for( int i = 0; i < numKeep; i++ ) 
+
+    for( int i = 0; i < numKeep; i++ )
     { // brute force way to find the modes...
       int max_k = -1;
       unsigned short maxVal = 0;
@@ -101,15 +105,15 @@ namespace vrcl  {
         }
       }
       intensityModes[i] = max_k;
-      std::cout << "intensity mode at " << intensityModes[i] 
+      std::cout << "intensity mode at " << intensityModes[i]
                 << " of " << numPts << std::endl;
     }
-    
-    
-    
+
+
+
   }
-  
-  
+
+
     void print_dereferenced_vtkSmartPointer_pair( SP(vtkObject) obj1, SP(vtkObject) obj2) {
         // e.g. make sure they're not the same memory address...
         vtkObject*  obj1_ptr            = &(*obj1);
@@ -143,7 +147,7 @@ namespace vrcl  {
         double green[4] = {1-pR,1-pG,1-pB,0.9};
         double magenta[4] = {1.0,1-pG,1-pB,0.7};
         double transparent[4] = {0,0,0,0};
-        
+
         labelLUT->SetNumberOfTableValues( maxVal );
         labelLUT->SetTableRange(0,maxVal);
         labelLUT->SetTableValue(0,   transparent);
@@ -157,7 +161,7 @@ namespace vrcl  {
         IFLOG("create_default_labelLUT_verbose", cout << " Created default Label LUT! " << endl; )
                 return labelLUT;
     }
-  
+
     void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data) {
 
         //create two readers one for the image and one for the labels
@@ -182,7 +186,7 @@ namespace vrcl  {
             imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
             imgReader->SetDataScalarTypeToUnsignedShort();
             imgReader->Update();
-            
+
             // read the image file into the label array to force correct type & meta-data
             std::string fakeLabelFileName = kv_opts->ImageArrayFilename;
             labelFileReader->SetFileName( fakeLabelFileName.c_str() );
@@ -193,10 +197,10 @@ namespace vrcl  {
             int* imgDim = imgReader->GetDataExtent();
             int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
             int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
-         
+
             short *ptrLabel=static_cast<short*>(label2D->GetScalarPointer());
             long elemNum=0;
-            for (int k=kmin; k<=kmax; k++) { 
+            for (int k=kmin; k<=kmax; k++) {
                 for (int i=imin; i<=imax; i++)  {
                     for (int j=jmin; j<=jmax; j++) {
                         ptrLabel[elemNum] = 0;
@@ -204,11 +208,11 @@ namespace vrcl  {
                     }
                 }
             }
-            
+
             bool forceInitialFill = true;
             if( forceInitialFill ) {
             int fill_sz = 3;  // need some non-zero part so 3D display doesn't break
-              for( int k = kmax/2 - fill_sz ; k < kmax/2+fill_sz; k++ ) { 
+              for( int k = kmax/2 - fill_sz ; k < kmax/2+fill_sz; k++ ) {
                 for( int i = imax/2 - fill_sz ; i < imax/2+fill_sz; i++ ) {
                   for( int j = jmax/2 - fill_sz ; j < jmax/2+fill_sz; j++ ) {
                     unsigned long elemNum = k * imax * jmax + j * imax + i;
@@ -219,8 +223,8 @@ namespace vrcl  {
             }
             label2D->Update();
             image2D->Update();
-            
-          
+
+
         } else if(canReadImg==0){
             cout<<"Could not read file"<<kv_opts->ImageArrayFilename<<"\n";
             exit(-1);
@@ -259,7 +263,7 @@ namespace vrcl  {
         kv_opts->numSlices      = dataExtent[5]-dataExtent[4]+1;
         kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
         kv_opts->sliderMin      = double(image2D->GetOrigin()[2]);
-        kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2] 
+        kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]
                                                                        + kv_opts->sliderMin;
         kv_opts->imV            = imgReader->GetHeight();
         kv_opts->imH            = imgReader->GetWidth();
@@ -281,11 +285,11 @@ namespace vrcl  {
           kv_data->imageVolumeRaw = image2ushort( image2D );
           kv_data->labelDataArray = image2ushort( label2D );
         }
-        
+
         std::vector<double> imageModes;
         compute_intensity_modes( kv_data->imageVolumeRaw, imageModes );
         kv_data->intensityModes = imageModes;
-        
+
         cout<<"LabelArrayFilename: "<<kv_opts->LabelArrayFilename<<"\n";
         cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
 

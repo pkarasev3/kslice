@@ -27,7 +27,6 @@
 #include "vtkDataSetMapper.h"
 #include "vtkImageData.h"
 #include "vtkRendererCollection.h"
-#include "vtkKWImage.h"
 #include "vtkImageCast.h"
 #include "vtkIndent.h"
 #include "vtkImageThreshold.h"
@@ -39,6 +38,9 @@
 #include "KvtkImageInteractionCallback.h"
 #include "KSandbox.h"
 #include "KDataWarehouse.h"
+
+
+// EVIL:  #include "vtkKWImage.h"
 
 #define SP( X )  vtkSmartPointer<X>
 
@@ -169,7 +171,7 @@ void KViewer::pasteToCurrentSlice( )
 }
 
 void KViewer::queueCopyFromCurrentSlice(int idxFrom)
-{   
+{
   cout << "... queued copy from slice " << idxFrom << endl;
   kwidget_2d_left->cacheSliceIndex = idxFrom; // bag it for pasting later
 }
@@ -195,7 +197,7 @@ void KViewer::AddNewLabelMap( )
 }
 
 void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
-{   
+{
 
   int cache_idx1 = kwidget_2d_left->cacheSliceIndex;
   if ( cache_idx1 >= 0 ) // if a copy-from is stored
@@ -230,7 +232,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case 's': // run "KSegmentor"
       // TODO: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
-      // then get rid of 'propagate data' crap, use 
+      // then get rid of 'propagate data' crap, use
       // the private update function in widget 2d!
       kv_data->labelDataArray_new           = SP(vtkImageData)::New();
       kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
