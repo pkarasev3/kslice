@@ -11,12 +11,12 @@ find_package(ITK)
 if(NOT ITK_DIR)
   message( status "If you need ITK, Please set ITK_DIR to build stuff that needs ITK.")
 else(NOT ITK_DIR)
-  include(${ITK_USE_FILE}) # only gao3d should need this ...
+  # include(${ITK_USE_FILE}) # only gao3d should need this ...
 endif(NOT ITK_DIR)
 
 
 find_package(OpenCV  REQUIRED)
-message( status "  OpenCV_LIBS = ${OpenCV_LIBS} ; 
+message( status "  OpenCV_LIBS = ${OpenCV_LIBS} ;
                    you also want to have had libgtk2.0-dev *Before* building opencv!" )
 
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
@@ -111,13 +111,14 @@ include_directories(
 add_subdirectory(util/getopt)
 add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
-add_subdirectory(SampleApplications/Make3DModel)
 add_subdirectory(SampleApplications/VolumeRenderDemo)
-add_subdirectory(SampleApplications/MHADecompressor)
+
 add_subdirectory(KSegmentor)
 
 if(ITK_DIR)
   add_subdirectory(Gao3DRSS)
+  add_subdirectory(SampleApplications/MHADecompressor)
+  add_subdirectory(SampleApplications/Make3DModel)
 endif()
 
 add_subdirectory(sfm_local_chanvese)

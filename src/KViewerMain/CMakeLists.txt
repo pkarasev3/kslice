@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
 # Use the include path and library for Qt that is used by VTK.
 include_DIRECTORIES(
         ${QT_include_DIR}
@@ -19,9 +17,12 @@ file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )
 # e.g. sounds more like a util perhaps
 file( GLOB VTKITKConnection ../VTKtoITKConnection/src/*.cxx ../VTKtoITKConnection/src/*.txx ../VTKtoITKConnection/include/*.h)
 
+if(ITK_DIR) # only build if we have ITK
+  set(KVIEWER_SRCS  ${KVIEWER_SRCS}  ${VTKITKConnection})
+  message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
+endif(ITK_DIR)
 
-# MACOSX_BUNDLE  -- what the heck is MACOSX bundle ?
-add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS} ${VTKITKConnection} )
+add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
 
 TARGET_LINK_LIBRARIES( KViewer
   QVTK
