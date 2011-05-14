@@ -7,6 +7,7 @@
 #include <omp.h>
 #include <string>
 #include <sstream>
+#include <opencv2/highgui/highgui.hpp>
 
 using std::string;
 using cv::Mat;
@@ -21,7 +22,7 @@ extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 namespace vrcl
 {
-  
+
 void test_OpenMP()
 {
   int nthreads, tid;
@@ -161,7 +162,7 @@ void KSegmentor::setNumIterations(int itersToRun){
 
 void KSegmentor::initializeData()
 {
-    this->ptrCurrImage = static_cast<unsigned short*>( 
+    this->ptrCurrImage = static_cast<unsigned short*>(
         imageVol->GetScalarPointer())+(unsigned short)currSlice*mdims[0]*mdims[1];
     this->ptrCurrLabel = static_cast<unsigned short*>(
         labelVol->GetScalarPointer())+(unsigned short)currSlice*mdims[0]*mdims[1];
@@ -169,7 +170,7 @@ void KSegmentor::initializeData()
     imageVol->GetScalarRange( imgRange );
     labelVol->GetScalarRange( labelRange );
     assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
-    
+
     this->imgRange=imgRange;
     this->integrateUserInput( currSlice );
 
@@ -183,7 +184,7 @@ void KSegmentor::initializeData()
           elemNum++;
         }
     }
-   
+
     bool writeInfoPng = false;
     if( writeInfoPng ) {
       std::stringstream ss;
@@ -208,8 +209,8 @@ void KSegmentor::intializeLevelSet(){
         ll_destroy(Lin2out);
         ll_destroy(Lout2in);
     }
-  
-  
+
+
     //create linked lists
     Lz  = ll_create();
     Ln1 = ll_create();
@@ -218,14 +219,14 @@ void KSegmentor::intializeLevelSet(){
     Lp2 = ll_create();
     Lin2out = ll_create();
     Lout2in = ll_create();
-  
+
     //initialize lists, phi, and labels
     ls_mask2phi3c(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
 
     if( currSlice == prevSlice ) {
-       
+
     }
-    
+
 }
 
 void KSegmentor::Update()

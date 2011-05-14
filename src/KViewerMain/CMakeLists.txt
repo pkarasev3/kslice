@@ -17,11 +17,11 @@ file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )
 # e.g. sounds more like a util perhaps
 file( GLOB VTKITKConnection ../VTKtoITKConnection/src/*.cxx ../VTKtoITKConnection/src/*.txx ../VTKtoITKConnection/include/*.h)
 
-if(ITK_DIR) # only build if we have ITK
+if(${BUILD_ITK_DEPENDENT_STUFF}) # only build if we have ITK
   set(KVIEWER_SRCS  ${KVIEWER_SRCS}  ${VTKITKConnection})
-  message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
-endif(ITK_DIR)
+endif(${BUILD_ITK_DEPENDENT_STUFF})
 
+message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
 add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
 
 TARGET_LINK_LIBRARIES( KViewer

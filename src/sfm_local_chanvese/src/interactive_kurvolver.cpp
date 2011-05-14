@@ -1,6 +1,6 @@
 #include "interactive_kurvolver.h"
 #include "sfm_local_chanvese_mex.h"
-
+#include <iostream>
 using std::endl;
 using std::cout;
 
@@ -22,7 +22,7 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
 
     //perform iteration
     ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);
-    
+
     //update statistics
     en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
 
@@ -33,7 +33,7 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
   en_lrbac_destroy();
 }
 
-void apply_control_function(LL *Lz,double *phi, double* F, 
+void apply_control_function(LL *Lz,double *phi, double* F,
                             double* U_integral, double *img, int iter, long* dims )
 { // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
@@ -43,8 +43,8 @@ void apply_control_function(LL *Lz,double *phi, double* F,
   double gamma        = 1.0 / iter;
 
   while(Lz->curr != NULL){          //loop through list
-    x = Lz->curr->x; 
-    y = Lz->curr->y; 
+    x = Lz->curr->x;
+    y = Lz->curr->y;
     z = Lz->curr->z;
     idx          = Lz->curr->idx;
     I            = img[idx];
@@ -57,6 +57,6 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     ll_step(Lz);
     n++;       //next point
   }
-  
+
 
 }

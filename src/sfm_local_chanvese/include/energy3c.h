@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include "llist.h"
 #include "sparse3c.h"
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 
 // functions to minimize lrbac (vessel, yezzi) energy
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh);
