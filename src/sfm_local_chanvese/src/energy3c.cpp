@@ -1,9 +1,9 @@
 /*********************************************************************
  * energy3c.cpp
  *
- * This file holds functions that initialize image means, compute the 
+ * This file holds functions that initialize image means, compute the
  * curve flow for various energies
- * 
+ *
  * written by: Shawn Lankton (4/17/2009) - www.shawnlankton.com
  *
  ********************************************************************/
@@ -14,7 +14,8 @@
 #include "math.h"
 #include <iostream>
 #include <fstream>
-
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 static double uin, uout, uuser, sumin, sumout,sumuser;
 double ain, aout, auser; // means
@@ -41,7 +42,7 @@ double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, 
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
     I = img[idx];
-    
+
     if(I>=dthresh){
       if(Ain[idx] <0){
         en_lrbac_vessel_cv_init_point(img,phi,idx,x,y,z,dims,rad,dthresh);
@@ -61,7 +62,7 @@ double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, 
   }
 
   if(scale[0]==0) scale[0]=Fmax;
- 
+
   for(int j=0;j<Lz->length;j++){
     F[j] = (1-lam)*F[j]/scale[0]+lam*kappa[j];
   }
@@ -81,13 +82,13 @@ void en_lrbac_vessel_yz_init_point(double* img, double* phi, int idx, int x, int
 
   for(i=-irad;i<=irad;i++){
     if((x+i)<0 | (x+i)>=DIMX) continue;
-    for(j=-irad;j<=irad;j++){ 
+    for(j=-irad;j<=irad;j++){
       if((y+j)<0 | (y+j)>=DIMY) continue;
       for(k=-irad;k<=irad;k++){
         if((z+k)<0 | (z+k)>=DIMZ) continue;
         ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
         bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-        
+
         if(img[ridx]>dthresh){
           if(phi[ridx]<=0){
             usum += img[ridx]*gball[bidx];
@@ -118,7 +119,7 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(img[idx]>=dthresh){
       for(i=-irad;i<=irad;i++){
         if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){ 
+        for(j=-irad;j<=irad;j++){
           if((y+j)<0 | (y+j)>=DIMY) continue;
           for(k=-irad;k<=irad;k++){
             if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -141,11 +142,11 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
   ll_init(Lout2in);
   while(Lout2in->curr != NULL){
     x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
-    
+
     if(img[idx]>=dthresh){
       for(i=-irad;i<=irad;i++){
         if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){ 
+        for(j=-irad;j<=irad;j++){
           if((y+j)<0 | (y+j)>=DIMY) continue;
           for(k=-irad;k<=irad;k++){
             if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -182,7 +183,7 @@ double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, 
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
     I = img[idx];
-    
+
     if(I>=dthresh){
       if(Ain[idx] <0){
         en_lrbac_vessel_cv_init_point(img,phi,idx,x,y,z,dims,rad,dthresh);
@@ -200,7 +201,7 @@ double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, 
   }
 
   if(scale[0]==0) scale[0]=Fmax;
- 
+
   for(int j=0;j<Lz->length;j++){
     F[j] = (1-lam)*F[j]/scale[0]+lam*kappa[j];
   }
@@ -220,13 +221,13 @@ void en_lrbac_vessel_cv_init_point(double* img, double* phi, int idx, int x, int
 
   for(i=-irad;i<=irad;i++){
     if((x+i)<0 | (x+i)>=DIMX) continue;
-    for(j=-irad;j<=irad;j++){ 
+    for(j=-irad;j<=irad;j++){
       if((y+j)<0 | (y+j)>=DIMY) continue;
       for(k=-irad;k<=irad;k++){
         if((z+k)<0 | (z+k)>=DIMZ) continue;
         ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
         bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-        
+
         if(img[ridx]>dthresh){
           if(phi[ridx]<=0){
             usum += img[ridx]*gball[bidx];
@@ -257,7 +258,7 @@ void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(img[idx]>=dthresh){
       for(i=-irad;i<=irad;i++){
         if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){ 
+        for(j=-irad;j<=irad;j++){
           if((y+j)<0 | (y+j)>=DIMY) continue;
           for(k=-irad;k<=irad;k++){
             if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -284,7 +285,7 @@ void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(img[idx]>=dthresh){
       for(i=-irad;i<=irad;i++){
         if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){ 
+        for(j=-irad;j<=irad;j++){
           if((y+j)<0 | (y+j)>=DIMY) continue;
           for(k=-irad;k<=irad;k++){
             if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -313,13 +314,13 @@ void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
 
   //create ball
   gball = en_lrbac_gball(rad);
-  
+
   //allocate memory for lookups
   Ain  = (double*)malloc(NUMEL*sizeof(double)); if(Ain==NULL) return;
   Sin  = (double*)malloc(NUMEL*sizeof(double)); if(Sin==NULL) return;
   Aout = (double*)malloc(NUMEL*sizeof(double)); if(Aout==NULL) return;
   Sout = (double*)malloc(NUMEL*sizeof(double)); if(Sout==NULL) return;
-  
+
   //poision "uninitialized" points
   for(i=0;i<NUMEL;i++){
     Ain[i] = -1; Aout[i] = -1;
@@ -336,13 +337,13 @@ void en_lrbac_init_point(double* img, double* phi, int idx, int x, int y, int z,
 
   for(i=-irad;i<=irad;i++){
     if((x+i)<0 || (x+i)>=DIMX) continue;
-    for(j=-irad;j<=irad;j++){ 
+    for(j=-irad;j<=irad;j++){
       if((y+j)<0 || (y+j)>=DIMY) continue;
       for(k=-irad;k<=irad;k++){
         if((z+k)<0 || (z+k)>=DIMZ) continue;
         ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
         bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-        
+
         if(phi[ridx]<=0){
           usum += img[ridx]*gball[bidx];
           au   += gball[bidx];
@@ -372,7 +373,7 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
 
     for(i=-irad;i<=irad;i++){
       if((x+i)<0 | (x+i)>=DIMX) continue;
-      for(j=-irad;j<=irad;j++){ 
+      for(j=-irad;j<=irad;j++){
         if((y+j)<0 | (y+j)>=DIMY) continue;
         for(k=-irad;k<=irad;k++){
           if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -394,10 +395,10 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
   ll_init(Lout2in);
   while(Lout2in->curr != NULL){
     x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
-    
+
     for(i=-irad;i<=irad;i++){
       if((x+i)<0 | (x+i)>=DIMX) continue;
-      for(j=-irad;j<=irad;j++){ 
+      for(j=-irad;j<=irad;j++){
         if((y+j)<0 | (y+j)>=DIMY) continue;
         for(k=-irad;k<=irad;k++){
           if((z+k)<0 | (z+k)>=DIMZ) continue;
@@ -469,7 +470,7 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
   return F;
 }
 
-// allocates and populates memory for a 3D Gaussian, 
+// allocates and populates memory for a 3D Gaussian,
 // size (floor(rad)*2+1)^3 centered in the middle with sigma = rad/2.
 double *en_lrbac_gball(double rad){
   double *gball;
@@ -538,13 +539,13 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
   gamv = sumuv/sumvv;
   du = (u-v)*(Gamuu-Gamuv);
   dv = (u-v)*(Gamuv-Gamvv);
-  
+
   ubad = vbad = 0;
   if((Gamuv*(Gamuu+Gamvv))>(Gamuu*Gamvv+Gamuv*Gamuv)){
     if(du*du_orig<0){ubad = 1;}// mexPrintf("cu ");}
     else            {vbad = 1;}// mexPrintf("cv ");}
   }
-    
+
   ll_init(Lz); n = 0; Fmax = 0.0001; //begining of list;
   while(Lz->curr != NULL){           //loop through list
     idx = Lz->curr->idx;
@@ -579,16 +580,16 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
 void en_yezzi_init(LL* Lz, double *img, double *phi, long *dims){
   int x,y,z,idx;
   double Gamuu, Gamuv, sumuu, sumuv, Ibar, I2bar;
-  sumin = 0; sumout = 0; ain = 0; aout = 0; 
+  sumin = 0; sumout = 0; ain = 0; aout = 0;
   uin = 0; uout = 0; du_orig = 0;
 
   for(int i=0; i<NUMEL; i++){
     if(phi[i]<=0){
-      sumin  = sumin  + img[i]; 
+      sumin  = sumin  + img[i];
       ain++;
     }
     else{
-      sumout = sumout + img[i]; 
+      sumout = sumout + img[i];
       aout++;
     }
   }
@@ -617,7 +618,7 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
   ll_init(Lin2out);
   while(Lin2out->curr != NULL){
     idx = Lin2out->curr->idx;
-    
+
     sumin  -= img[idx]; ain--;
     sumout += img[idx]; aout++;
     ll_remcurr_free(Lin2out);
@@ -625,7 +626,7 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
   ll_init(Lout2in);
   while(Lout2in->curr != NULL){
     idx = Lout2in->curr->idx;
-    
+
     sumout -= img[idx]; aout--;
     sumin  += img[idx]; ain++;
     ll_remcurr_free(Lout2in);
@@ -664,12 +665,12 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
   int dxi,dyi,dzi;
   int x,y,z,idx,n,idxN;
   double MIN_INTERIOR;
-  
+
   F = (double*)malloc(Lz->length*sizeof(double));
   if(F == NULL) return NULL;
   kappa = (double*)malloc(Lz->length*sizeof(double));
   if(kappa == NULL) return NULL;
-  
+
   if(DIMZ == 1)
     MIN_INTERIOR = .01;
   else
@@ -680,7 +681,7 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
   while(Lz->curr != NULL){  //loop through list
     x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
     kappa[n] = en_kappa_norm_pt(Lz->curr, phi, dims, &dx, &dy, &dz); //compute kappa
-    
+
     if(Ain[idx]<0){
       en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
     }
@@ -709,7 +710,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
   // allocate space for F
   F = (double*)malloc(Lz->length*sizeof(double));
   if(F == NULL) return NULL;
-  
+
   kappa = (double*)malloc(Lz->length*sizeof(double));
   if(kappa == NULL) return NULL;
 
@@ -834,22 +835,22 @@ double *en_lrbac_user_compute(LL *Lz,double *phi, double *img,double penaltyAlph
 
 void en_chanvese_init(double* img, double* phi, long *dims){
   double I;
-  sumin = 0; sumout = 0; ain = 0; aout = 0; 
+  sumin = 0; sumout = 0; ain = 0; aout = 0;
   uin = 0; uout = 0; du_orig = 0;
 
   for(int i=0; i<NUMEL; i++){
     I = img[i];
     if(phi[i]<=0){
-      sumin  = sumin  + I; 
+      sumin  = sumin  + I;
       ain++;
     }
     else{
-      sumout = sumout + I; 
+      sumout = sumout + I;
       aout++;
     }
   }
   if(ain>0)  uin = sumin/ain;
-  if(aout>0) uout = sumout/aout;  
+  if(aout>0) uout = sumout/aout;
   //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
@@ -929,7 +930,7 @@ void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
   ll_init(Lin2out);
   while(Lin2out->curr != NULL){
     idx = Lin2out->curr->idx;
-    
+
     sumin  -= img[idx]; ain--;
     sumout += img[idx]; aout++;
     ll_remcurr_free(Lin2out);
@@ -937,7 +938,7 @@ void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
   ll_init(Lout2in);
   while(Lout2in->curr != NULL){
     idx = Lout2in->curr->idx;
-    
+
     sumout -= img[idx]; aout--;
     sumin  += img[idx]; ain++;
     ll_remcurr_free(Lout2in);
@@ -955,7 +956,7 @@ double *en_meanvar_compute(LL *Lz, double *phi, double *img, long *dims, double 
   // allocate space for F
   F = (double*)malloc(Lz->length*sizeof(double));
   if(F == NULL) return NULL;
-  
+
   kappa = (double*)malloc(Lz->length*sizeof(double));
   if(kappa == NULL) return NULL;
 
@@ -980,20 +981,20 @@ double *en_meanvar_compute(LL *Lz, double *phi, double *img, long *dims, double 
 
 void en_meanvar_init(double* img, double* phi, long *dims){
   double I;
-  sumin = 0; sumout = 0; ain = 0; aout = 0; 
+  sumin = 0; sumout = 0; ain = 0; aout = 0;
   sum2in=0; sum2out=0; varin = 0; varout = 0;
   uin = 0; uout = 0; du_orig = 0;
 
   for(int i=0; i<NUMEL; i++){
     I = img[i];
     if(phi[i]<=0){
-      sumin  += I; 
+      sumin  += I;
       sum2in += I*I;
       ain++;
     }
     else{
-      sumout  += I; 
-      sum2out += I*I; 
+      sumout  += I;
+      sum2out += I*I;
       aout++;
     }
   }
@@ -1048,13 +1049,13 @@ double *en_bhattacharyya_compute(LL *Lz, double *phi, double *img, long *dims, d
   // allocate space for F
   F = (double*)malloc(Lz->length*sizeof(double));
   if(F == NULL) return NULL;
-  
+
   kappa = (double*)malloc(Lz->length*sizeof(double));
   if(kappa == NULL) return NULL;
 
   lookup = (double*)malloc(nbins*sizeof(double));
   if(lookup==NULL) return NULL;
-  
+
   double *pdfin_smooth= (double *)malloc(nbins*sizeof(double));
   double *pdfout_smooth= (double *)malloc(nbins*sizeof(double));
 
@@ -1418,7 +1419,7 @@ double en_kappa_norm_pt(PT* p, double *phi, long *dims, double *pdx, double *pdy
   if(zok && yok){// (uf+db-df-ub)/4
     dyz = (phi[idx-OFFY+OFFZ]+phi[idx+OFFY-OFFZ]-phi[idx+OFFY+OFFZ]-phi[idx-OFFY-OFFZ])/4;
   }
-  
+
   kappa = (dxx*(dy2+dz2)+dyy*(dx2+dz2)+dzz*(dx2+dy2)-
            2*dx*dy*dxy-2*dx*dz*dxz-2*dy*dz*dyz)/
            (dx2+dy2+dz2+.00000001);

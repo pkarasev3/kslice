@@ -1,4 +1,5 @@
 #include "lsops3c.h"
+#include <math.h>
 
 namespace
 {
@@ -7,8 +8,8 @@ namespace
 
 }
 
-void ls_iteration(double *F, double *phi, double* label, long* dims, 
-                  LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2, 
+void ls_iteration(double *F, double *phi, double* label, long* dims,
+                  LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in){
   int x,y,z,i,idx;
   int u,d,r,l,f,b;
@@ -28,11 +29,11 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     if(fabs(F[i])>Fmax) Fmax = fabs(F[i]);
   }
 
-  for(i=0;i<Lz->length;i++){ 
+  for(i=0;i<Lz->length;i++){
     F[i] = F[i] / Fmax * dCFL;
   }
 
-  // #2) add F to phi(Lz), create Sn1 & Sp1 
+  // #2) add F to phi(Lz), create Sn1 & Sp1
   //                                             ========
   //     (a) scan Lz values [-2.5 -1.5)[-1.5 -.5)[-.5 .5](.5 1.5](1.5 2.5]
   ll_init(Lz); i = 0;
@@ -45,7 +46,7 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     phi_old  = phi[idx];
     phi[idx] = phi[idx]+F[i];
 
-    if (std::abs(F[i])>=.5)
+    if ( abs(F[i])>=.5 )
     {  // std::cout<<"We have a serious mistake"<<std::endl;
        throw "SFLS logic error!";
     }
@@ -57,9 +58,9 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     if(phi_old>0  && phi[idx]<=0){
       ll_pushnew(Lout2in,x,y,z,idx);
     }
-    
+
     if(phi[idx] > .5){
-      ll_push(Sp1, ll_remcurr(Lz)); 
+      ll_push(Sp1, ll_remcurr(Lz));
     }
     else if(phi[idx] < -.5){
       ll_push(Sn1, ll_remcurr(Lz));
@@ -179,28 +180,28 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     ll_push(Ln1,ll_remcurr(Sn1));
     label[idx] = -1;
     if(((y+1)<DIMY) && phi[idx+OFFY]==-3){
-      ll_pushnew(Sn2,x,y+1,z,idx+OFFY); 
-      phi[idx+OFFY] = phi[idx] - 1; 
+      ll_pushnew(Sn2,x,y+1,z,idx+OFFY);
+      phi[idx+OFFY] = phi[idx] - 1;
     }//up
     if(((y-1)>=0)   && phi[idx-OFFY]==-3){
       ll_pushnew(Sn2,x,y-1,z,idx-OFFY);
-      phi[idx-OFFY] = phi[idx] - 1; 
+      phi[idx-OFFY] = phi[idx] - 1;
     }//down
     if(((x+1)<DIMX) && phi[idx+OFFX]==-3){
       ll_pushnew(Sn2,x+1,y,z,idx+OFFX);
-      phi[idx+OFFX] = phi[idx] - 1; 
+      phi[idx+OFFX] = phi[idx] - 1;
     }//right
     if(((x-1)>=0)   && phi[idx-OFFX]==-3){
       ll_pushnew(Sn2,x-1,y,z,idx-OFFX);
-      phi[idx-OFFX] = phi[idx] - 1; 
+      phi[idx-OFFX] = phi[idx] - 1;
     }//left
     if(((z+1)<DIMZ) && phi[idx+OFFZ]==-3){
       ll_pushnew(Sn2,x,y,z+1,idx+OFFZ);
-      phi[idx+OFFZ] = phi[idx] - 1; 
+      phi[idx+OFFZ] = phi[idx] - 1;
     }//front
     if(((z-1)>=0)   && phi[idx-OFFZ]==-3){
       ll_pushnew(Sn2,x,y,z-1,idx-OFFZ);
-      phi[idx-OFFZ] = phi[idx] - 1; 
+      phi[idx-OFFZ] = phi[idx] - 1;
     }//back
   }
 
@@ -211,27 +212,27 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     ll_push(Lp1,ll_remcurr(Sp1));
     label[idx] = 1;
     if(((y+1)<DIMY) && phi[idx+OFFY]==3){
-      ll_pushnew(Sp2,x,y+1,z,idx+OFFY); 
+      ll_pushnew(Sp2,x,y+1,z,idx+OFFY);
       phi[idx+OFFY] = phi[idx] + 1;
     }//up
     if(((y-1)>=0)   && phi[idx-OFFY]==3){
-      ll_pushnew(Sp2,x,y-1,z,idx-OFFY); 
+      ll_pushnew(Sp2,x,y-1,z,idx-OFFY);
       phi[idx-OFFY] = phi[idx] + 1;
     }//down
     if(((x+1)<DIMX) && phi[idx+OFFX]==3){
-      ll_pushnew(Sp2,x+1,y,z,idx+OFFX); 
+      ll_pushnew(Sp2,x+1,y,z,idx+OFFX);
       phi[idx+OFFX] = phi[idx] + 1;
     }//right
     if(((x-1)>=0)   && phi[idx-OFFX]==3){
-      ll_pushnew(Sp2,x-1,y,z,idx-OFFX); 
+      ll_pushnew(Sp2,x-1,y,z,idx-OFFX);
       phi[idx-OFFX] = phi[idx] + 1;
     }//left
     if(((z+1)<DIMZ) && phi[idx+OFFZ]==3){
-      ll_pushnew(Sp2,x,y,z+1,idx+OFFZ); 
+      ll_pushnew(Sp2,x,y,z+1,idx+OFFZ);
       phi[idx+OFFZ] = phi[idx] + 1;
     }//front
     if(((z-1)>=0)   && phi[idx-OFFZ]==3){
-      ll_pushnew(Sp2,x,y,z-1,idx-OFFZ); 
+      ll_pushnew(Sp2,x,y,z-1,idx-OFFZ);
       phi[idx-OFFZ] = phi[idx] + 1;
     }//back
   }
@@ -261,23 +262,23 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
 
 double ls_max_hood_onlevel(int idx, long x, long y, long z, long *dims, double *phi, double *label, double level){
   double pmax = -3;
-  if(((y+1)<DIMY) && (label[idx+OFFY]>=level) && (phi[idx+OFFY]>pmax)) pmax = phi[idx+OFFY]; 
-  if(((y-1)>=0  ) && (label[idx-OFFY]>=level) && (phi[idx-OFFY]>pmax)) pmax = phi[idx-OFFY]; 
-  if(((x+1)<DIMX) && (label[idx+OFFX]>=level) && (phi[idx+OFFX]>pmax)) pmax = phi[idx+OFFX]; 
-  if(((x-1)>=0  ) && (label[idx-OFFX]>=level) && (phi[idx-OFFX]>pmax)) pmax = phi[idx-OFFX]; 
-  if(((z+1)<DIMZ) && (label[idx+OFFZ]>=level) && (phi[idx+OFFZ]>pmax)) pmax = phi[idx+OFFZ]; 
-  if(((z-1)>=0  ) && (label[idx-OFFZ]>=level) && (phi[idx-OFFZ]>pmax)) pmax = phi[idx-OFFZ]; 
+  if(((y+1)<DIMY) && (label[idx+OFFY]>=level) && (phi[idx+OFFY]>pmax)) pmax = phi[idx+OFFY];
+  if(((y-1)>=0  ) && (label[idx-OFFY]>=level) && (phi[idx-OFFY]>pmax)) pmax = phi[idx-OFFY];
+  if(((x+1)<DIMX) && (label[idx+OFFX]>=level) && (phi[idx+OFFX]>pmax)) pmax = phi[idx+OFFX];
+  if(((x-1)>=0  ) && (label[idx-OFFX]>=level) && (phi[idx-OFFX]>pmax)) pmax = phi[idx-OFFX];
+  if(((z+1)<DIMZ) && (label[idx+OFFZ]>=level) && (phi[idx+OFFZ]>pmax)) pmax = phi[idx+OFFZ];
+  if(((z-1)>=0  ) && (label[idx-OFFZ]>=level) && (phi[idx-OFFZ]>pmax)) pmax = phi[idx-OFFZ];
   return pmax;
 }
 
 double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, double *phi, double *label, double level){
   double pmin = 3;
-  if(((y+1)<DIMY) && (label[idx+OFFY]<=level) && (phi[idx+OFFY]<pmin)) pmin = phi[idx+OFFY]; 
-  if(((y-1)>=0  ) && (label[idx-OFFY]<=level) && (phi[idx-OFFY]<pmin)) pmin = phi[idx-OFFY]; 
-  if(((x+1)<DIMX) && (label[idx+OFFX]<=level) && (phi[idx+OFFX]<pmin)) pmin = phi[idx+OFFX]; 
-  if(((x-1)>=0  ) && (label[idx-OFFX]<=level) && (phi[idx-OFFX]<pmin)) pmin = phi[idx-OFFX]; 
-  if(((z+1)<DIMZ) && (label[idx+OFFZ]<=level) && (phi[idx+OFFZ]<pmin)) pmin = phi[idx+OFFZ]; 
-  if(((z-1)>=0  ) && (label[idx-OFFZ]<=level) && (phi[idx-OFFZ]<pmin)) pmin = phi[idx-OFFZ]; 
+  if(((y+1)<DIMY) && (label[idx+OFFY]<=level) && (phi[idx+OFFY]<pmin)) pmin = phi[idx+OFFY];
+  if(((y-1)>=0  ) && (label[idx-OFFY]<=level) && (phi[idx-OFFY]<pmin)) pmin = phi[idx-OFFY];
+  if(((x+1)<DIMX) && (label[idx+OFFX]<=level) && (phi[idx+OFFX]<pmin)) pmin = phi[idx+OFFX];
+  if(((x-1)>=0  ) && (label[idx-OFFX]<=level) && (phi[idx-OFFX]<pmin)) pmin = phi[idx-OFFX];
+  if(((z+1)<DIMZ) && (label[idx+OFFZ]<=level) && (phi[idx+OFFZ]<pmin)) pmin = phi[idx+OFFZ];
+  if(((z-1)>=0  ) && (label[idx-OFFZ]<=level) && (phi[idx-OFFZ]<pmin)) pmin = phi[idx-OFFZ];
   return pmin;
 }
 
@@ -290,7 +291,7 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
 
   //find 'interface' and mark as 0, create Lz
   for(x=0;x<DIMX;x++) for(y=0;y<DIMY;y++) for(z=0;z<DIMZ;z++){
-    idx = (int)(z*DIMXY+x*DIMY+y); 
+    idx = (int)(z*DIMXY+x*DIMY+y);
 
     //mark the inside and outside of label and phi
     if(mask[idx]<1e-3){ label[idx] =  3; phi[idx]= 3; }
@@ -317,7 +318,7 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
   ll_init(Lz);
   while(Lz->curr != NULL){
     x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
-    
+
     if(((y+1)<DIMY) && abs((int)label[idx+OFFY])==3){//up
       if(phi[idx+OFFY]<0){//in
         label[idx+OFFY]=-1; phi[idx+OFFY]=-1;
@@ -387,7 +388,7 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
   ll_init(Ln1);
   while(Ln1->curr != NULL){
     x = Ln1->curr->x; y = Ln1->curr->y; z = Ln1->curr->z; idx = Ln1->curr->idx;
-    
+
     if(((y+1)<DIMY) && label[idx+OFFY]==-3){//up
         label[idx+OFFY]=-2; phi[idx+OFFY]=-2;
         ll_pushnew(Ln2,x,y+1,z,idx+OFFY);
@@ -419,7 +420,7 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
   ll_init(Lp1);
   while(Lp1->curr != NULL){
     x = Lp1->curr->x; y = Lp1->curr->y; z = Lp1->curr->z; idx = Lp1->curr->idx;
-    
+
     if(((y+1)<DIMY) && label[idx+OFFY]==3){//up
         label[idx+OFFY]=2; phi[idx+OFFY]=2;
         ll_pushnew(Lp2,x,y+1,z,idx+OFFY);
