@@ -72,16 +72,15 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->mdims = new int[3];
         image->GetDimensions( mdims );
         this->numberdims=2;
-        this->rad      = 5;
+
         this->mdims[2] = 1;
         this->penaltyAlpha=0;
-        this->rad=10;
         this->seed=0;
         this->useContInit=1;
         this->display=0;
         this->dthresh=500;
         this->iter=200;
-        this->lambda=.2;
+        this->lambda=.1; // this could/should be user togglable!
 
         Lz=NULL;
         Ln1= NULL;
@@ -98,6 +97,14 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->seg=NULL;
         this->img=NULL;
         this->mask=NULL;
+
+        double spacing_mm[3];
+        image->GetSpacing( spacing_mm );
+
+        // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
+        // "10" pixels is 3mm in this context.
+        this->rad = (int)  3.0 / std::max( spacing_mm[0],spacing_mm[1] ); // about 3mm in physical units
+        cout << "segmentor using ROI size: " << rad << endl;
 
         this->img        = new double[ mdims[0]*mdims[1] ];
         this->mask       = new double[ mdims[0]*mdims[1] ];
@@ -144,16 +151,23 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         intializeLevelSet();
 }
 
+bool USE_CRAZY_INTEGRATION = false;
+
 void KSegmentor::accumulateUserInput( double value, int i, int j, int k )
 { // clicking: set the U_t values, +/- 1.0 ( phi < 0 is inside! )
-  double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
-  U_t[k].at<double>(j,i) = user_input ;
+  // BUG WARNING: If the image is not square, something with the indices is broken
+  if( USE_CRAZY_INTEGRATION ) {
+    double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
+    U_t[k].at<double>(j,i) = user_input ;
+  }
 }
 
 void KSegmentor::integrateUserInput( int k )
 {
-  U_integral[k]  += U_t[k];
-  U_t[k]          = 0.5 * U_t[k];
+  if( USE_CRAZY_INTEGRATION ) {
+    U_integral[k]  += U_t[k];
+    U_t[k]          = 0.5 * U_t[k];
+  }
 }
 
 void KSegmentor::setNumIterations(int itersToRun){
