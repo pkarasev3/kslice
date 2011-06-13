@@ -60,8 +60,8 @@ namespace  vrcl
     int num_changed = 0;
     for (int i = 0; i < dims[0]; i++)      {
       for (int j = 0; j < dims[1]; j++)    {
-            long elemNumFrom = idxFrom * dims[0] * dims[1] + j * dims[1] + i;
-            long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[1] + i;
+            long elemNumFrom = idxFrom * dims[0] * dims[1] + j * dims[0] + i;
+            long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[0] + i;
             short prevVal    = ptrLabel[elemNumTo];
             short newVal     = ptrLabel[elemNumFrom];
             ptrLabel[elemNumTo] = newVal;
@@ -87,7 +87,7 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     for (int k = 0; k < dims[2]; k++)    {
       for (int i = 0; i < dims[0]; i++)      {
         for (int j = 0; j < dims[1]; j++)    {
-                long elemNum = k * dims[0] * dims[1] + j * dims[1] + i;
+                long elemNum = k * dims[0] * dims[1] + j * dims[0] + i;
                 area_sum    += 1.0*(1e-6 < double( ptrLabel[elemNum] ) ) ;
         }
       }
