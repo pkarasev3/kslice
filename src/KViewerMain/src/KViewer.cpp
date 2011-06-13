@@ -286,7 +286,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
     event_PixCoord[2]=  slice_idx;
 
     if (0 != event_PixCoord[0] && 0 != event_PixCoord[1] )       {
-
+      // imH: ACROSS, imgV: DOWN, when viewed from the vtk window
       int imax = std::min(event_PixCoord[0]+kv_opts->paintBrushRad,(kv_opts->imH-1));
       int jmax = std::min(event_PixCoord[1]+kv_opts->paintBrushRad,(kv_opts->imV-1));
       int jmin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);

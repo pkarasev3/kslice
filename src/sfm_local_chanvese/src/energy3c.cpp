@@ -1419,10 +1419,10 @@ double en_kappa_norm_pt(PT* p, double *phi, long *dims, double *pdx, double *pdy
   if(zok && yok){// (uf+db-df-ub)/4
     dyz = (phi[idx-OFFY+OFFZ]+phi[idx+OFFY-OFFZ]-phi[idx+OFFY+OFFZ]-phi[idx-OFFY-OFFZ])/4;
   }
-
+  double alpha_reg = 1e-3;
   kappa = (dxx*(dy2+dz2)+dyy*(dx2+dz2)+dzz*(dx2+dy2)-
            2*dx*dy*dxy-2*dx*dz*dxz-2*dy*dz*dyz)/
-           (dx2+dy2+dz2+.00000001);
+           (dx2+dy2+dz2+ alpha_reg);
 
   pdx[0] = dx;
   pdy[0] = dy;

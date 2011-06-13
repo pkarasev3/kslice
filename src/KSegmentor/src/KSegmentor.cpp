@@ -80,7 +80,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->display=0;
         this->dthresh=500;
         this->iter=200;
-        this->lambda=.1; // this could/should be user togglable!
+        this->lambda=.2; // this could/should be user togglable!
 
         Lz=NULL;
         Ln1= NULL;
@@ -119,10 +119,11 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
 
         U_integral = std::vector< cv::Mat >( num_slices );
         U_t        = std::vector< cv::Mat >( num_slices );
+        cout << "I think the # of rows is: " << mdims[0] << ", # of cols is: " << mdims[1] << endl;
         for( int k = 0; k < num_slices; k++ )
         { /** per-slice user updates  */
-          U_integral[k] = cv::Mat::zeros( mdims[0], mdims[1], CV_64F );
-          U_t[k]        = cv::Mat::zeros( mdims[0], mdims[1], CV_64F );
+          U_integral[k] = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
+          U_t[k]        = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
         }
 
         this->iList=NULL;
@@ -151,23 +152,19 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         intializeLevelSet();
 }
 
-bool USE_CRAZY_INTEGRATION = false;
 
-void KSegmentor::accumulateUserInput( double value, int i, int j, int k )
+void KSegmentor::accumulateUserInput( double value, int j, int i, int k )
 { // clicking: set the U_t values, +/- 1.0 ( phi < 0 is inside! )
-  // BUG WARNING: If the image is not square, something with the indices is broken
-  if( USE_CRAZY_INTEGRATION ) {
+    assert( j < U_t[k].cols );
+    assert( i < U_t[k].rows );
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
-    U_t[k].at<double>(j,i) = user_input ;
-  }
+    U_t[k].at<double>(i,j) = user_input ;
 }
 
 void KSegmentor::integrateUserInput( int k )
 {
-  if( USE_CRAZY_INTEGRATION ) {
     U_integral[k]  += U_t[k];
     U_t[k]          = 0.5 * U_t[k];
-  }
 }
 
 void KSegmentor::setNumIterations(int itersToRun){
@@ -278,11 +275,8 @@ void KSegmentor::Update()
 
 void KSegmentor::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-  double dissipationRate = 0.95; // how much of the 'accumulated clicking' is kept between slices
-  ( U_integral[kFrom] ).copyTo( U_integral[kTo] );
-  cv::Mat tmp = U_integral[kTo] * dissipationRate;
-  tmp.copyTo( U_integral[kTo] );
-
+  Mat tmp = 0.9 * U_integral[kFrom];
+  tmp.copyTo(U_integral[kTo]);
 }
 
 void KSegmentor::setCurrIndex(int sliceIndex){
