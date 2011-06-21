@@ -87,7 +87,7 @@ namespace vrcl  {
 
     int numPts = imhist->GetNumberOfPoints();
     cout << "num histogram points: " << numPts << endl;
-    int numKeep = 20; // how many modes to compute
+    int numKeep = 5; // how many modes to compute
 
     unsigned short*  imhist_ptr = (unsigned short *) imhist->GetScalarPointer();
     intensityModes = std::vector<double>(numKeep);

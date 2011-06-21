@@ -68,8 +68,8 @@ if(WIN32)
   set(CMAKE_C_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
 else(WIN32)
   set(CMAKE_C_FLAGS_DEBUG "-g3 -pedantic -Werror" CACHE STRING "extra compiler flags for debug" FORCE )
-  set(CMAKE_C_FLAGS "-Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
-  set(CMAKE_CXX_FLAGS "-Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
+  set(CMAKE_C_FLAGS "-std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
+  set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
 # search for Boost version 1.34
   find_package( Boost COMPONENTS filesystem program_options )
@@ -144,3 +144,4 @@ message(STATUS "    QT_LIBRARIES:              ${QT_LIBRARIES} " )
 message(STATUS "    qt include dir:            ${QT_include_DIR} "  )
 
 
+#...

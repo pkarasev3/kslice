@@ -38,6 +38,8 @@ void test_OpenMP()
   }
 }
 
+/** default curvature penalty term. can be set externally when a KSegmentor is made. */
+double KSegmentor::defaultKappaParam = 0.1;
 
 void KSegmentor::saveMatToPNG( const cv::Mat& sliceImg, const std::string& fileName )
 {
@@ -80,7 +82,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->display=0;
         this->dthresh=500;
         this->iter=200;
-        this->lambda=.2; // this could/should be user togglable!
+        this->lambda=defaultKappaParam; // this could/should be user togglable!
 
         Lz=NULL;
         Ln1= NULL;
