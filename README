@@ -1,0 +1,9 @@
+Dependencies:   QT 4.7.x, VTK 5.6.1+, OpenCV 2.2+, Optional: ITK, Boost 
+
+Warning: May or May not build on Windows in current states. Please send suggestions if 
+it doesn't and you know how to fix it. 
+
+Building VTK: you must have enabled "with QT" and "with QT OpenGL" in the appropriate boxes. 
+
+Overall: build shared libraries in vtk and opencv, disable fast-math in opencv, 
+don't build python/LaTeX crap. 
