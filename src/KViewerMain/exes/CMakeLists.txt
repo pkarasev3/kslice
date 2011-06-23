@@ -5,4 +5,7 @@ add_executable( KViewer_desktop KViewer_desktop.cpp)
 target_link_libraries( KViewer_desktop ${KV_LIBS})
 
 
+add_executable( imageglob2mha imageglob2mha.cpp)
+target_link_libraries( imageglob2mha ${KV_LIBS} )
+
 
