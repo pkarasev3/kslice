@@ -267,7 +267,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
   if ( this->image_callback->ButtonDown() )
   {
-    int slice_idx          = kwidget_2d_left->currentSliceIndex;
+
+      int slice_idx          = kwidget_2d_left->currentSliceIndex;
     int label_idx          = kwidget_2d_left->activeLabelMapIndex;
     Ptr<KSegmentor> kseg   = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
     vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
@@ -286,9 +287,9 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
     event_PixCoord[2]=  slice_idx;
 
     if (0 != event_PixCoord[0] && 0 != event_PixCoord[1] )       {
-      // imH: ACROSS, imgV: DOWN, when viewed from the vtk window
-      int imax = std::min(event_PixCoord[0]+kv_opts->paintBrushRad,(kv_opts->imH-1));
-      int jmax = std::min(event_PixCoord[1]+kv_opts->paintBrushRad,(kv_opts->imV-1));
+      // imgWidth: ACROSS, imgV: DOWN, when viewed from the vtk window
+      int imax = std::min(event_PixCoord[0]+kv_opts->paintBrushRad,(kv_opts->imgWidth-1));
+      int jmax = std::min(event_PixCoord[1]+kv_opts->paintBrushRad,(kv_opts->imgHeight-1));
       int jmin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);
       int imin = std::max(event_PixCoord[0]-kv_opts->paintBrushRad,0);
       int k = event_PixCoord[2];
@@ -327,7 +328,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
-              long elemNum = kk * kv_opts->imV * kv_opts->imH + j * kv_opts->imH + i;
+              long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( ptrImage[elemNum] < imgMax && ptrImage[elemNum] > imgMin ) {
                 ptrLabel[elemNum] = Label_Fill_Value;
                 kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );

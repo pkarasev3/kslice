@@ -1,6 +1,7 @@
 function [ imageArray, imageHeader ] = WriteMHA(fileLoc, imageArray, imageHeader )
-    
-    %test to see if files exists, if it does, erase it    
+ %function [ imageArray, imageHeader ] = WriteMHA(fileLoc, imageArray, imageHeader )
+ 
+ %test to see if files exists, if it does, erase it    
     exists=fopen(fileLoc);
     if exists~=-1 %then we opened something that already exists
         fclose(exists);
@@ -21,7 +22,7 @@ function [ imageArray, imageHeader ] = WriteMHA(fileLoc, imageArray, imageHeader
     %now, write raw data
     fidFile=fopen(fileLoc,'a');%open file    
 
-    precision='int16';
+    precision='uint16';
     [m,n,p]=size(imageArray);
     
     for j=1:p %dont write all at once so that we dont have just one really long line

@@ -33,7 +33,7 @@ KInteractiveLabelMap::KInteractiveLabelMap()
   labelDataArray          = vtkSmartPointer<vtkImageData>::New();
   
   sourceWidget            = NULL;
-  labelOpacity2D          = 0.65f;
+  labelOpacity2D          = 0.6f;
   labelInterpolate        = true;
 }
 
@@ -55,8 +55,8 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   // clone to get image meta-data,then make blank label data
   labelDataArray->DeepCopy(image);
 
-  int imax=kv_opts->imV-1;
-  int jmax=kv_opts->imH-1;
+  int imax=kv_opts->imgHeight-1;
+  int jmax=kv_opts->imgWidth-1;
   int kmax=kv_opts->numSlices-1;
 
   short *ptrLabel=static_cast<short*>(labelDataArray->GetScalarPointer());
@@ -70,7 +70,7 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   bool forceInitialFill = true;
   if( forceInitialFill )
   {
-    int fill_sz = 3;  // need some non-zero part so 3D display doesn't break
+    int fill_sz = 1;  // need some non-zero part so 3D display doesn't break
     int kmin = kmax/2 - fill_sz;
     if( kmin < 0 )
       kmin = 0;
@@ -90,7 +90,7 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   // convert it to unsigned short, our desired internal method...
   labelDataArray  = image2ushort( labelDataArray );
   
-  // grab a handle on the image ... TODO: verify this is safe...should be OK
+  // grab a handle on the image ...
   imageVolume     = image;
 
   ksegmentor = Ptr<KSegmentor>(new KSegmentor(imageVolume,labelDataArray, slice_idx)  );
@@ -135,8 +135,8 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
 //  kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
 //  kv_opts->sliderMin      = double(image2D->GetOrigin()[2]);
 //  kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2] + kv_opts->sliderMin;
-//  kv_opts->imV            = imgReader->GetHeight();
-//  kv_opts->imH            = imgReader->GetWidth();
+//  kv_opts->imgHeight            = imgReader->GetHeight();
+//  kv_opts->imgWidth            = imgReader->GetWidth();
 
 //  std::vector<double> imgOrigin(3);
 //  memcpy( &(imgOrigin[0]), imgReader->GetDataOrigin(), 3 * sizeof(double) );

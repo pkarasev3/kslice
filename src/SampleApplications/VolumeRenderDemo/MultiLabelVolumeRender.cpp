@@ -14,6 +14,9 @@
 #include "vtkSmartPointer.h"
 #include "vtkMetaImageReader.h"
 #include "vtkImageResample.h"
+#include "vtkImageMedian3D.h"
+#include "vtkImageContinuousErode3D.h"
+#include "vtkImageContinuousDilate3D.h"
 #include "opencv2/core/core.hpp"
 #include <vtkMath.h>
 #include <cmath>
@@ -86,6 +89,11 @@ void get_good_color( int idx, vector<int>& rgb_out )
   
 }
 
+struct LabelVolumeMetaInfo {
+  string filename;
+  string volume_string;
+};
+
 
 SP(vtkImageData) image2ushort( vtkImageData* imageData )
 {
@@ -118,10 +126,11 @@ SP(vtkImageData) image2ushort( vtkImageData* imageData )
   return imgvol;
 }
 
-SP(vtkImageData) mergeLabelMaps( const std::vector<SP(vtkImageData)> & multiLabels )
+SP(vtkImageData) mergeLabelMaps( const std::vector<SP(vtkImageData)> & multiLabels,
+                                 std::vector<LabelVolumeMetaInfo> & volume_info )
 {
   SP(vtkImageData) img   =  SP(vtkImageData)::New();
-  img->DeepCopy( multiLabels[1] );
+  img->DeepCopy( multiLabels[0] );
   int nLabels = multiLabels.size();
   int dims[3];
   double labelRange[2];
@@ -134,9 +143,9 @@ SP(vtkImageData) mergeLabelMaps( const std::vector<SP(vtkImageData)> & multiLabe
     vector<double> spacing(spc,spc+3);
     string strVolume;
     vrcl::getVolumeAsString(spacing,imgData,strVolume);
-    cout << strVolume << endl;
+    volume_info[k].volume_string = strVolume;
+
     imgData->GetDimensions( dims );
-    
     unsigned short*  img_k_in = (unsigned short *) imgData->GetScalarPointer();
     unsigned short*  img_out  = (unsigned short *) img->GetScalarPointer();
     int numel                 = dims[0]*dims[1]*dims[2];
@@ -156,20 +165,23 @@ SP(vtkImageData) mergeLabelMaps( const std::vector<SP(vtkImageData)> & multiLabe
 int main( int argc, char **argv)
 {
   SP(vtkMetaImageReader) imgReader =  SP(vtkMetaImageReader)::New();
-  SP(vtkMetaImageReader) lblReader =  SP(vtkMetaImageReader)::New();
-  
+
   std::vector< SP(vtkImageData) > multiLabels(argc-1);
-  
+  std::vector<LabelVolumeMetaInfo>    volume_info(argc-1);
+
   if( argc >= 2 ) {
+    cout << "loading label files. warning: they should be the same size "
+         << " e.g. from the same image file! " << endl;
     for( int k = 1; k < argc; k++ ) {
       cout << "attempting to load " << argv[k] << endl;
       imgReader->SetFileName( argv[k] );
       imgReader->Update();
-      
+      volume_info[k-1].filename = argv[k];
+
       // read it from disk, fails if file name is wacked
       SP(vtkImageData) imageDataTmp   =  SP(vtkImageData)::New();
-      imageDataTmp = imgReader->GetOutput();
-      
+      imageDataTmp = vrcl::removeImageOstrava( imgReader->GetOutput(),3/*erode*/,5 /*dilate*/ );
+
       // make it a ushort and bag it
       SP(vtkImageData) img      =  SP(vtkImageData)::New();
       img    = image2ushort( imageDataTmp );
@@ -180,7 +192,13 @@ int main( int argc, char **argv)
     exit(1);
   }
   
-  SP(vtkImageData) imageData = mergeLabelMaps( multiLabels );
+  SP(vtkImageData) imageData = mergeLabelMaps( multiLabels, volume_info);
+
+  cout << "successfully processed labels. printing their meta info: " << endl;
+  for( int k = 0; k < (int) volume_info.size(); k++ ) {
+    cout << volume_info[k].filename << ", " << volume_info[k].volume_string << endl;
+  }
+
   SP(vtkImageResample) resampler = SP(vtkImageResample)::New();
   resampler->SetInput( imageData );
   resampler->SetAxisMagnificationFactor(0,1.0);

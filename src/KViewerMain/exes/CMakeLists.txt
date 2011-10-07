@@ -9,3 +9,6 @@ add_executable( imageglob2mha imageglob2mha.cpp)
 target_link_libraries( imageglob2mha ${KV_LIBS} )
 
 
+add_executable( mha_decompress_resave mha_decompress_resave.cpp)
+target_link_libraries( mha_decompress_resave ${KV_LIBS} )
+

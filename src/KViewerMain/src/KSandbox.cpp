@@ -104,6 +104,10 @@ void compute_intensity_modes( vtkImageData* image, std::vector<double>& intensit
         imhist_ptr[k] = 0;
       }
     }
+    if( max_k == -1 ) {
+      std::cout << "Warning, mode-finding failed. Image seems badly un-equalized or skewed!" << std::endl;
+      max_k = 0;
+    }
     intensityModes[i] = max_k;
     std::cout << "intensity mode at " << intensityModes[i]
               << " of " << numPts << std::endl;
@@ -185,7 +189,12 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
        << kv_opts->LabelArrayFilename<< endl;
     imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
     imgReader->SetDataScalarTypeToUnsignedShort();
+    // WTF @ Liang-Jia's data??
+    //  imgReader->SetDataByteOrderToBigEndian();
     imgReader->Update();
+
+    std::string byteOrderName( imgReader->GetDataByteOrderAsString() );
+    std::cout << "byte orderness of " << kv_opts->ImageArrayFilename << ": " << byteOrderName << endl;
 
     // read the image file into the label array to force correct type & meta-data
     std::string fakeLabelFileName = kv_opts->ImageArrayFilename;
@@ -275,8 +284,11 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   kv_opts->sliderMin      = double(image2D->GetOrigin()[2]);
   kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]
       + kv_opts->sliderMin;
-  kv_opts->imV            = imgReader->GetHeight();
-  kv_opts->imH            = imgReader->GetWidth();
+  kv_opts->imgHeight            = imgReader->GetHeight();
+  kv_opts->imgWidth            = imgReader->GetWidth();
+
+  kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1;
+  kv_opts->maxIntensity        = image2D->GetScalarRange()[1];
 
   std::vector<double> imgOrigin(3);
   memcpy( &(imgOrigin[0]), imgReader->GetDataOrigin(), 3 * sizeof(double) );
@@ -287,7 +299,7 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   cout << "image origin and extent: " << Mat( imgOrigin )
        << " ... " << Mat( imgExtent ) << endl;
 
-  bool forceToUShort      = true;
+  bool forceToUShort      = false;
   if( !forceToUShort ) {
     kv_data->imageVolumeRaw = image2D ;
     kv_data->labelDataArray = label2D ;
