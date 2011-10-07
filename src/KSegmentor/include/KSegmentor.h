@@ -46,6 +46,8 @@ class KSegmentor
         }
         void saveCurrentSliceToPNG( const std::string& fileName);
 
+        static double defaultKappaParam;
+
     private:
         /** internal 'update from input' function */
         void integrateUserInput( int k );

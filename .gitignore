@@ -12,4 +12,6 @@ qtGUI_Demo.pro
 foo*
 build*
 *build
+data
+
 

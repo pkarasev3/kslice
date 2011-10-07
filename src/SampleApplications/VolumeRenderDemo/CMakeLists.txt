@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES ( VolumeRenderVTKDemo ${VOLREND_VTK_REQUIRED_LIBS} )
 
 
 add_executable( MultiLabelVolumeRender MultiLabelVolumeRender.cpp )
-TARGET_LINK_LIBRARIES ( MultiLabelVolumeRender ${VOLREND_VTK_REQUIRED_LIBS} )
+TARGET_LINK_LIBRARIES ( MultiLabelVolumeRender KSegmentor ${OpenCV_LIBS} ${VOLREND_VTK_REQUIRED_LIBS} )
 
 add_executable( LabelMapAsImplicitFunction LabelMapAsImplicitFunction.cpp )
 TARGET_LINK_LIBRARIES ( LabelMapAsImplicitFunction ${VOLREND_VTK_REQUIRED_LIBS} )

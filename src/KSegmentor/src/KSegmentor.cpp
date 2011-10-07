@@ -38,6 +38,8 @@ void test_OpenMP()
   }
 }
 
+/** default curvature penalty term. can be set externally when a KSegmentor is made. */
+double KSegmentor::defaultKappaParam = 0.1;
 
 void KSegmentor::saveMatToPNG( const cv::Mat& sliceImg, const std::string& fileName )
 {
@@ -80,7 +82,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->display=0;
         this->dthresh=500;
         this->iter=200;
-        this->lambda=.2; // this could/should be user togglable!
+        this->lambda=defaultKappaParam; // this could/should be user togglable!
 
         Lz=NULL;
         Ln1= NULL;
@@ -104,6 +106,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
         // "10" pixels is 3mm in this context.
         this->rad = (int)  3.0 / std::max( spacing_mm[0],spacing_mm[1] ); // about 3mm in physical units
+        this->rad = std::min(12.0,this->rad); // force non-huge radius if the spacing is retarded
         cout << "segmentor using ROI size: " << rad << endl;
 
         this->img        = new double[ mdims[0]*mdims[1] ];

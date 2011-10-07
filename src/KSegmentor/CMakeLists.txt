@@ -11,7 +11,7 @@ set( KSEGM_LIBS
 )
 
 add_library(KSegmentor  ${ksegm_headers} ${ksegm_sources})
-target_link_libraries(KSegmentor   sfm_local_chanvese   ${KSEGM_LIBS} )
+target_link_libraries(KSegmentor   sfm_local_chanvese   vrcl ${KSEGM_LIBS} )
 
 add_subdirectory( tests )
 
