@@ -11,8 +11,8 @@ struct KViewerOptions
 
 public:
   int     numSlices;
-  int     imV;
-  int     imH;
+  int     imgHeight;
+  int     imgWidth;
   double  sliceZSpace;
   double  sliderMax;
   double  sliderMin;

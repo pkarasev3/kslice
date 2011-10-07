@@ -143,5 +143,6 @@ message(STATUS "    C++ flags (Debug):         ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FL
 message(STATUS "    QT_LIBRARIES:              ${QT_LIBRARIES} " )
 message(STATUS "    qt include dir:            ${QT_include_DIR} "  )
 
+message(STATUS " fyi, bunch of image data is here ----   tsfat.bme.gatech.edu:/u4/public/karasev/data_medical/mha_grantmuller_kslice/mha_all/ " )
 
 #...

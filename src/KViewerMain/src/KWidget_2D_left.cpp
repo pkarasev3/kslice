@@ -43,11 +43,18 @@ struct BogusSingletonException : public std::exception
 
 void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data )
 {
+  /** Sets up the mapping of intensity values to displayed colors.
+    * Needs to be adjusted if all you see is black & white.
+    */
   vtkImageData* image = kv_data->imageVolumeRaw;
-  double minMaxImage[2];
-  image->GetScalarRange( minMaxImage );
-  kv_opts->minIntensity = minMaxImage[0];
-  kv_opts->maxIntensity = minMaxImage[1];
+
+  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
+    cout << "no min,max passed; setting default window: min,max of image." << endl;
+    double minMaxImage[2];
+    image->GetScalarRange( minMaxImage );
+    kv_opts->minIntensity = minMaxImage[0];
+    kv_opts->maxIntensity = minMaxImage[1];
+  }
 
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
@@ -74,8 +81,7 @@ int round(double d)
 }
 #endif
 
-} // end anonymous namespace ... todo: move to structs if we feel like it.
-// if we don't feel like it, then these should be member functions!
+}
 
 void KWidget_2D_left:: SetupRenderWindow() {
 
@@ -282,6 +288,11 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     kv_data->labelDataArray_new           = SP(vtkImageData)::New();
     kv_data->labelDataArray_new->ShallowCopy( multiLabelMaps[k]->labelDataArray );
+    double label_opacity = kv_opts->labelOpacity2D;
+    if( k != activeLabelMapIndex ) {
+      label_opacity *= 0.5;
+    }
+    multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
     multiLabelMaps[k]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
     multiLabelMaps[k]->label2D_shifter_scaler->Update();
   }

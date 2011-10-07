@@ -19,11 +19,18 @@ void waterMark(const std::string& text, cv::Mat & img);
 /** compute volume (non-zero elements) in label map, insert to string "xyz mL^3*/
 void getVolumeAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 std::string & volume );
+                                 std::string & volume, bool numberOnly = false );
+
+void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
+                                 vtkImageData* label_map,
+                                 std::string & volumeString, bool numberOnly = false );
 
 /** in-place, copy a slice from index a to index b in volume */
 void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
 
+/** remove 3D islands: erode slightly, dilate a lot, AND this with original */
+vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
+                                               int erode_sz=3, int dilate_sz=5);
 class KSegmentor
 {
     private:
