@@ -1,0 +1,15 @@
+CMakeLists.txt.*
+moc_*
+*.bbl
+*.blg
+*.out
+ui_gui.h
+qtGUI_Demo.pro
+*.asv
+*.aux
+*.dvi
+*.tmp
+foo*
+build*
+*build
+
