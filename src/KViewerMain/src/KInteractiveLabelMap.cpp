@@ -68,9 +68,15 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   }
 
   bool forceInitialFill = true;
-  if( forceInitialFill ) {
+  if( forceInitialFill )
+  {
     int fill_sz = 3;  // need some non-zero part so 3D display doesn't break
-    for( int k = kmax/2 - fill_sz ; k < kmax/2+fill_sz; k++ ) { 
+    int kmin = kmax/2 - fill_sz;
+    if( kmin < 0 )
+      kmin = 0;
+
+    for( int k = kmin ; k < kmax; k++ ) {
+
       for( int i = imax/2 - fill_sz ; i < imax/2+fill_sz; i++ ) {
         for( int j = jmax/2 - fill_sz ; j < jmax/2+fill_sz; j++ ) {
           unsigned long elemNum = k * imax * jmax + j * imax + i;

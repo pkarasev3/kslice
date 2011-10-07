@@ -33,104 +33,104 @@ const std::string KWidget_2D_left::VERBOSE = "VerboseWidget2D_IO";
 
 namespace {
 
-  struct BogusSingletonException : public std::exception
+struct BogusSingletonException : public std::exception
+{
+  virtual const char* what() const throw ()
   {
-    virtual const char* what() const throw ()
-    {
-      return "kv_data and/or kv_opts are bogus!";
-    }
-  };
-
-  void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data )
-  {
-    vtkImageData* image = kv_data->imageVolumeRaw;
-    double minMaxImage[2];
-    image->GetScalarRange( minMaxImage );
-    kv_opts->minIntensity = minMaxImage[0];
-    kv_opts->maxIntensity = minMaxImage[1];
-
-      cout << "attempting to use Image Range: "
-           << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
-    satLUT->SetTableRange (kv_opts->minIntensity, kv_opts->maxIntensity);
-
-    double mode0 = kv_data->intensityModes[0];
-    double mode1 = kv_data->intensityModes[kv_data->intensityModes.size()-1];
-    mode0        = mode0 / kv_opts->maxIntensity;
-    mode1        = mode1 / kv_opts->maxIntensity;
-
-    satLUT->SetSaturationRange (0.0, 0.1);
-    satLUT->SetHueRange (  0, 1);
-    satLUT->SetValueRange (0, 1);
-    satLUT->ForceBuild();
+    return "kv_data and/or kv_opts are bogus!";
   }
+};
+
+void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data )
+{
+  vtkImageData* image = kv_data->imageVolumeRaw;
+  double minMaxImage[2];
+  image->GetScalarRange( minMaxImage );
+  kv_opts->minIntensity = minMaxImage[0];
+  kv_opts->maxIntensity = minMaxImage[1];
+
+  cout << "attempting to use Image Range: "
+       << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
+  satLUT->SetTableRange (kv_opts->minIntensity, kv_opts->maxIntensity);
+
+  double mode0 = kv_data->intensityModes[0];
+  double mode1 = kv_data->intensityModes[kv_data->intensityModes.size()-1];
+  mode0        = mode0 / kv_opts->maxIntensity;
+  mode1        = mode1 / kv_opts->maxIntensity;
+
+  satLUT->SetSaturationRange (0.0, 0.1);
+  satLUT->SetHueRange (  0, 1);
+  satLUT->SetValueRange (0, 1);
+  satLUT->ForceBuild();
+}
 
 #if WIN32
-  /**
+/**
    * \warning method added for Windows OS. Might conflict with definitions in non windows environment
    */
-  int round(double d)
-  {
-    return d+0.5;
-  }
+int round(double d)
+{
+  return d+0.5;
+}
 #endif
 
 } // end anonymous namespace ... todo: move to structs if we feel like it.
 // if we don't feel like it, then these should be member functions!
 
-  void KWidget_2D_left:: SetupRenderWindow() {
+void KWidget_2D_left:: SetupRenderWindow() {
 
-    kvImageRenderer = vtkSmartPointer<vtkRenderer>::New();
-    // This is where multiple actors are added / multiple label maps here
-    kvImageRenderer->AddActor( imageActor );
-    kvImageRenderer->AddActor( multiLabelMaps[0]->labelActor2D );
-    kvImageRenderer->SetBackground(0.5,0.5,0.5);
+  kvImageRenderer = vtkSmartPointer<vtkRenderer>::New();
+  // This is where multiple actors are added / multiple label maps here
+  kvImageRenderer->AddActor( imageActor );
+  kvImageRenderer->AddActor( multiLabelMaps[0]->labelActor2D );
+  kvImageRenderer->SetBackground(0.5,0.5,0.5);
 
-    renderWindowLeft = vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindowLeft->AddRenderer( kvImageRenderer );
+  renderWindowLeft = vtkSmartPointer<vtkRenderWindow>::New();
+  renderWindowLeft->AddRenderer( kvImageRenderer );
 
-    sliceViewPicker = vtkSmartPointer<vtkPropPicker>::New();
-    sliceViewPicker->PickFromListOn();
-    sliceViewPicker->AddPickList( imageActor );
-    image_interactor_style = vtkSmartPointer<vtkInteractorStyleImage>::New();
+  sliceViewPicker = vtkSmartPointer<vtkPropPicker>::New();
+  sliceViewPicker->PickFromListOn();
+  sliceViewPicker->AddPickList( imageActor );
+  image_interactor_style = vtkSmartPointer<vtkInteractorStyleImage>::New();
 
-    vtkRenderWindow* window_alias = renderWindowLeft;
-    QVTKWidget* qvtk = qVTK_widget_left;
-    qvtk->GetRenderWindow()->GetInteractor( )->SetInteractorStyle( image_interactor_style );
-    qvtk->SetRenderWindow( window_alias );
-    window_alias->GetInteractor( )->SetInteractorStyle( image_interactor_style );
+  vtkRenderWindow* window_alias = renderWindowLeft;
+  QVTKWidget* qvtk = qVTK_widget_left;
+  qvtk->GetRenderWindow()->GetInteractor( )->SetInteractorStyle( image_interactor_style );
+  qvtk->SetRenderWindow( window_alias );
+  window_alias->GetInteractor( )->SetInteractorStyle( image_interactor_style );
 
-  }
+}
 
 
 
 void KWidget_2D_left::SetupImageDisplay() {
 
-    vtkSmartPointer<vtkLookupTable> satLUT = vtkSmartPointer<vtkLookupTable>::New();
-    SetupSaturationLUT( satLUT, kv_opts, kv_data );
+  vtkSmartPointer<vtkLookupTable> satLUT = vtkSmartPointer<vtkLookupTable>::New();
+  SetupSaturationLUT( satLUT, kv_opts, kv_data );
 
-    vtkSmartPointer<vtkImageShiftScale> intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
-    intensShift->SetInput( kv_data->imageVolumeRaw );
+  vtkSmartPointer<vtkImageShiftScale> intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
+  intensShift->SetInput( kv_data->imageVolumeRaw );
 
-    imageReslicer=vtkSmartPointer<vtkImageReslice>::New();
-    imageReslicer->SetInput(intensShift->GetOutput());
-    imageReslicer->SetOutputDimensionality(2);  //drawing just a single slice
-    imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    imageReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
+  imageReslicer=vtkSmartPointer<vtkImageReslice>::New();
+  imageReslicer->SetInput(intensShift->GetOutput());
+  imageReslicer->SetOutputDimensionality(2);  //drawing just a single slice
+  imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+  imageReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
 
-    // assign color mapping via lookup table
-    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
-    colorMap->SetLookupTable(satLUT);
-    colorMap->SetInput( imageReslicer->GetOutput() );
-    colorMap->Update();
+  // assign color mapping via lookup table
+  vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
+  colorMap->SetLookupTable(satLUT);
+  colorMap->SetInput( imageReslicer->GetOutput() );
+  colorMap->Update();
 
-    imageActor = vtkSmartPointer<vtkImageActor>::New( );
-    imageActor->SetInput( colorMap->GetOutput() );
-    imageActor->SetInterpolate( kv_opts->labelInterpolate );
+  imageActor = vtkSmartPointer<vtkImageActor>::New( );
+  imageActor->SetInput( colorMap->GetOutput() );
+  imageActor->SetInterpolate( kv_opts->labelInterpolate );
 
-    // keep a handle on it so that user can change contrast later from KViewer
-    color_HSV_LookupTable = satLUT;
+  // keep a handle on it so that user can change contrast later from KViewer
+  color_HSV_LookupTable = satLUT;
 
-  }
+}
 
 KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
   // must explicity call Initialize()!
@@ -144,8 +144,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   // set Logger flags for test/debug
   SETLOG(KWidget_2D_left::VERBOSE,1)
 
-  // grab options and state variables from KViewer main app.
-  kv_opts = kv_opts_input;
+      // grab options and state variables from KViewer main app.
+      kv_opts = kv_opts_input;
   kv_data = kv_data_input;
   currentSliceIndex = 0;
   cacheSliceIndex   = 0;
@@ -209,7 +209,7 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
   for( ; label_idx < (int) multiLabelMaps.size(); label_idx++)
   {
     IFLOG(VERBOSE, cout << "... attempting to write label map to file ...  " )
-    stringstream label_index_ss;
+        stringstream label_index_ss;
     label_index_ss << "_" << std::setw(4) << std::setfill('0') << label_idx;
     string labelmap_filename = labelmap_name_base + label_index_ss.str() + ".mha";
 
@@ -220,7 +220,8 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
     labelWriter->Write();
     IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelmap_filename << endl )
 
-    multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );
+        // wtf @ png libs ...
+        // multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );
   }
 
 }
@@ -239,7 +240,7 @@ void KWidget_2D_left::SaveAsCurrentLabelMap( const std::string &fileName ) {
 
 void KWidget_2D_left::SaveCurrentLabelMap( ) {
   IFLOG(VERBOSE, cout << "... attempting to write label map to file ... " )
-  time_t seconds;
+      time_t seconds;
   seconds = time(NULL);
   std::stringstream  ss;
   ss << "KViewerSaved_LabelMap_" << seconds ;
@@ -257,19 +258,26 @@ Multiple Label Maps
 *********************************************************************/
 
 
-void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo )
+void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll )
 { /** for every labelmap, copy & paste from index A to index B, then update display */
-  for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
+  if( bPasteAll ) {
+    for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
+      copySliceFromTo( multiLabelMaps[k]->labelDataArray, iFrom, iTo );
+      multiLabelMaps[k]->ksegmentor->copyIntegralDuringPaste( iFrom, iTo );
+    }
+  } else {
+    int k = activeLabelMapIndex;
     copySliceFromTo( multiLabelMaps[k]->labelDataArray, iFrom, iTo );
     multiLabelMaps[k]->ksegmentor->copyIntegralDuringPaste( iFrom, iTo );
   }
   UpdateMultiLabelMapDisplay();
+
 }
 
 
 
 void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
-// the shallow-copy trick to force instant display update
+  // the shallow-copy trick to force instant display update
 
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     kv_data->labelDataArray_new           = SP(vtkImageData)::New();
@@ -342,31 +350,31 @@ void KWidget_2D_left::SetupLabelDisplay()  {
   // Begin Code for Transparent 2d ACL Slice
   // Lookup Table for Label Map
 
-//    kv_data->labelDataArray->Update();
-//    this->labelLUT = create_default_labelLUT( kv_data->labelDataArray->GetScalarRange()[1] );
-//    label2D_shifter_scaler = vtkSmartPointer<vtkImageShiftScale>::New();
-//    label2D_shifter_scaler->SetInput( kv_data->labelDataArray );
+  //    kv_data->labelDataArray->Update();
+  //    this->labelLUT = create_default_labelLUT( kv_data->labelDataArray->GetScalarRange()[1] );
+  //    label2D_shifter_scaler = vtkSmartPointer<vtkImageShiftScale>::New();
+  //    label2D_shifter_scaler->SetInput( kv_data->labelDataArray );
 
-//    labelReslicer=vtkSmartPointer<vtkImageReslice>::New();
-//    labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );
-//    labelReslicer->SetOutputDimensionality(2);  //drawing just a single slice
-//    labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-//    labelReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
+  //    labelReslicer=vtkSmartPointer<vtkImageReslice>::New();
+  //    labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );
+  //    labelReslicer->SetOutputDimensionality(2);  //drawing just a single slice
+  //    labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+  //    labelReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
 
-//    vtkSmartPointer<vtkImageMapToColors> colorMapLabSlice = vtkSmartPointer<vtkImageMapToColors>::New();
-//    colorMapLabSlice->SetLookupTable(labelLUT);
+  //    vtkSmartPointer<vtkImageMapToColors> colorMapLabSlice = vtkSmartPointer<vtkImageMapToColors>::New();
+  //    colorMapLabSlice->SetLookupTable(labelLUT);
 
-//    colorMapLabSlice->SetInputConnection( labelReslicer->GetOutputPort() );
-//    colorMapLabSlice->Update();
+  //    colorMapLabSlice->SetInputConnection( labelReslicer->GetOutputPort() );
+  //    colorMapLabSlice->Update();
 
-//    labelActor2D = vtkSmartPointer<vtkImageActor>::New( );
-//    labelActor2D->SetInput( colorMapLabSlice->GetOutput() );
-//    labelActor2D->SetOpacity( kv_opts->labelOpacity2D );
-//    labelActor2D->SetInterpolate( kv_opts->labelInterpolate );
+  //    labelActor2D = vtkSmartPointer<vtkImageActor>::New( );
+  //    labelActor2D->SetInput( colorMapLabSlice->GetOutput() );
+  //    labelActor2D->SetOpacity( kv_opts->labelOpacity2D );
+  //    labelActor2D->SetInterpolate( kv_opts->labelInterpolate );
 
 }
 // TODO: details of label display needs to use stuff in KInteractiveLabelMap
-  // SetupLabelDisplay( );
+// SetupLabelDisplay( );
 
 
 // this is bullshit

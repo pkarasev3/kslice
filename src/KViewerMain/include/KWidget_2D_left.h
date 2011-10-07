@@ -115,7 +115,7 @@ Multiple Label Maps
   void ResetLabelMapList( );
   
   /** for every labelmap, copy & paste from index A to index B */ 
-  void CopyLabelsFromTo( int iFrom, int iTo );
+  void CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll = false );
  
   /** get the one that's being "edited" now */
   vtkSmartPointer<vtkImageData> GetActiveLabelMap( );

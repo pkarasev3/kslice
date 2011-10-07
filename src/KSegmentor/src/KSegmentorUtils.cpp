@@ -88,10 +88,13 @@ void getVolumeAsString( const vector<double>& imageSpacing,
       for (int i = 0; i < dims[0]; i++)      {
         for (int j = 0; j < dims[1]; j++)    {
                 long elemNum = k * dims[0] * dims[1] + j * dims[0] + i;
-                area_sum    += 1.0*(1e-6 < double( ptrLabel[elemNum] ) ) ;
+                // area_sum    += 1.0*(1e-6 < double( ptrLabel[elemNum] ) ) ;
+                area_sum    += double( ptrLabel[elemNum] ) ;
         }
       }
     }
+    area_sum -= label_range[0];
+    area_sum /= (1e-3 + label_range[1] - label_range[0]);
     area_sum /= pow(10.0, 3.0); // 1mL = 1cm^3 = 1000mm^3
     area_sum *= (imageSpacing[0] * imageSpacing[1] * imageSpacing[2]);
     std::stringstream ss;
