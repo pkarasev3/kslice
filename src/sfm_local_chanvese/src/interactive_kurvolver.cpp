@@ -17,6 +17,8 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
     // compute force
     F = en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
 
+    /** TODO: currently uses approximation for input observer. port the full double-loop version from
+        matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
     // apply controller, modify F in-place
     apply_control_function( Lz, phi, F, U_integral, img, iter, dims );
 

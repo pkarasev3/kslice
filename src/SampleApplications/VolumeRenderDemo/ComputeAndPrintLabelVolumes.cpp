@@ -57,7 +57,7 @@ int main( int argc, char **argv)
 
   if( argc >= 2 ) {
     cout << "% processing label files, printing their meta info. Format: " << endl;
-    cout << "% filename,volume_in_mL" << endl;
+    cout << "% filename,volume_in_mL,[left],[right],extent_x,extent_y,extent_z" << endl;
 
     int kstart = 1;
     bool bWriteMHA = false;
@@ -74,9 +74,17 @@ int main( int argc, char **argv)
 
     for( int k = kstart; k < argc; k++ )
     {
-      imgReader->SetFileName( argv[k] );
+      string input_filename = argv[k];
+
+      imgReader->SetFileName( input_filename.c_str() );
+      int canReadFile = imgReader->CanReadFile(input_filename.c_str());
+      if( !canReadFile ) {
+        cout << "cannot read file! skipping " << canReadFile << endl;
+        continue;
+      }
+
       imgReader->Update();
-      volume_info[k-1].filename = argv[k];
+      volume_info[k-1].filename = input_filename;
       SP(vtkImageData) imageDataTmp   =  SP(vtkImageData)::New();
       imageDataTmp = imgReader->GetOutput();
 
