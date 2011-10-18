@@ -102,6 +102,10 @@ public slots:
   */
   void UpdateVolumeStatus();
 
+  /**  \brief refresh display of all labels, e.g. if opacity or color are changed via gui
+  */
+  void UpdateMultiLabelDisplay();
+
   /**  \brief update the volume count and display it in qlabel
    */
   void AddNewLabelMap( );

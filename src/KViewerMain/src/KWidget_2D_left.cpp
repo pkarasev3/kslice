@@ -58,16 +58,11 @@ void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Pt
 
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
-  satLUT->SetTableRange (kv_opts->minIntensity, kv_opts->maxIntensity);
-
-  double mode0 = kv_data->intensityModes[0];
-  double mode1 = kv_data->intensityModes[kv_data->intensityModes.size()-1];
-  mode0        = mode0 / kv_opts->maxIntensity;
-  mode1        = mode1 / kv_opts->maxIntensity;
+  satLUT->SetTableRange (kv_opts->minIntensity * 0.9, kv_opts->maxIntensity * 1.1);
 
   satLUT->SetSaturationRange (0.0, 0.1);
-  satLUT->SetHueRange (  0, 1);
-  satLUT->SetValueRange (0, 1);
+  satLUT->SetHueRange (  0.0, 1);
+  satLUT->SetValueRange (0.0, 1);
   satLUT->ForceBuild();
 }
 
@@ -148,10 +143,10 @@ KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
 void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
                                   Ptr<KDataWarehouse> kv_data_input ) {
   // set Logger flags for test/debug
-  SETLOG(KWidget_2D_left::VERBOSE,1)
+  SETLOG(KWidget_2D_left::VERBOSE,1);
 
-      // grab options and state variables from KViewer main app.
-      kv_opts = kv_opts_input;
+  // grab options and state variables from KViewer main app.
+  kv_opts = kv_opts_input;
   kv_data = kv_data_input;
   currentSliceIndex = 0;
   cacheSliceIndex   = 0;
@@ -159,14 +154,27 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     throw BogusSingletonException();
   }
 
-  this->AddNewLabelMap();
+  bool bNoInputLabelFiles = true;
+  if( ! kv_opts_input->LabelArrayFilenames.empty() )
+  { // were there any label file names?
+    if( ! kv_opts_input->LabelArrayFilenames[0].empty() )
+    { // and its not a leading "" ?
+      bNoInputLabelFiles = false; // then we DO have input label files
+    }
+  }
+
+  this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
+
   kv_data->labelDataArray = this->GetActiveLabelMap( );
 
-  // Does order matter? First one is OK, last one must be last
-  SetupImageDisplay( );
+  SetupImageDisplay( ); // must come before renderwindow setup!
 
-  // it will use the first interactive label map to begin with
-  SetupRenderWindow( );
+  SetupRenderWindow( ); // must come after image display setup!
+
+  if( !bNoInputLabelFiles )
+  { // must happen after renderers are set up so we can insert actors right away
+    this->LoadMultiLabels( kv_opts->LabelArrayFilenames );
+  }
 
 }
 
@@ -280,10 +288,47 @@ void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll )
 
 }
 
+void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
+{
+  if( slice_index < 0 ) {
+    slice_index = currentSliceIndex;
+  }
+
+  if( !bAllLabels )
+  {                 // update active label only
+    int label_idx = activeLabelMapIndex;
+    Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
+    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
+    kseg->setCurrLabelArray(kv_data->labelDataArray_new);
+    kseg->setCurrIndex( slice_index );
+    kseg->setNumIterations( kv_opts->segmentor_iters );
+    kseg->initializeData();
+    kseg->intializeLevelSet();
+    kseg->Update();
+  } else
+  {            // update all labels at once
+    for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
+    { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
+      Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+      kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
+      kseg->setNumIterations( kv_opts->segmentor_iters );
+      kseg->setCurrIndex( slice_index );
+      kseg->initializeData();
+      kseg->intializeLevelSet();
+      kseg->Update();
+    }
+  }
+
+  UpdateMultiLabelMapDisplay();
+
+}
 
 
 void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
+
   // the shallow-copy trick to force instant display update
+  // TODO: is this hack necessary / does it work in newest VTK version?
 
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     kv_data->labelDataArray_new           = SP(vtkImageData)::New();
@@ -302,6 +347,50 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
 
   // update the QVTK display
   qVTK_widget_left->update( );
+}
+
+void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_files )
+{
+  bool bIsInitialization = ( 0 == multiLabelMaps.size() );
+  if( bIsInitialization )
+    return;
+  // We only get here if starting app using --Labels=a.mha b.mha c.mha ..... arguments
+  // otherwise labels are sequentially added while segmenting
+
+
+  multiLabelMaps.clear(); // clean slate
+  assert( kv_data->imageVolumeRaw != NULL ); // image better exist or we're screwed
+  int nLabels = label_files.size();  assert(nLabels > 0 ); // how many files to load
+
+  for( int k = 0; k < nLabels; k++ ) {
+    Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
+    labelMap->RegisterSourceWidget( this ); // give the label map handles to kv_opts, image volume, and this widget
+    SP( vtkImageData ) label_from_file = SP( vtkImageData )::New();
+    SP( vtkMetaImageReader ) reader    = SP( vtkMetaImageReader )::New();
+
+    if( !reader->CanReadFile(label_files[k].c_str()) ) {
+      cout << "quitting due to bogus/unreadable filename " << label_files[k] << endl;
+      exit(1);
+    }
+
+    { // read the file, convert to uchar, ensure it has same size as image, bag it in labelMap
+      reader->SetFileName(label_files[k].c_str());
+      reader->Update();
+      label_from_file = image2ushort( reader->GetOutput() );
+      int npts = label_from_file->GetNumberOfPoints();
+      cout << "loading label file " << label_files[k] << ", #points = " << npts << endl;
+      assert( npts == kv_data->imageVolumeRaw->GetNumberOfPoints() );
+      labelMap->labelDataArray->DeepCopy( label_from_file );
+    }
+    multiLabelMaps.push_back(labelMap);     // bag it in the array
+    activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
+    kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
+  }
+
+  activeLabelMapIndex = 0;
+  UpdateMultiLabelMapDisplay( );
+
+
 }
 
 void KWidget_2D_left::AddNewLabelMap( )

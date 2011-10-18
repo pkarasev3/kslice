@@ -8,4 +8,4 @@ scp tsfat:/u4/public/karasev/data_medical/kslice_data/*.mha  ./
 
 
 # karasevpa@gmail.com
-# ivan.kolesov@gmail.com
+# ivan.kolesov1@gmail.com

@@ -84,8 +84,19 @@ void KViewer::updatePaintBrushStatus(vtkObject*) {
   }
   if( this->image_callback->ButtonDown() ) {
     toggle << "\t(On)";
+    if( image_callback->Erase() ) {
+      qVTK1->GetRenderWindow()->SetCurrentCursor(VTK_CURSOR_SIZESE);
+    } else {
+      qVTK1->GetRenderWindow()->SetCurrentCursor(VTK_CURSOR_HAND);
+    }
   } else {
     toggle << "\t(Off)";
+    if( image_callback->Erase() ) {
+      qVTK1->GetRenderWindow()->SetCurrentCursor(VTK_CURSOR_SIZENW);
+    } else {
+      qVTK1->GetRenderWindow()->SetCurrentCursor(VTK_CURSOR_DEFAULT);
+    }
+
   }
   ss << "       " << toggle.str();
   QString str = QString(ss.str().c_str());
@@ -112,6 +123,11 @@ void KViewer::UpdateVolumeStatus()
 
   UpdateModel3D();
   qVTK1->setFocus( );
+}
+
+void KViewer::UpdateMultiLabelDisplay()
+{
+  kwidget_2d_left->UpdateMultiLabelMapDisplay();
 }
 
 void KViewer::ToggleFillEraseMode() {
@@ -213,10 +229,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     }
     int slice_idx                 = kwidget_2d_left->currentSliceIndex;
     int label_idx                 = kwidget_2d_left->activeLabelMapIndex;
-    Ptr<KSegmentor> kseg          = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
-    SP(vtkImageData) active_label = SP(vtkImageData)::New();
-    active_label                  = kwidget_2d_left->GetActiveLabelMap();
-    bool needToPropagateData = false;
+
     switch ( keyPressed ) {
     case '1':
       kwidget_2d_left->SelectActiveLabelMap( label_idx - 1 );
@@ -225,39 +238,30 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       kwidget_2d_left->SelectActiveLabelMap( label_idx + 1 );
       break;
     case 'b': // update 3D
-      UpdateVolumeStatus();
+      // TODO: don't crash on:      UpdateVolumeStatus();
       break;
     case 'v': // Paste!
-      kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx );
+      kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
     case 's': // run "KSegmentor"
-      // TODO: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
-      // then get rid of 'propagate data' crap, use
-      // the private update function in widget 2d!
-      kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-      kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
-      kseg->setCurrLabelArray(kv_data->labelDataArray_new);
-      kseg->setRadius( this->kv_opts->paintBrushRad / 2 );
-      kseg->setCurrIndex( slice_idx );
-      kseg->setNumIterations( 30 );
-      kseg->initializeData();
-      kseg->intializeLevelSet();
-      kseg->Update();
-
-      needToPropagateData = true;
+      kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
       break;
     default:
       break;
     }
 
-    if( needToPropagateData ) {
-      needToPropagateData = false;
-      // propagate the new "input" into the display objects
-      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
-      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
-      kv_data->labelDataArray = kv_data->labelDataArray_new;
-      qVTK1->update();
-    }
+    //
+    // DONE: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
+    // then get rid of 'propagate data' crap, use
+    // the private update function in widget 2d!
+//    if( needToPropagateData ) {
+//      needToPropagateData = false;
+//      // propagate the new "input" into the display objects
+//      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
+//      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
+//      kv_data->labelDataArray = kv_data->labelDataArray_new;
+//      qVTK1->update();
+//    }
   }
 
 
@@ -268,7 +272,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
   if ( this->image_callback->ButtonDown() )
   {
 
-      int slice_idx          = kwidget_2d_left->currentSliceIndex;
+    int slice_idx          = kwidget_2d_left->currentSliceIndex;
     int label_idx          = kwidget_2d_left->activeLabelMapIndex;
     Ptr<KSegmentor> kseg   = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
     vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
@@ -298,20 +302,18 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       kv_data->imageVolumeRaw->GetScalarRange( image_range );
       double paintSimilarityMinimum = (image_range[1] - image_range[0]) * kv_opts->paintBrushThreshold;
       double imgValAtClickPoint = kv_data->imageVolumeRaw->GetScalarComponentAsDouble(
-          event_PixCoord[0], event_PixCoord[1], event_PixCoord[2], 0 );
+            event_PixCoord[0], event_PixCoord[1], event_PixCoord[2], 0 );
 
-      double label_range[2];
-      kv_data->labelDataArray->GetScalarRange( label_range );
-      if( label_range[1] == 0 ) // if this was an empty labelmap to begin with!
-        label_range[1] = 1000;
-      float Label_Fill_Value = label_range[1] * (! image_callback->Erase() );
+      double label_val_max   = std::max( kv_data->labelDataArray->GetScalarRange()[1],
+                                         kv_opts->drawLabelMaxVal);
+      float Label_Fill_Value = label_val_max * (! image_callback->Erase() );
 
       // semi-hack that forces visualization update without copying entire volume
       kv_data->labelDataArray_new           = SP(vtkImageData)::New();
       kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
 
-      short *ptrLabel=static_cast<short*>(kv_data->labelDataArray_new->GetScalarPointer());
-      short *ptrImage=static_cast<short*>(kv_data->imageVolumeRaw->GetScalarPointer());
+      unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray_new->GetScalarPointer());
+      unsigned short *ptrImage=static_cast<unsigned short*>(kv_data->imageVolumeRaw->GetScalarPointer());
 
       for (int i=imin; i<=imax; i++)  {
         for (int j=jmin; j<=jmax; j++) {
@@ -386,9 +388,9 @@ void KViewer::setupQVTKandData( )
   interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, image_callback);
   interactor->AddObserver(vtkCommand::KeyPressEvent, image_callback);
 
-  if( ! kv_opts->LabelArrayFilename.empty() ) {
+  if( ! kv_opts->LabelArrayFilenames[0].empty() ) {
     assert( NULL != saveAsLineEdit ); // it must be created first!
-    saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilename.c_str() ) );
+    saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
   }
 
   qVTK1->setUpdatesEnabled(true);
@@ -510,7 +512,7 @@ void KViewer::color2(QAction* color) {
     kwidget_3d_right->kv3DModelRenderer->SetBackground(0,0,0);
   else if(color->text() == "Stereo Rendering")    {
     kwidget_3d_right->kv3DModelRenderer->GetRenderWindow()->SetStereoRender(
-        !kwidget_3d_right->kv3DModelRenderer->GetRenderWindow()->GetStereoRender());
+          !kwidget_3d_right->kv3DModelRenderer->GetRenderWindow()->GetStereoRender());
   }
   qVTK2->update();
 }

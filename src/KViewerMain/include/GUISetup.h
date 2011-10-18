@@ -254,8 +254,8 @@ public:
     volumeOfLabelmap->setText(QApplication::translate("GUI", "Volume: not yet computed", 0, QApplication::UnicodeUTF8));
     paintBrushStatus->setText(QApplication::translate("GUI", "Toggled: Draw", 0, QApplication::UnicodeUTF8));
 
-    contrastKeyTip->setText(QApplication::translate("GUI", "Contrast up/down keys:   l and k ", 0, QApplication::UnicodeUTF8));
-    copyPasteKeyTip->setText(QApplication::translate("GUI", "Copy/Paste Slice keys:  c and v ", 0, QApplication::UnicodeUTF8));
+    contrastKeyTip->setText(QApplication::translate("GUI", "Contrast up/down keys: [l,k]; Label Opacity up/down keys: [o,p]", 0, QApplication::UnicodeUTF8));
+    copyPasteKeyTip->setText(QApplication::translate("GUI", "Copy/Paste Slice keys: [c,v]; Scroll thru labels keys: [1,2]", 0, QApplication::UnicodeUTF8));
     segmentTip->setText(QApplication::translate("GUI", "Run KSegmentor key:  s ", 0, QApplication::UnicodeUTF8));
     drawEraseTip->setText(QApplication::translate("GUI", "Toggle Draw/Erase key:  d ", 0, QApplication::UnicodeUTF8));
 

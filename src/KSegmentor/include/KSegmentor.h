@@ -16,10 +16,12 @@ namespace vrcl
 /** write string on top of image data in-place*/
 void waterMark(const std::string& text, cv::Mat & img);
 
-/** compute volume (non-zero elements) in label map, insert to string "xyz mL^3*/
+/** compute volume (non-zero elements) in label map, insert to string "xyz mL^3
+    optionally, pass "left" or "right" to do only lateral or medial side. */
 void getVolumeAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 std::string & volume, bool numberOnly = false );
+                                 std::string & volume, bool numberOnly = false,
+                                 const std::string& right_left_both = std::string("both") );
 
 void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
@@ -114,6 +116,8 @@ class KSegmentor
         LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
         LL *Lin2out, *Lout2in;
+
+
 
 };
 

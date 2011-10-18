@@ -108,6 +108,8 @@ Multiple Label Maps
     if they click the new label button many times */
   void AddNewLabelMap( );
 
+  void LoadMultiLabels( const std::vector<std::string>& label_files );
+
   /** toggle which map in the list is 'active' for UI edits */
   void SelectActiveLabelMap(int labelMapIndex);
 
@@ -116,7 +118,13 @@ Multiple Label Maps
   
   /** for every labelmap, copy & paste from index A to index B */ 
   void CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll = false );
+
+  void RunSegmentor( int slice_index = -1, bool bAllLabels = false );
  
+  /** called internally when a display update is needed,
+      such as when a new labelmap is created */
+  void UpdateMultiLabelMapDisplay( );
+
   /** get the one that's being "edited" now */
   vtkSmartPointer<vtkImageData> GetActiveLabelMap( );
 
@@ -131,10 +139,6 @@ private:
 
   /** internal common code for saving label files */
   void SaveLabelsInternal( const std::stringstream& ss );
-
-  /** called internally when a display update is needed,
-      such as when a new labelmap is created */
-  void UpdateMultiLabelMapDisplay( );
 
   void SetupRenderWindow();
   void SetupImageDisplay();

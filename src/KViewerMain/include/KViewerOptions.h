@@ -8,6 +8,10 @@
 
 struct KViewerOptions
 {
+public:
+  static double getDefaultDrawLabelMaxVal() {
+    return 1000.0;
+  }
 
 public:
   int     numSlices;
@@ -20,16 +24,22 @@ public:
   double  paintBrushThreshold; 
   int     loadImageTrigger;
 
+  //vtkSmartPointer<vtkMetaImageReader> labelFileReader;
 
-  vtkSmartPointer<vtkMetaImageReader> labelFileReader;
-  std::string LabelArrayFilename;
+  std::vector<std::string> LabelArrayFilenames;
   std::string ImageArrayFilename;
+
   float modelOpacity3D;
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
   int   minIntensity;
   int   maxIntensity;
+
+  double drawLabelMaxVal; // value of "inside" labelmap
+  int    segmentor_iters; // # of curve evolution update iterations
+  int    multilabel_paste_mode; // copy/paste, do all labels, or only active, or ?
+  int    multilabel_sgmnt_mode; // run segmentor, do all labels, or only active, or ?
 
 //////////////////////
 
@@ -54,6 +64,8 @@ public:
 void LoadImage( );
 
 void LoadLabel(const std::string& loadLabel);
+
+void PrintLogo( );
 
 int GetBrushSize();
 

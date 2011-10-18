@@ -12,12 +12,12 @@ using namespace vrcl;
 #define SP( X )  vtkSmartPointer<X> 
 
 namespace {
-  struct BogusDataException : public std::exception  {
-    virtual const char* what() const throw ()    {
-      return "kv_opts and/or image data are bogus!";
-    }
-  };
-  const static string PrintVerbose = "VerboseKInteractiveLabelMap";
+struct BogusDataException : public std::exception  {
+  virtual const char* what() const throw ()    {
+    return "kv_opts and/or image data are bogus!";
+  }
+};
+const static string PrintVerbose = "VerboseKInteractiveLabelMap";
 }
 
 KInteractiveLabelMap::KInteractiveLabelMap()
@@ -33,7 +33,7 @@ KInteractiveLabelMap::KInteractiveLabelMap()
   labelDataArray          = vtkSmartPointer<vtkImageData>::New();
   
   sourceWidget            = NULL;
-  labelOpacity2D          = 0.6f;
+  labelOpacity2D          = 0.9f;
   labelInterpolate        = true;
 }
 
@@ -46,6 +46,44 @@ void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D)
   
 }
 
+vector<double> get_good_color_0to7( int idx )
+{
+  double rgb[3];
+  switch( idx )
+  {
+  case 0:
+    rgb = {240, 163, 255}; // amethyst
+    break;
+  case 1:
+    rgb = {255,0,16}; // red
+    break;
+  case 2:
+    rgb = {0,117,220}; // blue
+    break;
+  case 3:
+    rgb = {0,153,143}; // turquoise
+    break;
+  case 4:
+    rgb = {194,0,136}; // mallow
+    break;
+  case 5:
+    rgb = {255,80,5}; // zinnia
+    break;
+  case 6:
+    rgb = {43,206,72}; // green
+    break;
+  case 7:
+    rgb = {224,255,102}; // uranium
+    break;
+  default:
+    rgb = {200,200,200};
+    break;
+  }
+  rgb[0] /= 255.0;
+  rgb[1] /= 255.0;
+  rgb[2] /= 255.0;
+  return std::vector<double>(rgb,rgb+3);
+}
 
 void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
 {
@@ -55,10 +93,6 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   // clone to get image meta-data,then make blank label data
   labelDataArray->DeepCopy(image);
 
-  int imax=kv_opts->imgHeight-1;
-  int jmax=kv_opts->imgWidth-1;
-  int kmax=kv_opts->numSlices-1;
-
   short *ptrLabel=static_cast<short*>(labelDataArray->GetScalarPointer());
   unsigned int numPts = labelDataArray->GetNumberOfPoints();  assert(0!=ptrLabel);
   unsigned long elemNum = 0;
@@ -66,25 +100,8 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
     ptrLabel[elemNum] = 0;
     elemNum++;
   }
+  labelDataArray->Update();
 
-  bool forceInitialFill = true;
-  if( forceInitialFill )
-  {
-    int fill_sz = 1;  // need some non-zero part so 3D display doesn't break
-    int kmin = kmax/2 - fill_sz;
-    if( kmin < 0 )
-      kmin = 0;
-
-    for( int k = kmin ; k < kmax; k++ ) {
-
-      for( int i = imax/2 - fill_sz ; i < imax/2+fill_sz; i++ ) {
-        for( int j = jmax/2 - fill_sz ; j < jmax/2+fill_sz; j++ ) {
-          unsigned long elemNum = k * imax * jmax + j * imax + i;
-          ptrLabel[elemNum] = 1000;
-        }
-      }
-    }
-  }
   int slice_idx = sourceWidget->currentSliceIndex;
 
   // convert it to unsigned short, our desired internal method...
@@ -97,12 +114,9 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
 
   // connect the GUI display for this label map.
   // later a renderer needs to add the actor
-  double maxVal = labelDataArray->GetScalarRange()[1];
-  vector<double> labelRGB(3); // {2,3,5} prime generators =>
-                              // 20 labels before we run out of colors
-  labelRGB[0] = std::max( 1.0 - (index%5)/4.0,     0.0);
-  labelRGB[1] = std::min( (index%7)/5.0, 1.0          );
-  labelRGB[2] = std::min( (index%3)/3.0, 1.0          );
+  double maxVal = kv_opts->drawLabelMaxVal;
+  cout << "new interactive labelmap with actors, max val = " << maxVal << endl;
+  vector<double> labelRGB = get_good_color_0to7(index);
   labelLUT = create_default_labelLUT( maxVal, labelRGB );
   label2D_shifter_scaler->SetInput( labelDataArray );
   labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );

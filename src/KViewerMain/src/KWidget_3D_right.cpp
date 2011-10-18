@@ -175,7 +175,11 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                    Ptr<KViewerOptions> kv_opts_input,
                                    Ptr<KDataWarehouse> kv_data_input ) {
 
-  bool UseVolumeRender = false;
+  bool UseVolumeRender = false; // TODO: 3D view needs total rewrite,
+                                // a) it doesn't support multiple levels at all
+                                // b) it will be too slow to volume render multiple labels
+                                // c) better idea: use x,y,z coords for colormap generation
+                                // in conjunction with polydata actors
   if(UseVolumeRender) {
     // Turn off volume view temporarily for speed
     kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.

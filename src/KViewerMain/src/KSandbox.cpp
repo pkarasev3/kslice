@@ -28,30 +28,30 @@ namespace vrcl  {
 
 vtkSmartPointer<vtkImageData> image2ushort( vtkImageData* imageData )
 {
-  vtkSmartPointer<vtkImageData> imgvol = vtkSmartPointer<vtkImageData>::New( );
   int dims[3];
   imageData->GetDimensions( dims );
-
-  imgvol->SetDimensions( dims[0],dims[1],dims[2] );
-  imgvol->SetNumberOfScalarComponents(1);
-
+  double img_range[2];
+  imageData->GetScalarRange(img_range);
   double spc[3];
   imageData->GetSpacing( spc );
+
+  vtkSmartPointer<vtkImageData> imgvol = vtkSmartPointer<vtkImageData>::New( );
+  imgvol->SetDimensions( dims[0],dims[1],dims[2] );
+  imgvol->SetNumberOfScalarComponents(1);
   imgvol->SetSpacing( spc );
   imgvol->SetOrigin( 0,0,0 );
   imgvol->SetScalarTypeToUnsignedShort( );
   imgvol->AllocateScalars( );
 
-  // Values stored 'linearly', slightly unsure about the orientation though.
+  // Values stored 'linearly'
   unsigned short*  outputPtr = (unsigned short *) imgvol->GetScalarPointer();
   short *inputPtr = static_cast<short*>( imageData->GetScalarPointer() );
   int numel                 = dims[0]*dims[1]*dims[2];
   for( int i=0; i<numel; i++ )
-  {
-    short invalue            =  inputPtr[i];
+  { // intentionally unwrapped for debugging; some files have weird data ...
+    double invalue            =  (double) inputPtr[i] - img_range[0];
     unsigned short nextvalue = (unsigned short ) invalue ;
-    *outputPtr= nextvalue;
-    *outputPtr++;
+    outputPtr[i]= nextvalue;
   }
 
   return imgvol;
@@ -146,19 +146,19 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
     pB = rgb_primary[2];
   }
   SP(vtkLookupTable) labelLUT = SP(vtkLookupTable)::New();
-  double red[4]   = {pR,pG,pB,0.7}; // the 'interior' color
-  double blue[4]  = {1-pR,1-pG,1.0,0.7};
-  double green[4] = {1-pR,1-pG,1-pB,0.9};
-  double magenta[4] = {1.0,1-pG,1-pB,0.7};
+  double mid[4]  = {pR,pG,pB,0.5};
+  double far[4]  = {pR,pG,pB,0.9};
+  double near[4] = {pR,pG,pB/2,0.4};
   double transparent[4] = {0,0,0,0};
+  double main[4]         = {pR,pG,pB,0.3};
 
   labelLUT->SetNumberOfTableValues( maxVal );
   labelLUT->SetTableRange(0,maxVal);
   labelLUT->SetTableValue(0,   transparent);
-  labelLUT->SetTableValue(maxVal/4,     green);
-  labelLUT->SetTableValue(maxVal/2,     blue);
-  labelLUT->SetTableValue(3*maxVal/4,   magenta);
-  labelLUT->SetTableValue(maxVal-1,     red);
+  labelLUT->SetTableValue(maxVal/4,     far);
+  labelLUT->SetTableValue(maxVal/2,     mid);
+  labelLUT->SetTableValue(3*maxVal/4,   near);
+  labelLUT->SetTableValue(maxVal-1,     main);
   labelLUT->SetRampToLinear();
   labelLUT->Build();
 
@@ -175,7 +175,7 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   SP(vtkImageData)       image2D         = SP(vtkImageData)::New();
 
   //test if we can read each file
-  int canReadLab = labelFileReader->CanReadFile(kv_opts->LabelArrayFilename.c_str());
+  int canReadLab = 0;               // try to read multiple labels later
   int canReadImg = imgReader->CanReadFile(kv_opts->ImageArrayFilename.c_str());
   if ( canReadLab == 0 )
   {		// can't read label file, try to create a blank one
@@ -185,12 +185,9 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
       // TODO: return "fail" and have them re-select a file...
       exit(-1);
     }
-    cout<<"No User Input for Label, making a blank one"
-       << kv_opts->LabelArrayFilename<< endl;
+    cout<<"No User Input for Label, making a blank initial label..." << endl;
     imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
     imgReader->SetDataScalarTypeToUnsignedShort();
-    // WTF @ Liang-Jia's data??
-    //  imgReader->SetDataByteOrderToBigEndian();
     imgReader->Update();
 
     std::string byteOrderName( imgReader->GetDataByteOrderAsString() );
@@ -218,28 +215,6 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
       }
     }
 
-    bool forceInitialFill = true;
-    if( forceInitialFill )
-    {
-      int fill_sz = 3;  // need some non-zero part so 3D display doesn't break
-      kmin = kmax/2 - fill_sz;
-      kmax = kmax/2 + fill_sz;
-      if( kmin < 0 )
-        kmin = 0;
-      if( kmax > imgDim[5] )
-        kmax = imgDim[5];
-
-
-      for( int k = kmin ; k < kmax; k++ ) {
-
-        for( int i = imax/2 - fill_sz ; i < imax/2+fill_sz; i++ ) {
-          for( int j = jmax/2 - fill_sz ; j < jmax/2+fill_sz; j++ ) {
-            unsigned long elemNum = k * imax * jmax + j * imax + i;
-            ptrLabel[elemNum] = 1000;
-          }
-        }
-      }
-    }
     label2D->Update();
     image2D->Update();
 
@@ -247,18 +222,8 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   } else if(canReadImg==0){
     cout<<"Could not read file"<<kv_opts->ImageArrayFilename<<"\n";
     exit(-1);
-  } else
-  {
-    // we can successfully read both files, read and deep copy!
-    imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
-    imgReader->Update();
-
-    labelFileReader->SetFileName(kv_opts->LabelArrayFilename.c_str());
-    labelFileReader->Update();
-
-    image2D->DeepCopy(imgReader->GetOutput());
-    label2D->DeepCopy(labelFileReader->GetOutput());
   }
+
   // we null out the origin information, so image and world coords correspond
   // easier for drawing with mouse
   double ox, oy, oz;
@@ -299,7 +264,7 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   cout << "image origin and extent: " << Mat( imgOrigin )
        << " ... " << Mat( imgExtent ) << endl;
 
-  bool forceToUShort      = false;
+  bool forceToUShort      = true;
   if( !forceToUShort ) {
     kv_data->imageVolumeRaw = image2D ;
     kv_data->labelDataArray = label2D ;
@@ -308,11 +273,6 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
     kv_data->labelDataArray = image2ushort( label2D );
   }
 
-  std::vector<double> imageModes;
-  compute_intensity_modes( kv_data->imageVolumeRaw, imageModes );
-  kv_data->intensityModes = imageModes;
-
-  cout<<"LabelArrayFilename: "<<kv_opts->LabelArrayFilename<<"\n";
   cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
 
   //        SP(vtkIndent) indentVTK= SP(vtkIndent)::New();

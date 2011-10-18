@@ -110,7 +110,7 @@ SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
   {
     unsigned short dilateVal       =  ptrDilate[i];
     unsigned short originalVal     =  ptrOriginal[i];
-    unsigned short newVal          =  (ptrDilate[i] > 0 ) * ptrOriginal[i];
+    unsigned short newVal          =  (dilateVal > 0 ) * originalVal;
     ptrClean[i]                    = newVal;
   }
 
@@ -120,7 +120,7 @@ SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
 
 void getVolumeAsString( const vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 string & volumeString, bool numberOnly )
+                                 string & volumeString, bool numberOnly, const std::string& right_left_both )
 {
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
     int dims[3];
@@ -129,8 +129,21 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     double label_range[2];
     label_map->GetScalarRange( label_range );
 
+    int imin = 0;
+    int imax = dims[0];
+
+    { // only do lateral or medial half, optionally.
+      if( 0 == right_left_both.compare("right") ) {
+        imax = dims[0];
+        imin = dims[0]/2;
+      } else if( 0 == right_left_both.compare("left") ) {
+        imax = dims[0]/2;
+        imin = 0;
+      }
+    }
+
     for (int k = 0; k < dims[2]; k++)    {
-      for (int i = 0; i < dims[0]; i++)      {
+      for (int i = imin; i < imax; i++)      {
         for (int j = 0; j < dims[1]; j++)    {
                 long elemNum = k * dims[0] * dims[1] + j * dims[0] + i;
                 // area_sum    += 1.0*(1e-6 < double( ptrLabel[elemNum] ) ) ;
@@ -163,7 +176,7 @@ void getXYZExtentsAsString( const vector<double>& imageSpacing,
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
     int dims[3];
     label_map->GetDimensions( dims );
-    double area_sum = 0.0;
+
     double label_range[2];
     label_map->GetScalarRange( label_range );
     double Imin = (label_range[1] + label_range[0])/2.0;
