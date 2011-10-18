@@ -24,94 +24,22 @@
 #include <cmath>
 #include <vector>
 #include "KSegmentor.h"
+#include "KSandbox.h"
 
 #define SP( X )  vtkSmartPointer<X>
 using namespace std;
 using namespace cv;
+using namespace vrcl;
 
 struct LabelVolumeMetaInfo {
   string filename;
   string volume_string;
+  string volume_Lstring;
+  string volume_Rstring;
   string extents_string;
 };
 
 
-SP(vtkImageData) image2ushort( vtkImageData* imageData )
-{
-  SP(vtkImageData) imgvol = SP(vtkImageData)::New( );
-  int dims[3];
-  imageData->GetDimensions( dims );
-  double spacing_in[3];
-  imageData->GetSpacing(spacing_in);
-  //cout << "spacing:" << Mat( vector<double>(spacing_in,spacing_in+3) ) << endl;
-
-  imgvol->SetDimensions( dims[0],dims[1],dims[2] );
-  imgvol->SetNumberOfScalarComponents(1);
-  imgvol->SetSpacing( spacing_in );
-  imgvol->SetOrigin( 0,0,0 );
-  imgvol->SetScalarTypeToUnsignedShort( );
-  imgvol->AllocateScalars( );
-
-  // Values stored 'linearly', slightly unsure about the orientation though.
-  unsigned short*  outputPtr = (unsigned short *) imgvol->GetScalarPointer();
-  short *inputPtr = static_cast<short*>( imageData->GetScalarPointer() );
-  int numel                 = dims[0]*dims[1]*dims[2];
-  for( int i=0; i<numel; i++ )
-  {
-    short invalue            =  inputPtr[i];
-    unsigned short nextvalue = (unsigned short ) invalue ;
-    *outputPtr= nextvalue;
-    *outputPtr++;
-  }
-
-  return imgvol;
-}
-
-SP(vtkImageData) CleanLabelMap( vtkMetaImageReader* reader )
-{
-  vtkImageData* img_dirty = reader->GetOutput();
-  SP(vtkImageData) clean_img = SP(vtkImageData)::New();
-  clean_img->DeepCopy(img_dirty);
-  clean_img->Update();
-
-  //  int * imgDim = clean_img->GetExtent();
-  //  int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
-  //  int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
-  int* dataExtent         = reader->GetDataExtent();
-
-  int kmin = 0;
-  int imax= reader->GetHeight()-1;
-  int jmax= reader->GetWidth()-1;
-  int numSlices = dataExtent[5]-dataExtent[4]+1;
-  int kmax= numSlices-1;
-
-  short *ptrLabel=static_cast<short*>(clean_img->GetScalarPointer());
-
-  // Doh, undo the effect of "// need some non-zero part so 3D display doesn't break"
-  int fill_sz = 3;
-  kmin = kmax/2 - fill_sz;
-  kmax = kmax/2 + fill_sz;
-  if( kmin < 0 )
-    kmin = 0;
-  if( kmax > dataExtent[5] )
-    kmax = dataExtent[5];
-
-  for( int k = kmin ; k < kmax; k++ ) {
-    for( int i = imax/2 - fill_sz ; i < imax/2+fill_sz; i++ ) {
-      for( int j = jmax/2 - fill_sz ; j < jmax/2+fill_sz; j++ ) {
-        unsigned long elemNum = k * imax * jmax + j * imax + i;
-        cout << " ptrLabel[elemNum] = " <<  ptrLabel[elemNum] << endl;
-        if( ptrLabel[elemNum] > 0 ) {
-          int aha = 1; // for breakpoint
-        }
-        // ptrLabel[elemNum] = 1000;
-      }
-    }
-  }
-
-  return clean_img;
-
-}
 
 
 int main( int argc, char **argv)
@@ -133,13 +61,19 @@ int main( int argc, char **argv)
 
     int kstart = 1;
     bool bWriteMHA = false;
-    if( argv[1][0] == 'w' ) { // if first arg is "w"
+    bool bLeftRightSplit = false;
+    if( argv[1][0] == 'w' ) { // e.g. if first arg is "write"
       kstart = 2;
       bWriteMHA = true;
       cout << "write mha is on! " << endl;
+    } else if( argv[1][0] == 's' ) { // e.g. if first arg is "split"
+      kstart = 2;
+      bLeftRightSplit = true;
+      cout << "split left/right volume is on! " << endl;
     }
 
-    for( int k = kstart; k < argc; k++ ) {
+    for( int k = kstart; k < argc; k++ )
+    {
       imgReader->SetFileName( argv[k] );
       imgReader->Update();
       volume_info[k-1].filename = argv[k];
@@ -156,15 +90,6 @@ int main( int argc, char **argv)
 
       // =============================== part 1: filter for the volume measurements
 
-      // read it from disk, fails if file name is wacked
-      bool bUseGaussSmooth = false;
-      if( bUseGaussSmooth ) {
-        gauss_filter->SetInput( imageDataTmp );
-        gauss_filter->SetStandardDeviations(1.0,1.0,0.5);
-        gauss_filter->Update();
-        imageDataTmp = gauss_filter->GetOutput();
-      }
-
       // make it a ushort and bag it
       SP(vtkImageData) img      =  SP(vtkImageData)::New();
       img    = image2ushort( imageDataTmp );
@@ -173,8 +98,42 @@ int main( int argc, char **argv)
       double spc[3];
       img->GetSpacing(spc);
       vector<double> spacing(spc,spc+3);
-      vrcl::getVolumeAsString(spacing,img, volume_info[k-1].volume_string,true /* number only!*/ );
+      double z_factor = std::max(1.0, spc[2] / ( (spc[0] + spc[1]) * 0.5 ) );
+      //cout << "resampling Z by factor " << z_factor << endl;
+      if( z_factor > 1.0 ) {
 
+        SP(vtkImageResample) resampler = SP(vtkImageResample)::New();
+        resampler->SetInput( img );
+        resampler->SetAxisMagnificationFactor(0,1.0);
+        resampler->SetAxisMagnificationFactor(1,1.0);
+        resampler->SetAxisMagnificationFactor(2,z_factor);
+        resampler->SetInterpolationModeToCubic();
+        resampler->Update();
+        imageDataTmp = resampler->GetOutput();
+
+        bool bUseGaussSmooth = true;
+        if( bUseGaussSmooth ) {
+          gauss_filter->SetInput( imageDataTmp );
+          gauss_filter->SetStandardDeviations(1.0,1.0,1.0);
+          gauss_filter->Update();
+          imageDataTmp = gauss_filter->GetOutput();
+        }
+
+        imageDataTmp->GetSpacing(spc);
+        vector<double> spacing_new(spc,spc+3);
+        vrcl::getVolumeAsString(spacing_new,imageDataTmp, volume_info[k-1].volume_string,true /* number only!*/ );
+        if( bLeftRightSplit ) {
+          vrcl::getVolumeAsString(spacing_new,imageDataTmp, volume_info[k-1].volume_Lstring,true /* number only!*/,"left");
+          vrcl::getVolumeAsString(spacing_new,imageDataTmp, volume_info[k-1].volume_Rstring,true /* number only!*/,"right");
+        }
+
+      } else {
+        vrcl::getVolumeAsString(spacing,img, volume_info[k-1].volume_string,true /* number only!*/ );
+        if( bLeftRightSplit ) {
+          vrcl::getVolumeAsString(spacing,img, volume_info[k-1].volume_Lstring,true /* number only!*/,"left");
+          vrcl::getVolumeAsString(spacing,img, volume_info[k-1].volume_Rstring,true /* number only!*/,"right");
+        }
+      }
 
 
       ////////////////////////////////////////////////
@@ -186,10 +145,17 @@ int main( int argc, char **argv)
       // now get the min/max extents of nonzero portions after median filtering
       vrcl::getXYZExtentsAsString(spacing,img,volume_info[k-1].extents_string,true /* number only!*/ );
 
-
-      cout << volume_info[k-1].filename << ","
-           << volume_info[k-1].volume_string << ","
-           << volume_info[k-1].extents_string << endl;
+      if( !bLeftRightSplit ) {
+        cout << volume_info[k-1].filename << ","
+             << volume_info[k-1].volume_string << ","
+             << volume_info[k-1].extents_string << endl;
+      } else {
+        cout << volume_info[k-1].filename << ","
+             << volume_info[k-1].volume_string << ","
+             << volume_info[k-1].volume_Lstring << ","
+             << volume_info[k-1].volume_Rstring << ","
+             << volume_info[k-1].extents_string << endl;
+      }
     }
   } else {
     cout << "bogus args! usage: " << argv[0] << " odin.mha dva.mha tri.mha ... blyat.mha " << endl;

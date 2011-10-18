@@ -1,4 +1,4 @@
-set(KV_LIBS KViewer QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics  vtkIO  vtkCommon  ${OpenCV_LIBS}  )
+set(KV_LIBS KViewer QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics  vtkIO  vtkCommon  ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 
 # MACOSX_BUNDLE - wtf?
 add_executable( KViewer_desktop KViewer_desktop.cpp)

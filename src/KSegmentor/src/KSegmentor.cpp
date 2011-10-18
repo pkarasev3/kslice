@@ -105,9 +105,9 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
 
         // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
         // "10" pixels is 3mm in this context.
-        this->rad = (int)  3.0 / std::max( spacing_mm[0],spacing_mm[1] ); // about 3mm in physical units
+        this->rad = 3.0 / std::max( spacing_mm[0],spacing_mm[1] ); // about 3mm in physical units
         this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
-        this->rad = std::min(6.0, this->rad); // force non-tiny radius if the spacing is retarded
+        this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
         cout << "segmentor using ROI size: " << rad << endl;
 
         this->img        = new double[ mdims[0]*mdims[1] ];
@@ -184,6 +184,11 @@ void KSegmentor::initializeData()
 
     imageVol->GetScalarRange( imgRange );
     labelVol->GetScalarRange( labelRange );
+    if( abs(labelRange[1]) < 1e-3 )
+    { // empty label; so set the proper range
+      labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
+    }
+    cout << "KSegmentor reads label range: " << labelRange[0] << "," << labelRange[1] << endl;
     assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
     this->imgRange=imgRange;

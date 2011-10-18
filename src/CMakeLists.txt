@@ -9,14 +9,14 @@ include(${VTK_USE_FILE})
 
 find_package(ITK)
 if(NOT ITK_DIR)
-  message( status "If you need ITK, Please set ITK_DIR to build stuff that needs ITK.")
+  message(STATUS "If you need ITK, Please set ITK_DIR to build stuff that needs ITK.")
 else(NOT ITK_DIR)
   # include(${ITK_USE_FILE}) # only gao3d should need this ...
 endif(NOT ITK_DIR)
 
 
 find_package(OpenCV  REQUIRED)
-message( status "  OpenCV_LIBS = ${OpenCV_LIBS} ;
+message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
                    you also want to have had libgtk2.0-dev *Before* building opencv!" )
 
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
@@ -71,7 +71,6 @@ else(WIN32)
   set(CMAKE_C_FLAGS "-std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
-# search for Boost version 1.34
   find_package( Boost COMPONENTS filesystem program_options )
   find_package( OpenMP )
   link_directories ( ${Boost_LIBRARY_DIRS} )
