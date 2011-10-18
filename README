@@ -17,6 +17,8 @@ the way bone surfaces tend to have (possibly much) higher intensity than the int
 better CT segmentation needs two things: a) make the "smart brush" have a settable window
 while drawing, b) make the contour energy settable at startup; e.g. edge-based. 
 
+-the mha volume files must be (signed or unsigned) short! So, no floats! 
+
 
 
 =======================
