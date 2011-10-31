@@ -54,7 +54,7 @@ void UpdateInternal( vtkImageData* img, VolumeRenderInternal&  vol)
   if( img != vol.data ) {
     vol.data->ShallowCopy( img );
   }
-  
+
   double imgRange[2];
   img->GetScalarRange( imgRange );
     
@@ -119,7 +119,7 @@ void KVolumeRenderView::UpdateDisplay( vtkImageData* img, vtkImageData* lbl )
     double ival2 = img->GetScalarRange()[1];
     double lval1 = lbl->GetScalarRange()[0];
     double lval2 = lbl->GetScalarRange()[1];
-    
+
     vriImage.opacityFunc->AddPoint( ival1, 0.01   );
     vriImage.opacityFunc->AddPoint( ival2, 0.2    );
     vriImage.opacityFunc->AddPoint( ival2*0.9, 0.0    );
@@ -139,7 +139,7 @@ void KVolumeRenderView::UpdateDisplay( vtkImageData* img, vtkImageData* lbl )
     
     this->volumeImage->ShallowCopy(vriImage.volume);
     this->volumeLabel->ShallowCopy(vriLabel.volume);
-    volumeImage->Update();
-    volumeLabel->Update();
+    //volumeImage->Update();
+    //volumeLabel->Update();
     
   }

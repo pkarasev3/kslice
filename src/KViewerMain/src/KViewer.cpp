@@ -39,6 +39,9 @@
 #include "KSandbox.h"
 #include "KDataWarehouse.h"
 
+//TESTING
+#include "vtkMetaImageWriter.h"
+
 
 // EVIL:  #include "vtkKWImage.h"
 
@@ -56,6 +59,9 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
 
   this->setupQVTKandData( );
   this->updatePaintBrushStatus(NULL);
+  //initializing "times" for seg interval clock
+  t1=clock();
+  t2=t1;
 }
 
 
@@ -75,7 +81,7 @@ void KViewer::updateCoords(vtkObject* obj) {
 void KViewer::updatePaintBrushStatus(vtkObject*) {
   std::stringstream ss;
   std::stringstream toggle;
-  ss << "Brush Size: " << this->kv_opts->GetBrushSize();
+  ss << "Brush Sizetest: " << this->kv_opts->GetBrushSize();
 
   if( ! image_callback->Erase() ) {
     toggle << "Mode: Draw";
@@ -122,6 +128,9 @@ void KViewer::UpdateVolumeStatus()
   updatePaintBrushStatus(NULL);
 
   UpdateModel3D();
+  qVTK2->setFocus( );
+  qVTK1->update();
+  qVTK2->update();
   qVTK1->setFocus( );
 }
 
@@ -137,7 +146,8 @@ void KViewer::ToggleFillEraseMode() {
 }
 
 void KViewer::UpdateModel3D() {
-  kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
+  //kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
+  kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray);
   qVTK1->update();
   qVTK2->update();
 }
@@ -153,7 +163,8 @@ void KViewer::SaveAsSegmentation() {
 
 void KViewer::LoadImage() {
   this->kv_opts->LoadImage( );
-  this->setupQVTKandData( );
+    //Why recursive call of setupQVTKandData( )??
+  //this->setupQVTKandData( );
 }
 
 void KViewer::LoadLabelMap(){
@@ -196,6 +207,7 @@ void KViewer::MoveSlider( int shiftNumberOfSlices )
 {
   int currentSlice  = this->kwidget_2d_left->currentSliceIndex;
   int newSliceIndex = currentSlice + shiftNumberOfSlices;
+  this->kwidget_2d_left->currentSliceIndex=newSliceIndex;
   if( newSliceIndex < this->kv_opts->numSlices   &&  newSliceIndex >= 0 ) {
     this->SliceSelect( newSliceIndex );
     this->Slider->setValue( newSliceIndex );
@@ -206,9 +218,9 @@ void KViewer::AddNewLabelMap( )
 {
   // create a new label map
   kwidget_2d_left->AddNewLabelMap( );
-
+  this->UpdateVolumeStatus();
   qVTK1->update();
-
+ qVTK1->update();
   cout << "added new label map. total # = " << kwidget_2d_left->multiLabelMaps.size() << endl;
 }
 
@@ -226,7 +238,11 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       keyPressed = 's';
     } else if (event == (unsigned long) 'v' ){
       keyPressed = 'v'; // pressing 'paste button' in QT took us here
-    }
+    } else if (event == (unsigned long) '0' ){
+    keyPressed = '0';
+    } else if (event == (unsigned long) '9' ){
+     keyPressed = '9';
+}
     int slice_idx                 = kwidget_2d_left->currentSliceIndex;
     int label_idx                 = kwidget_2d_left->activeLabelMapIndex;
 
@@ -239,6 +255,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case 'b': // update 3D
       // TODO: don't crash on:      UpdateVolumeStatus();
+       UpdateVolumeStatus();
       break;
     case 'v': // Paste!
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
@@ -246,6 +263,19 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case 's': // run "KSegmentor"
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
       break;
+    case '0':
+       kv_opts->seg_time_interval+=0.05;
+       segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
+      break;
+    case '9':
+       kv_opts->seg_time_interval-=0.05;
+       segmentationInterval->setText("time interval for seg. update: "+ QString::number(kv_opts->seg_time_interval)+" sec");
+      break;
+    case'r':
+    {
+        kwidget_2d_left->UpdateTransform();
+        this->UpdateVolumeStatus();
+    }
     default:
       break;
     }
@@ -288,7 +318,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
     int event_PixCoord[3]; 						       				//the X,Y,Z voxel coordinates
     event_PixCoord[0]=  round(event_pos[0]/imageSpacing[0]);
     event_PixCoord[1]=  round(event_pos[1]/imageSpacing[1]);
-    event_PixCoord[2]=  slice_idx;
+    event_PixCoord[2]=  slice_idx/imageSpacing[2];
 
     if (0 != event_PixCoord[0] && 0 != event_PixCoord[1] )       {
       // imgWidth: ACROSS, imgV: DOWN, when viewed from the vtk window
@@ -310,10 +340,17 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
       // semi-hack that forces visualization update without copying entire volume
       kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-      kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
+      //What do whe need kv_data->labelDataArray for if every label map has its own labelDataArray??
+      kv_data->labelDataArray_new->ShallowCopy(kv_data->labelDataArray);
+      //kv_data->labelDataArray_new->ShallowCopy( kwidget_2d_left->multiLabelMaps[label_idx]->labelDataArray );
 
       unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray_new->GetScalarPointer());
       unsigned short *ptrImage=static_cast<unsigned short*>(kv_data->imageVolumeRaw->GetScalarPointer());
+
+      vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
+      labelWriter->SetInput(  kv_data->labelDataArray);
+      labelWriter->SetFileName( "LabelRotated-KV.mhd");
+      labelWriter->Write();
 
       for (int i=imin; i<=imax; i++)  {
         for (int j=jmin; j<=jmax; j++) {
@@ -338,6 +375,14 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             }
           }
         }
+      }
+      ///TESTING ONLY
+      t2 = clock();
+      if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
+      {
+          std::cout<<t2<<std::endl;
+          kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
+          t1=t2;
       }
       // perform update on the labelmap being edited
       kv_data->labelDataArray_new->Update();
@@ -364,15 +409,17 @@ void KViewer::setupQVTKandData( )
   // create QT GUI base class with slider info
   setupGUI(this,0,kv_opts->numSlices-1,1);
 
+  // Setup the 2D Widget: image, label map(s), some user interaction objects
+  kwidget_2d_left = cv::Ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
+  kwidget_2d_left->Initialize( kv_opts, kv_data);
+  kwidget_2d_left->PrintHelp( );
+
   // Setup the 3D Widget: volume, label map(s), some user interaction objects
   kwidget_3d_right = cv::Ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
   KWidget_3D_right::Initialize( kwidget_3d_right, kv_opts, kv_data );
   kwidget_3d_right->PrintHelp( );
 
-  // Setup the 2D Widget: image, label map(s), some user interaction objects
-  kwidget_2d_left = cv::Ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
-  kwidget_2d_left->Initialize( kv_opts, kv_data);
-  kwidget_2d_left->PrintHelp( );
+
 
   // CreateThresholdFilter( );
   ConnectQTSlots( );
@@ -392,6 +439,9 @@ void KViewer::setupQVTKandData( )
     assert( NULL != saveAsLineEdit ); // it must be created first!
     saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
   }
+
+   //initialize display for segmentation interval
+  segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
 
   qVTK1->setUpdatesEnabled(true);
   qVTK2->setUpdatesEnabled(true);

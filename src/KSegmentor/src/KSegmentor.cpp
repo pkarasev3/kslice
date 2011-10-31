@@ -153,7 +153,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
 
         this->seg = new  unsigned short[dims[0]*dims[1]*dims[2]];
         initializeData();
-        intializeLevelSet();
+       intializeLevelSet();
 }
 
 
@@ -189,6 +189,7 @@ void KSegmentor::initializeData()
       labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
     }
     cout << "KSegmentor reads label range: " << labelRange[0] << "," << labelRange[1] << endl;
+    cout << "KSegmentor reads image range: " << imgRange[0] << "," << imgRange[1] << endl;
     assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
     this->imgRange=imgRange;
