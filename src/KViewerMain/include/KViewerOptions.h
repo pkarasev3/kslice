@@ -23,6 +23,7 @@ public:
   int     paintBrushRad;
   double  paintBrushThreshold; 
   int     loadImageTrigger;
+  float     seg_time_interval;
 
   //vtkSmartPointer<vtkMetaImageReader> labelFileReader;
 
@@ -33,6 +34,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
+  bool time_triggered_seg_update;
   int   minIntensity;
   int   maxIntensity;
 

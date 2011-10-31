@@ -53,15 +53,18 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   GetOpt_pp ops(argc, argv); // parse the command line string into chunks
 
   // set default values if they weren't passed as command line args
-  paintBrushRad       = 10; // size of brush (radius)
+  paintBrushRad       = 7; // size of brush (radius)
   paintBrushThreshold = 0.05; // only draw if within X times image range of click point
-  modelOpacity3D      = 0.8;
-  labelOpacity2D      = 0.9;
+  modelOpacity3D      = 0.3;
+  labelOpacity2D      = 0.7;
   labelInterpolate    = true;
   writeCompressed     = true;
+
   minIntensity        = 1;
   maxIntensity        = 5000;
   segmentor_iters     = 30;
+  time_triggered_seg_update = true;
+  seg_time_interval =0.3;  //time interval for performing (automatic) segmentation while painting
 
   LabelArrayFilenames.push_back("");
   drawLabelMaxVal     = getDefaultDrawLabelMaxVal();
