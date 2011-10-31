@@ -45,7 +45,7 @@ namespace {
 void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   
   Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
-
+kwidget_3d_right->labelActor3D = vtkSmartPointer<vtkLODActor>::New();
   kwidget_3d_right->labelSubVolumeExtractor = vtkSmartPointer<vtkExtractVOI>::New();
   kwidget_3d_right->labelSubVolumeExtractor->SetInput( kv_data->labelDataArray );
   kwidget_3d_right->labelSubVolumeExtractor->Update();
@@ -65,7 +65,8 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   smoother->SetInputConnection( cube_marcher->GetOutputPort() );
   smoother->SetFeatureEdgeSmoothing( true );
   smoother->SetBoundarySmoothing(    true );
-  smoother->SetNumberOfIterations(10);
+  //increased smoothing iterations
+  smoother->SetNumberOfIterations(60);
 
   vtkSmartPointer<vtkPolyDataNormals> labSurfNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
   labSurfNormals->SetInputConnection(  smoother->GetOutputPort() );
@@ -75,18 +76,19 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   vtkSmartPointer<vtkDataSetMapper> labelMapper = vtkSmartPointer<vtkDataSetMapper>::New();
   labelMapper->SetInputConnection( labSurfNormals->GetOutputPort() );
   labelMapper->SetImmediateModeRendering(1);
-  labelMapper->Update();
+  //labelMapper->Update();
 
   vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
   polydata = smoother->GetOutput( );
 
-  kwidget_3d_right->labelActor3D = vtkSmartPointer<vtkLODActor>::New();
+
   kwidget_3d_right->labelActor3D->SetMapper( labelMapper );
+
 
 
   vtkSmartPointer<vtkProperty> propSetter=vtkSmartPointer<vtkProperty>::New();
   propSetter = kwidget_3d_right->labelActor3D->GetProperty();
-  propSetter->SetRepresentationToSurface(); // crazy: propSetter->SetRepresentationToWireframe();
+  propSetter->SetRepresentationToWireframe();
   propSetter->SetOpacity(kwidget_3d_right->kv_opts->modelOpacity3D);
   propSetter->SetAmbient(0);
   propSetter->SetDiffuse(1);
@@ -95,7 +97,7 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   propSetter->SetSpecularPower(1);
   propSetter->SetSpecularColor(.7,.49,.25);
   propSetter->SetInterpolationToPhong(); // more crazy: propSetter1->SetInterpolationToFlat();
-
+  kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
 
 }
 
@@ -118,14 +120,15 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   //////////////////// Render Window Right : 3D Display /////////////////////////////
   vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
   vtkImageData* label = kwidget_3d_right->kv_data->labelDataArray;
-  kwidget_3d_right->volRenView->UpdateDisplay( image, label );
+  //kwidget_3d_right->volRenView->UpdateDisplay( image, label );
   
   kwidget_3d_right->kv3DModelRenderer = vtkSmartPointer<vtkRenderer>::New();
-  
+
   vtkVolume* volumeL = kwidget_3d_right->volRenView->volumeLabel;
   kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeL);
   vtkVolume* volumeI = kwidget_3d_right->volRenView->volumeImage;
   kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeI);
+  kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
   kwidget_3d_right->kv3DModelRenderer->SetBackground(1.0,1.0,1.0);
   
   
@@ -151,8 +154,10 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_source ) {
 
     // Don't resample, kind of hopeless: better to segment properly and use thinner images!
+    //this->labelSubVolumeExtractor = vtkExtractVOI::New();
   this->labelSubVolumeExtractor->SetInput( new_subvolume_source );
   this->labelSubVolumeExtractor->Update( );
+ //SetupLabelActor3D(kwidget_3d_right);
   this->qVTK_widget_right->update( );
 
 }
@@ -175,7 +180,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                    Ptr<KViewerOptions> kv_opts_input,
                                    Ptr<KDataWarehouse> kv_data_input ) {
 
-  bool UseVolumeRender = false; // TODO: 3D view needs total rewrite,
+  bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all
                                 // b) it will be too slow to volume render multiple labels
                                 // c) better idea: use x,y,z coords for colormap generation
@@ -189,6 +194,8 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
         throw "kv_data does not exist yet!" ;
     
     SetupRenderWindow( kwidget_3d_right );
+    SetupSubVolumeExtractor( kwidget_3d_right );
+    SetupLabelActor3D( kwidget_3d_right );
   }
 }
 
