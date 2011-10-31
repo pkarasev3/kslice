@@ -46,12 +46,11 @@ void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Pt
   /** Sets up the mapping of intensity values to displayed colors.
     * Needs to be adjusted if all you see is black & white.
     */
-  vtkImageData* image = kv_data->imageVolumeRaw;
 
   if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
     cout << "no min,max passed; setting default window: min,max of image." << endl;
     double minMaxImage[2];
-    image->GetScalarRange( minMaxImage );
+    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
     kv_opts->minIntensity = minMaxImage[0];
     kv_opts->maxIntensity = minMaxImage[1];
   }
@@ -83,7 +82,8 @@ void KWidget_2D_left:: SetupRenderWindow() {
   kvImageRenderer = vtkSmartPointer<vtkRenderer>::New();
   // This is where multiple actors are added / multiple label maps here
   kvImageRenderer->AddActor( imageActor );
-  kvImageRenderer->AddActor( multiLabelMaps[0]->labelActor2D );
+  if( bNoInputLabelFiles )
+    kvImageRenderer->AddActor( multiLabelMaps[0]->labelActor2D );
   kvImageRenderer->SetBackground(0.5,0.5,0.5);
 
   renderWindowLeft = vtkSmartPointer<vtkRenderWindow>::New();
@@ -102,41 +102,102 @@ void KWidget_2D_left:: SetupRenderWindow() {
 
 }
 
+void  KWidget_2D_left::InitializeTransform()
+{
+
+    kv_opts->m_CurrentAngle=90;
+
+    kv_opts->GetTransform()->PostMultiply();
+    kv_opts->GetTransform()->Translate(-kv_opts->m_Center[0],-kv_opts->m_Center[1],-kv_opts->m_Center[2]);
+    std::cout<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<std::endl;
+    kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
+    kv_opts->GetTransform()->Translate(kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]);
+}
+
+void  KWidget_2D_left::UpdateTransform()
+{
+
+    imageReslicer->SetResliceTransform(kv_opts->GetTransform());
+    imageReslicer->SetOutputDimensionality(3);
+    imageReslicer->Modified();
+    imageReslicer->UpdateWholeExtent();
+    imageReslicer->Update();
+
+    kv_data->UpdateRawImage(imageReslicer->GetOutput());
+
+  imageReslicer-> SetResliceTransform(vtkTransform::New());
+  imageReslicer->SetOutputDimensionality(2);
+  imageReslicer->Modified();
+  imageReslicer->UpdateWholeExtent();
+  imageReslicer->Update();
+
+  this->UpdateMultiLabelMapDisplay(true);
+
+  //Why do we have to do this (only for imageReslicer  -not for LabeReslicer)
+  m_SliderTrans->Identity();
+  m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
+  imageReslicer->SetResliceTransform(m_SliderTrans);
+
+}
+
+void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
+
+    satLUT = vtkSmartPointer<vtkLookupTable>::New();
+    SetupSaturationLUT( satLUT, kv_opts, kv_data );
 
 
-void KWidget_2D_left::SetupImageDisplay() {
 
-  vtkSmartPointer<vtkLookupTable> satLUT = vtkSmartPointer<vtkLookupTable>::New();
-  SetupSaturationLUT( satLUT, kv_opts, kv_data );
+    vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
+    labelWriter->SetInput( kv_data->imageVolumeRaw);
+    labelWriter->SetFileName( "Imagekv_data->Rotated0.mhd");
+    labelWriter->Write();
 
-  vtkSmartPointer<vtkImageShiftScale> intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
-  intensShift->SetInput( kv_data->imageVolumeRaw );
 
-  imageReslicer=vtkSmartPointer<vtkImageReslice>::New();
-  imageReslicer->SetInput(intensShift->GetOutput());
-  imageReslicer->SetOutputDimensionality(2);  //drawing just a single slice
-  imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-  imageReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
+    intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
+    intensShift->SetInput( kv_data->imageVolumeRaw );
+    imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+    imageReslicer->SetInputConnection(intensShift->GetOutputPort());
+    imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
 
-  // assign color mapping via lookup table
-  vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
-  colorMap->SetLookupTable(satLUT);
-  colorMap->SetInput( imageReslicer->GetOutput() );
-  colorMap->Update();
+    std::cout<<"Ini-Image:"<<std::endl;
+    std::cout<<"Image-O:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
+    std::cout<<"Image-E:"<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<" "<<std::endl;
 
-  imageActor = vtkSmartPointer<vtkImageActor>::New( );
-  imageActor->SetInput( colorMap->GetOutput() );
-  imageActor->SetInterpolate( kv_opts->labelInterpolate );
+    imageReslicer->SetOutputDimensionality(2);
 
-  // keep a handle on it so that user can change contrast later from KViewer
-  color_HSV_LookupTable = satLUT;
+    imageReslicer->Modified();
+    imageReslicer->UpdateWholeExtent();
+    imageReslicer->SetOutputOrigin(0,0,0);
+    imageReslicer->Update();
+
+
+    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
+    colorMap->SetLookupTable(satLUT);
+    colorMap->SetInput( imageReslicer->GetOutput() );
+    colorMap->Update();
+
+    imageActor = vtkSmartPointer<vtkImageActor>::New( );
+    imageActor->SetInput( colorMap->GetOutput() );
+    imageActor->SetInterpolate( kv_opts->labelInterpolate );
+
+    // keep a handle on it so that user can change contrast later from KViewer
+    color_HSV_LookupTable = satLUT;
+
+    labelWriter->SetInput( kv_data->imageVolumeRaw);
+    labelWriter->SetFileName( "Imagekv_data->RotatedIni.mhd");
+    labelWriter->Write();
+
+  //this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
 
 }
 
 KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
-  // must explicity call Initialize()!
+  // must explicity call izeTrize()!
   qVTK_widget_left  = qvtk_handle;
   currentSliceIndex = 0;
+  imageReslicer=vtkSmartPointer<vtkImageReslice>::New();
+  m_SliderTrans = vtkTransform::New();
+  m_CurrentSliceOrigin=0;
 }
 
 
@@ -154,7 +215,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     throw BogusSingletonException();
   }
 
-  bool bNoInputLabelFiles = true;
+ bNoInputLabelFiles = true;
   if( ! kv_opts_input->LabelArrayFilenames.empty() )
   { // were there any label file names?
     if( ! kv_opts_input->LabelArrayFilenames[0].empty() )
@@ -162,10 +223,13 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
       bNoInputLabelFiles = false; // then we DO have input label files
     }
   }
+  this->InitializeTransform();
+  if( bNoInputLabelFiles )
+  {
+     this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
+     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
+  }
 
-  this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
-
-  kv_data->labelDataArray = this->GetActiveLabelMap( );
 
   SetupImageDisplay( ); // must come before renderwindow setup!
 
@@ -175,7 +239,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   { // must happen after renderers are set up so we can insert actors right away
     this->LoadMultiLabels( kv_opts->LabelArrayFilenames );
   }
-
+ this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
+UpdateMultiLabelMapDisplay( );
 }
 
 //  ************************************************************************   //
@@ -206,11 +271,16 @@ void KWidget_2D_left::CallbackMousePosition(vtkObject* obj)
 
 void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin ) {
   currentSliceIndex  = currSlice;
-  imageReslicer->SetResliceAxesOrigin(  0,  0,  currSliceOrigin );
+  m_CurrentSliceOrigin = currSliceOrigin;
+
+  m_SliderTrans->Identity();
+  m_SliderTrans->Translate(0,0,currSliceOrigin);
+  imageReslicer->SetResliceTransform(m_SliderTrans);
 
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     multiLabelMaps[k]->labelReslicer->SetResliceAxesOrigin(  0,  0,  currSliceOrigin );
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
+
   }
 
 }
@@ -325,14 +395,23 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
 }
 
 
-void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
+void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool UpdateTransform) {
 
   // the shallow-copy trick to force instant display update
   // TODO: is this hack necessary / does it work in newest VTK version?
 
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     kv_data->labelDataArray_new           = SP(vtkImageData)::New();
+    if(UpdateTransform)
+        multiLabelMaps[k]->UpdateResliceTransform(this->currentSliceIndex);
+    else
+    {
+        //Another (semi)-hack (in fact nor really semi...)
+        multiLabelMaps[k]->UpdateResliceTransform(-1);
+
+    }
     kv_data->labelDataArray_new->ShallowCopy( multiLabelMaps[k]->labelDataArray );
+
     double label_opacity = kv_opts->labelOpacity2D;
     if( k != activeLabelMapIndex ) {
       label_opacity *= 0.5;
@@ -340,6 +419,7 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
     multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
     multiLabelMaps[k]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
     multiLabelMaps[k]->label2D_shifter_scaler->Update();
+
   }
   kv_data->labelDataArray_new           = SP(vtkImageData)::New();
   kv_data->labelDataArray_new->ShallowCopy( GetActiveLabelMap( ) );
@@ -351,11 +431,11 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( ) {
 
 void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_files )
 {
-  bool bIsInitialization = ( 0 == multiLabelMaps.size() );
+  /*bool bIsInitialization = ( 0 == multiLabelMaps.size() );
   if( bIsInitialization )
     return;
   // We only get here if starting app using --Labels=a.mha b.mha c.mha ..... arguments
-  // otherwise labels are sequentially added while segmenting
+  // otherwise labels are sequentially added while segmenting*/
 
 
   multiLabelMaps.clear(); // clean slate
@@ -364,7 +444,6 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 
   for( int k = 0; k < nLabels; k++ ) {
     Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
-    labelMap->RegisterSourceWidget( this ); // give the label map handles to kv_opts, image volume, and this widget
     SP( vtkImageData ) label_from_file = SP( vtkImageData )::New();
     SP( vtkMetaImageReader ) reader    = SP( vtkMetaImageReader )::New();
 
@@ -373,23 +452,30 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
       exit(1);
     }
 
-    { // read the file, convert to uchar, ensure it has same size as image, bag it in labelMap
-      reader->SetFileName(label_files[k].c_str());
-      reader->Update();
-      label_from_file = image2ushort( reader->GetOutput() );
-      int npts = label_from_file->GetNumberOfPoints();
-      cout << "loading label file " << label_files[k] << ", #points = " << npts << endl;
-      assert( npts == kv_data->imageVolumeRaw->GetNumberOfPoints() );
-      labelMap->labelDataArray->DeepCopy( label_from_file );
-    }
+    // read the file, convert to uchar, ensure it has same size as image, bag it in labelMap
+    reader->SetFileName(label_files[k].c_str());
+    reader->Update();
+
+    label_from_file = image2ushort( reader->GetOutput() );
+
+    int npts = label_from_file->GetNumberOfPoints();
+    cout << "loading label file " << label_files[k] << ", #points = " << npts << endl;
+    assert( npts == kv_data->imageVolumeRaw->GetNumberOfPoints() );
+    labelMap->labelDataArray->DeepCopy(label_from_file);
+
+    labelMap->RegisterSourceWidget( this,false ); // give the label map handles to kv_opts, image volume, and this widget
+
     multiLabelMaps.push_back(labelMap);     // bag it in the array
     activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
+    //Add new actor
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
+
+    //Update label data
+    this->kv_data->UpdateLabelDataArray( labelMap->labelDataArray);
   }
 
   activeLabelMapIndex = 0;
   UpdateMultiLabelMapDisplay( );
-
 
 }
 
@@ -399,7 +485,9 @@ void KWidget_2D_left::AddNewLabelMap( )
   Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
 
   // give the label map handles to kv_opts, image volume, and this widget
-  labelMap->RegisterSourceWidget( this );
+  labelMap->RegisterSourceWidget( this,true );
+  ///Updating label map after Transform
+  this->kv_data->UpdateLabelDataArray(labelMap->labelDataArray);
   multiLabelMaps.push_back(labelMap);            // bag it in the array
   activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
 
@@ -407,7 +495,8 @@ void KWidget_2D_left::AddNewLabelMap( )
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
     UpdateMultiLabelMapDisplay( );
   }
-
+  if (this->activeLabelMapIndex>0)
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
   // TODO: fire whatever it is that "slider callback" does to update
 
 }
