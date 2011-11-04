@@ -117,20 +117,19 @@ void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
   cout << "new interactive labelmap with actors, max val = " << maxVal << endl;
   vector<double> labelRGB = get_good_color_0to7(index);
   labelLUT = create_default_labelLUT( maxVal, labelRGB );
-  label2D_shifter_scaler->SetInput( this->labelDataArray );
+
+  labelDataArray=image2ushort( this->labelDataArray);
+
+  label2D_shifter_scaler->SetInput(labelDataArray);
+
   labelReslicer->SetInputConnection( this->label2D_shifter_scaler->GetOutputPort() );
-  labelReslicer->SetOutputDimensionality(3);  //transforming the whole image
+  labelReslicer->SetOutputDimensionality(2);  //transforming the whole image
   labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
   labelReslicer->SetResliceAxesOrigin(0,0,sourceWidget->currentSliceIndex);
   labelReslicer->Update();
 
-  // grab a handle on the image ...
-    imageVolume     = labelReslicer->GetOutput();
-
-
-  //labelDataArray  = image2ushort( labelDataArray );
-   this->labelDataArray->DeepCopy(image2ushort( labelReslicer->GetOutput() ));
-
+  // grab a handle on the image ... - what for . not used?
+   //imageVolume     = labelDataArray;
 
   colorMap->SetLookupTable(labelLUT);
   colorMap->SetInputConnection(labelReslicer->GetOutputPort() );
@@ -148,29 +147,25 @@ void KInteractiveLabelMap::UpdateResliceTransform(int currentSliceIndex)
         labelReslicer->SetResliceTransform(kv_opts->GetTransform());
 
     labelReslicer->SetOutputDimensionality(3);
+    labelReslicer->AutoCropOutputOff();
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
-    labelReslicer->Update();
+
 
     //Do we kneed this
     imageVolume     = labelReslicer->GetOutput();
 
-    std::cout<<"Z EXTENT of labe after copy:"<<labelDataArray->GetExtent()[5]<<std::endl;
     // convert it to unsigned short, our desired internal method...
 
-    //sourceWidget->kv_data->UpdateLabelDataArray(image2ushort( labelReslicer->GetOutput() ));
     this->labelDataArray->DeepCopy(image2ushort( labelReslicer->GetOutput() ));
-
 
     //double currSliceOrigin=kv_opts->sliderMin +kv_opts->sliceZSpace*currentSliceIndex;
     labelReslicer->SetResliceTransform(vtkTransform::New());
     labelReslicer->SetOutputDimensionality(2);
+    labelReslicer->AutoCropOutputOff();
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
     labelReslicer->Update();
-
-    std::cout<<"Z EXTENT of labe after reslice:"<<labelDataArray->GetExtent()[5]<<std::endl;
-
 }
 
 

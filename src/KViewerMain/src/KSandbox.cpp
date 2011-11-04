@@ -279,9 +279,9 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
     kv_data->UpdateRawImage( image2ushort( image2D ));
     kv_data->UpdateLabelDataArray( image2ushort( label2D ));
   }
-  kv_opts->m_Center[1]= 0.5*(kv_opts->imageExtent [1]);
-  kv_opts->m_Center[2]= 0.5*(kv_opts->imageExtent [3]);
-  kv_opts->m_Center[3]= 0.5*(kv_opts->imageExtent [5]);
+  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
+  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
+  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
 
 
   cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
