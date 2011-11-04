@@ -120,6 +120,7 @@ void KViewer::SliceSelect(int SliderVal) {
 void KViewer::UpdateVolumeStatus()
 {   // performance note: iterates over the label image, not instantaneous like other labels
   kv_data->labelDataArray->Update();
+
   std::string volumeDisplay;
   getVolumeAsString( kv_opts->imageSpacing,
                      kv_data->labelDataArray, volumeDisplay );
@@ -275,6 +276,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateVolumeStatus();
+        this->UpdateImageInformation(kv_data->imageVolumeRaw);
     }
     default:
       break;
@@ -338,19 +340,9 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                                          kv_opts->drawLabelMaxVal);
       float Label_Fill_Value = label_val_max * (! image_callback->Erase() );
 
-      // semi-hack that forces visualization update without copying entire volume
-      kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-      //What do whe need kv_data->labelDataArray for if every label map has its own labelDataArray??
-      kv_data->labelDataArray_new->ShallowCopy(kv_data->labelDataArray);
-      //kv_data->labelDataArray_new->ShallowCopy( kwidget_2d_left->multiLabelMaps[label_idx]->labelDataArray );
-
-      unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray_new->GetScalarPointer());
+      kv_data->labelDataArray=kwidget_2d_left->multiLabelMaps[label_idx]->labelDataArray;
+      unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray->GetScalarPointer());
       unsigned short *ptrImage=static_cast<unsigned short*>(kv_data->imageVolumeRaw->GetScalarPointer());
-
-      vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
-      labelWriter->SetInput(  kv_data->labelDataArray);
-      labelWriter->SetFileName( "LabelRotated-KV.mhd");
-      labelWriter->Write();
 
       for (int i=imin; i<=imax; i++)  {
         for (int j=jmin; j<=jmax; j++) {
@@ -370,6 +362,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( ptrImage[elemNum] < imgMax && ptrImage[elemNum] > imgMin ) {
                 ptrLabel[elemNum] = Label_Fill_Value;
+
+                //Coordinates have to be transformed
                 kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );
               }
             }
@@ -377,21 +371,28 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
         }
       }
       ///TESTING ONLY
-      t2 = clock();
+     t2 = clock();
       if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
       {
           std::cout<<t2<<std::endl;
           kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
           t1=t2;
       }
-      // perform update on the labelmap being edited
-      kv_data->labelDataArray_new->Update();
-      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
-      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
-      kv_data->labelDataArray = kv_data->labelDataArray_new;
+      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified();
+     // kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
       qVTK1->update();
     }
   }
+}
+
+
+void KViewer::UpdateImageInformation(vtkImageData* image)
+{
+    for(int i=0;i<6;i++) kv_opts->imageExtent[i]=image->GetExtent()[i];
+    kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
+    kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
+    kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
+    kwidget_2d_left->InitializeTransform();
 }
 
 
