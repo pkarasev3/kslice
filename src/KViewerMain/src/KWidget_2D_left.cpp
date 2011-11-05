@@ -20,6 +20,10 @@
 #include "KInteractiveLabelMap.h"
 #include "KWidget_2D_left.h"
 
+
+///Only for testing purposes
+#include "vtkImagePlaneWidget.h"
+
 #include <stdio.h>
 #include <time.h>
 
@@ -477,6 +481,9 @@ void KWidget_2D_left::AddNewLabelMap( )
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
     UpdateMultiLabelMapDisplay( );
   }
+
+  if (this->activeLabelMapIndex>0)
+       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
 
 
 }
