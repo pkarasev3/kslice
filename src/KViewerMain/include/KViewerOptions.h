@@ -5,6 +5,7 @@
 #include <vector>
 #include "vtkSmartPointer.h"
 #include "vtkMetaImageReader.h"
+#include "vtkTransform.h"
 
 struct KViewerOptions
 {
@@ -12,6 +13,10 @@ public:
   static double getDefaultDrawLabelMaxVal() {
     return 1000.0;
   }
+private:
+
+  vtkSmartPointer<vtkTransform> m_Transform;
+
 
 public:
   int     numSlices;
@@ -24,6 +29,8 @@ public:
   double  paintBrushThreshold; 
   int     loadImageTrigger;
   float     seg_time_interval;
+  double m_Center[3];
+  float m_CurrentAngle;
 
   //vtkSmartPointer<vtkMetaImageReader> labelFileReader;
 
@@ -70,6 +77,13 @@ void LoadLabel(const std::string& loadLabel);
 void PrintLogo( );
 
 int GetBrushSize();
+
+void SetupTransform();
+
+vtkSmartPointer<vtkTransform> GetTransform()
+{
+    return m_Transform;
+}
 
 
 

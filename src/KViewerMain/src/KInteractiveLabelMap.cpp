@@ -5,6 +5,7 @@
 #include "KWidget_2D_left.h"
 #include <vector>
 
+
 using std::vector;
 using std::string;
 using namespace vrcl;
@@ -37,13 +38,15 @@ KInteractiveLabelMap::KInteractiveLabelMap()
   labelInterpolate        = true;
 }
 
-void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D)
+void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D, bool regNewImage)
 {
   sourceWidget = kwidget2D; // get a 'reverse handle' on the widget whose container I'm in
   
   RegisterState(    kwidget2D->kv_opts );
-  RegisterNewImage( kwidget2D->kv_data->imageVolumeRaw, kwidget2D->multiLabelMaps.size() );
-  
+  if(regNewImage)
+    RegisterNewImage( kwidget2D->kv_data->imageVolumeRaw );
+  SetupLabelView(kwidget2D->kv_data->imageVolumeRaw, kwidget2D->currentSliceIndex);
+
 }
 
 vector<double> get_good_color_0to7( int idx )
@@ -85,7 +88,7 @@ vector<double> get_good_color_0to7( int idx )
   return std::vector<double>(rgb,rgb+3);
 }
 
-void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
+void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image)
 {
   if( NULL == kv_opts || NULL == image || NULL == sourceWidget) {
     throw BogusDataException();
@@ -101,16 +104,10 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
     elemNum++;
   }
   labelDataArray->Update();
+}
 
-  int slice_idx = sourceWidget->currentSliceIndex;
-
-  // convert it to unsigned short, our desired internal method...
-  labelDataArray  = image2ushort( labelDataArray );
-  
-  // grab a handle on the image ...
-  imageVolume     = image;
-
-  ksegmentor = Ptr<KSegmentor>(new KSegmentor(imageVolume,labelDataArray, slice_idx)  );
+void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
+{
 
   // connect the GUI display for this label map.
   // later a renderer needs to add the actor
@@ -118,17 +115,62 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image, int index )
   cout << "new interactive labelmap with actors, max val = " << maxVal << endl;
   vector<double> labelRGB = get_good_color_0to7(index);
   labelLUT = create_default_labelLUT( maxVal, labelRGB );
-  label2D_shifter_scaler->SetInput( labelDataArray );
-  labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );
-  labelReslicer->SetOutputDimensionality(2);  //drawing just a single slice
+
+  labelDataArray=image2ushort( this->labelDataArray);
+
+  label2D_shifter_scaler->SetInput(labelDataArray);
+
+  labelReslicer->SetInputConnection( this->label2D_shifter_scaler->GetOutputPort() );
+  labelReslicer->SetOutputDimensionality(2);  //transforming the whole image
   labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-  labelReslicer->SetResliceAxesOrigin(0,0,slice_idx);
+  labelReslicer->SetResliceAxesOrigin(0,0,sourceWidget->currentSliceIndex);
+  labelReslicer->Update();
+
+  // grab a handle on the image ... - what for . not used?
+   //imageVolume     = labelDataArray;
+
   colorMap->SetLookupTable(labelLUT);
-  colorMap->SetInputConnection( labelReslicer->GetOutputPort() );
+  colorMap->SetInputConnection(labelReslicer->GetOutputPort() );
   colorMap->Update();
   labelActor2D->SetInput( colorMap->GetOutput() );
   labelActor2D->SetOpacity( kv_opts->labelOpacity2D );
   labelActor2D->SetInterpolate( kv_opts->labelInterpolate );
+
+}
+
+
+void KInteractiveLabelMap::UpdateResliceTransform()
+{
+
+    /*if(sourceWidget->GetTransformedZ()==true)
+    {
+        labelReslicer->SetResliceTransform(kv_opts->GetTransform()->GetInverse());
+    }
+    else
+    {*/
+       labelReslicer->SetResliceTransform(kv_opts->GetTransform());
+    //}
+
+    labelReslicer->SetOutputDimensionality(3);
+    labelReslicer->AutoCropOutputOff();
+    labelReslicer->Modified();
+    labelReslicer->UpdateWholeExtent();
+
+
+    //Do we kneed this
+    imageVolume     = labelReslicer->GetOutput();
+
+    // convert it to unsigned short, our desired internal method...
+
+    this->labelDataArray->DeepCopy(image2ushort( labelReslicer->GetOutput() ));
+
+    //double currSliceOrigin=kv_opts->sliderMin +kv_opts->sliceZSpace*currentSliceIndex;
+    labelReslicer->SetResliceTransform(vtkTransform::New());
+    labelReslicer->SetOutputDimensionality(2);
+    labelReslicer->AutoCropOutputOff();
+    labelReslicer->Modified();
+    labelReslicer->UpdateWholeExtent();
+    labelReslicer->Update();
 }
 
 

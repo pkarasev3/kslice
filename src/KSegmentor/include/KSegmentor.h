@@ -3,9 +3,16 @@
 
 
 #include "vtkSmartPointer.h"
+#include "vtkImageReslice.h"
+
+//For testing
+#include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
 
+
 class vtkImageData;
+
+class vtkTransform;
 struct LL;
 // Don't include shit we can forward-declare!
 
@@ -37,6 +44,11 @@ class KSegmentor
 {
     private:
       KSegmentor(); // prevent invalid initialization
+
+      vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
+
+      vtkSmartPointer<vtkImageReslice> m_Reslicer;
+
     public:
         KSegmentor( vtkImageData* image, vtkImageData* label, int sliceIndex );
         virtual ~KSegmentor();
@@ -45,10 +57,13 @@ class KSegmentor
         void initializeData();
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet();
+        void TransformUserInputImages(vtkTransform* transform, bool invert=false );
+        void initializeUserInputImageWithContour();
         void Update();
 
         /** external interface to update at a voxel */
         void accumulateUserInput( double value, int i, int j, int k );
+        void accumulateAndIntegrateUserInputInUserImages( double value, int i, int j, int k);
         void copyIntegralDuringPaste( int kFrom, int kTo );
         void setRadius( int radNew ) {
           rad = radNew;

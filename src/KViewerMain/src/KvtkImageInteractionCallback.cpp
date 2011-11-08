@@ -11,7 +11,7 @@ using std::endl;
 
 namespace {
 
-const char keyMinusBrushSize    ='z';
+const char keyMinusBrushSize    ='y';
 const char keyPlusBrushSize     ='x';
 
 const char keyCopyLabelSlice    ='c';

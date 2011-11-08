@@ -47,7 +47,7 @@ public:
     
     
     /** ghetto but allows flexibility: reverse handle on the widget */
-    void RegisterSourceWidget( KWidget_2D_left* kwidget2D );
+    void RegisterSourceWidget( KWidget_2D_left* kwidget2D, bool regNewImage );
     
         
 
@@ -59,14 +59,17 @@ private:
     KWidget_2D_left*    sourceWidget;  // reverse handle on my source
 
     /** get a handle on the state-data in kv_opts */
-    void RegisterState( KViewerOptions* kv_opts_in ) {
+    void RegisterState( KViewerOptions* kv_opts_in) {
       kv_opts = kv_opts_in; 
     }
-
+//Changed visibility for testing purposes
+public:
     /** get a handle on a new image and create a blank labelmap of 
       * the appropriate dimensions, type, spacing, and so on. */
-    void RegisterNewImage( vtkImageData* image, int index = 0 );
-    
+    void RegisterNewImage( vtkImageData* image);
+
+    void SetupLabelView(vtkImageData* image,int index =0);
+    void UpdateResliceTransform();
 };
 
 #endif // KINTERACTIVELABELMAP_H
