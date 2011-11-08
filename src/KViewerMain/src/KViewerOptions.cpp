@@ -25,11 +25,45 @@ using std::vector;
 
 namespace po = boost::program_options;
 
-void KViewerOptions::LoadImage( ){
+const std::string tmp_file_name = "kslice.tmp";
+
+std::string ExtractDirectory( const std::string& path )  {
+  return path.substr( 0, path.find_last_of( '/' ) +1 ); // note: no dice on windows, needs backslash
+}
+
+void KViewerOptions::LoadImage( )
+{
+  std::string data_path = "../data/";
+  std::ifstream  cache_reader(tmp_file_name.c_str());
+  cache_reader.open(tmp_file_name.c_str(),ifstream::in);
+
+  if(cache_reader.is_open())
+  { // cache file exists, read it for the previous dir
+    cache_reader.close();
+    std::ifstream data(tmp_file_name.c_str());
+    std::string line;
+    while(std::getline(data,line)) {
+      std::stringstream  lineStream(line);
+      std::string        cell;
+      std::getline(lineStream,cell); //,'\n
+      cout << "read cache line: " << cell << endl;
+      if( !cell.empty() )
+        data_path = cell;
+    }
+    data.close();
+  }
   QString path;
-  path = QFileDialog::getOpenFileName(    NULL,  
-                                          "Choose an Image file to open",    "../data/",   "*.mha" );
+  path = QFileDialog::getOpenFileName( NULL,"Choose an Image file to open",data_path.c_str(),"*.mha" );
   this->ImageArrayFilename = path.toStdString();
+
+  // request by Grant: save the last location, too lazy to click
+  std::ofstream  cache_writer;
+  cache_writer.open(tmp_file_name.c_str(),ofstream::out);
+  cache_writer << ExtractDirectory(path.toStdString()) << std::endl;
+  cache_writer.close();
+
+  cout << "loaded image ... ";
+
 }
 
 void KViewerOptions::LoadLabel( const std::string& path ){
