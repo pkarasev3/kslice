@@ -31,7 +31,7 @@ set(DATA_PATH ${CMAKE_SOURCE_DIR}/../data CACHE PATH  "data folder")
 execute_process(COMMAND "sh"  ${SCRIPT_PATH}/link_build_dir_to_scripts_and_data.sh  "
                 ${CMAKE_SOURCE_DIR}"  "${CMAKE_BINARY_DIR}"   "${SCRIPT_PATH}"  ${DATA_PATH})
 
-set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "configuration (default: Debug)" FORCE)
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "configuration (default: Debug)")
 set(BUILD_QTGUI_DEMO_SH  CACHE bool false)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 

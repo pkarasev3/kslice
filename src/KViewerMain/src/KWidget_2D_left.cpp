@@ -106,7 +106,7 @@ void KWidget_2D_left:: SetupRenderWindow() {
 
 }
 
-void  KWidget_2D_left::InitializeTransform()
+void  KWidget_2D_left::InitializeTransform(char transform)
 {
 
     kv_opts->m_CurrentAngle=90;
@@ -114,14 +114,34 @@ void  KWidget_2D_left::InitializeTransform()
     kv_opts->GetTransform()->PostMultiply();
     kv_opts->GetTransform()->Translate(-kv_opts->m_Center[0],-kv_opts->m_Center[1],-kv_opts->m_Center[2]);
     std::cout<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<std::endl;
-    kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
+    switch(transform)
+    {case 'x':
+            kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
+            break;
+    case 'y':
+            kv_opts->GetTransform()->RotateY(kv_opts->m_CurrentAngle);
+            break;
+    case 'z':
+            kv_opts->GetTransform()->RotateZ(kv_opts->m_CurrentAngle);
+            break;
+    default:
+        break;
+    }
     kv_opts->GetTransform()->Translate(kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]);
 }
 
 void  KWidget_2D_left::UpdateTransform()
 {
+    /*if(this->m_TransformedZ==true)
+    {
+        imageReslicer->SetResliceTransform(kv_opts->GetTransform()->GetInverse());
+    }
+    else
+    {*/
+      imageReslicer->SetResliceTransform(kv_opts->GetTransform());
+   // }
 
-    imageReslicer->SetResliceTransform(kv_opts->GetTransform());
+
     imageReslicer->SetOutputDimensionality(3);
     imageReslicer->AutoCropOutputOff();
     imageReslicer->Modified();
@@ -142,6 +162,8 @@ void  KWidget_2D_left::UpdateTransform()
   m_SliderTrans->Identity();
   m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
   imageReslicer->SetResliceTransform(m_SliderTrans);
+
+
 
 }
 
@@ -190,6 +212,7 @@ KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
   imageReslicer=vtkSmartPointer<vtkImageReslice>::New();
   m_SliderTrans = vtkTransform::New();
   m_CurrentSliceOrigin=0;
+   //m_TransformedZ=false;
 }
 
 
@@ -398,11 +421,10 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
 
     for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
       if(updateTransform)
-        multiLabelMaps[k]->UpdateResliceTransform(this->currentSliceIndex);
-      //else
-          //pretty bad hack
-          //multiLabelMaps[k]->UpdateResliceTransform(-1);
-
+      {
+        multiLabelMaps[k]->UpdateResliceTransform();
+        multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
+      }
 
         double label_opacity = kv_opts->labelOpacity2D;
         if( k != activeLabelMapIndex ) {
@@ -412,6 +434,8 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
         //multiLabelMaps[k]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
         multiLabelMaps[k]->labelDataArray->Modified();
     }
+   /* if(updateTransform)
+              this->m_TransformedZ=!this->m_TransformedZ;*/
     // update the QVTK display
     qVTK_widget_left->update( );
 }

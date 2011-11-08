@@ -69,7 +69,7 @@ public:
     void RegisterNewImage( vtkImageData* image);
 
     void SetupLabelView(vtkImageData* image,int index =0);
-    void UpdateResliceTransform(int currentSliceIndex);
+    void UpdateResliceTransform();
 };
 
 #endif // KINTERACTIVELABELMAP_H
