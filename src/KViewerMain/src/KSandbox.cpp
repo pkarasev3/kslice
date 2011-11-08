@@ -186,7 +186,6 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
       // TODO: return "fail" and have them re-select a file...
       exit(-1);
     }
-    cout<<"No User Input for Label, making a blank initial label..." << endl;
     imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
     imgReader->SetDataScalarTypeToUnsignedShort();
     imgReader->Update();

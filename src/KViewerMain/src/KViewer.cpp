@@ -274,14 +274,28 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case'r':
     {
-        kwidget_2d_left->UpdateTransform();
-        this->UpdateVolumeStatus();
-        this->UpdateImageInformation(kv_data->imageVolumeRaw);
+        kwidget_2d_left->InitializeTransform('x');
+        break;
+    }
+    case't':
+    {
+        kwidget_2d_left->InitializeTransform('y');
+        break;
+    }
+    case'z':
+    {
+        kwidget_2d_left->InitializeTransform('z');
+        break;
     }
     default:
       break;
     }
-
+    if(keyPressed=='r' ||keyPressed=='t'||keyPressed=='z')
+    {
+        kwidget_2d_left->UpdateTransform();
+        this->UpdateVolumeStatus();
+        this->UpdateImageInformation(kv_data->imageVolumeRaw);
+    }
     //
     // DONE: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
     // then get rid of 'propagate data' crap, use
@@ -365,6 +379,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
                 //Coordinates have to be transformed
                 kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );
+                kseg->accumulateAndIntegrateUserInputInUserImages(Label_Fill_Value,i,j,kk);
               }
             }
           }
@@ -392,7 +407,6 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
     kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
     kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
-    kwidget_2d_left->InitializeTransform();
 }
 
 
@@ -410,6 +424,7 @@ void KViewer::setupQVTKandData( )
   // create QT GUI base class with slider info
   setupGUI(this,0,kv_opts->numSlices-1,1);
 
+
   // Setup the 2D Widget: image, label map(s), some user interaction objects
   kwidget_2d_left = cv::Ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
   kwidget_2d_left->Initialize( kv_opts, kv_data);
@@ -419,8 +434,6 @@ void KViewer::setupQVTKandData( )
   kwidget_3d_right = cv::Ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
   KWidget_3D_right::Initialize( kwidget_3d_right, kv_opts, kv_data );
   kwidget_3d_right->PrintHelp( );
-
-
 
   // CreateThresholdFilter( );
   ConnectQTSlots( );
@@ -439,6 +452,7 @@ void KViewer::setupQVTKandData( )
   if( ! kv_opts->LabelArrayFilenames[0].empty() ) {
     assert( NULL != saveAsLineEdit ); // it must be created first!
     saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
+
   }
 
    //initialize display for segmentation interval

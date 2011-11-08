@@ -5,8 +5,6 @@
 #include "KWidget_2D_left.h"
 #include <vector>
 
-///Only for testing purposes
-#include "vtkMetaImageWriter.h"
 
 using std::vector;
 using std::string;
@@ -141,10 +139,17 @@ void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
 }
 
 
-void KInteractiveLabelMap::UpdateResliceTransform(int currentSliceIndex)
+void KInteractiveLabelMap::UpdateResliceTransform()
 {
-    if(currentSliceIndex>=0)
-        labelReslicer->SetResliceTransform(kv_opts->GetTransform());
+
+    /*if(sourceWidget->GetTransformedZ()==true)
+    {
+        labelReslicer->SetResliceTransform(kv_opts->GetTransform()->GetInverse());
+    }
+    else
+    {*/
+       labelReslicer->SetResliceTransform(kv_opts->GetTransform());
+    //}
 
     labelReslicer->SetOutputDimensionality(3);
     labelReslicer->AutoCropOutputOff();

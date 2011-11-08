@@ -84,7 +84,7 @@ public:
     * connected to a QTVTK widget and interactor
     */
   void Initialize( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
-  void InitializeTransform();
+  void InitializeTransform(char trans=' ');
 
 
   // Callbacks
@@ -131,6 +131,10 @@ Multiple Label Maps
   vtkSmartPointer<vtkImageData> GetActiveLabelMap( );
 
   static const std::string VERBOSE;
+  bool GetTransformedZ()
+  {
+      return this->m_TransformedZ;
+  }
 
 private:
 
@@ -143,6 +147,7 @@ private:
   vtkSmartPointer<vtkImageShiftScale> intensShift;
 
   bool bNoInputLabelFiles;
+  bool m_TransformedZ;
 
  vtkTransform* m_SliderTrans;
 
@@ -152,6 +157,7 @@ private:
   void SetupRenderWindow();
   void SetupImageDisplay(bool transformUpdate=false);
   void SetupLabelDisplay();
+
 };
 
 
