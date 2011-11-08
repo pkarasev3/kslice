@@ -171,8 +171,9 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   //create two readers one for the image and one for the labels
   SP(vtkMetaImageReader) labelFileReader = SP(vtkMetaImageReader)::New();
   SP(vtkMetaImageReader) imgReader       = SP(vtkMetaImageReader)::New();
-  SP(vtkImageData)       label2D         = SP(vtkImageData)::New();
-  SP(vtkImageData)       image2D         = SP(vtkImageData)::New();
+  //Why does name contain "2D" when it ist storing 3D information??
+  SP(vtkImageData)       label2D   ;//      = SP(vtkImageData)::New();
+  SP(vtkImageData)       image2D;//         = SP(vtkImageData)::New();
 
   //test if we can read each file
   int canReadLab = 0;               // try to read multiple labels later
@@ -185,7 +186,6 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
       // TODO: return "fail" and have them re-select a file...
       exit(-1);
     }
-    cout<<"No User Input for Label, making a blank initial label..." << endl;
     imgReader->SetFileName(kv_opts->ImageArrayFilename.c_str());
     imgReader->SetDataScalarTypeToUnsignedShort();
     imgReader->Update();
@@ -193,6 +193,7 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
     std::string byteOrderName( imgReader->GetDataByteOrderAsString() );
     std::cout << "byte orderness of " << kv_opts->ImageArrayFilename << ": " << byteOrderName << endl;
 
+    //?????
     // read the image file into the label array to force correct type & meta-data
     std::string fakeLabelFileName = kv_opts->ImageArrayFilename;
     labelFileReader->SetFileName( fakeLabelFileName.c_str() );
@@ -242,10 +243,11 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   dataSpacing[1]= imgReader->GetDataSpacing()[1];
   dataSpacing[2]= imgReader->GetDataSpacing()[2];
 
+  ///Difference between imageExtent and dataExtent variables???
   int* dataExtent         = imgReader->GetDataExtent();
   kv_opts->imageSpacing   = dataSpacing;
   kv_opts->numSlices      = dataExtent[5]-dataExtent[4]+1;
-  kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
+  kv_opts->sliceZSpace    = dataSpacing[2];
   kv_opts->sliderMin      = double(image2D->GetOrigin()[2]);
   kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]
       + kv_opts->sliderMin;
@@ -264,14 +266,22 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   cout << "image origin and extent: " << Mat( imgOrigin )
        << " ... " << Mat( imgExtent ) << endl;
 
+  //Should not be here!
+  kv_data->imageVolumeRaw = vtkSmartPointer<vtkImageData>::New();
+  kv_data->labelDataArray = vtkSmartPointer<vtkImageData>::New();
+
   bool forceToUShort      = true;
   if( !forceToUShort ) {
-    kv_data->imageVolumeRaw = image2D ;
-    kv_data->labelDataArray = label2D ;
+    kv_data->UpdateRawImage(image2D) ;
+    kv_data->UpdateLabelDataArray( label2D) ;
   } else {
-    kv_data->imageVolumeRaw = image2ushort( image2D );
-    kv_data->labelDataArray = image2ushort( label2D );
+    kv_data->UpdateRawImage( image2ushort( image2D ));
+    kv_data->UpdateLabelDataArray( image2ushort( label2D ));
   }
+  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
+  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
+  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
+
 
   cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
 

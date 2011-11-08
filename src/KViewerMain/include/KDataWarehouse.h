@@ -24,12 +24,12 @@ private:
   std::map< std::string, vtkImageData* >     label_arrays;
   std::map< std::string, vtkImageData* >     image_arrays;
 
-  // init smart pointers in constructors, no one else should be doing New() calls
-  KDataWarehouse( ) : imageVolumeRaw(     vtkSmartPointer<vtkImageData>::New() ),
+  // init smart pointers in constructors, no one else should be doing New() calls NEVER USED!!!!
+  KDataWarehouse( ) :
                       labelDataArray(     vtkSmartPointer<vtkImageData>::New() ),
                       labelDataArray_new( vtkSmartPointer<vtkImageData>::New() )
   {
-
+      std::cout<<"Datawarehouse initialized"<<std::endl;
   }
 
 public:
@@ -39,6 +39,7 @@ public:
   ~KDataWarehouse( ) { }
 
   vtkSmartPointer<vtkImageData>       imageVolumeRaw;
+  vtkSmartPointer<vtkImageData>       imageVolumeRawTrans;
 
   // the 'saved' or 'initial' label array
   vtkSmartPointer<vtkImageData>       labelDataArray;
@@ -81,6 +82,16 @@ public:
     label_arrays[label_array_name] = data;
   }
 
+  void UpdateRawImage(vtkImageData* raw3DImage)
+  {
+      this->imageVolumeRaw->DeepCopy(raw3DImage);
+  }
+
+  //Updating label data array acording to current transformation
+  void UpdateLabelDataArray(vtkImageData* raw3DLabel)
+  {
+      this->labelDataArray->DeepCopy(raw3DLabel);
+  }
 
 
 };

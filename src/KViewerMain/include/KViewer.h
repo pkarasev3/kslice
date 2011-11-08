@@ -157,6 +157,10 @@ protected:
     */
   void setupQVTKandData( );
 
+  /** \brief Update image information after transformation
+    */
+  void UpdateImageInformation(vtkImageData* image);
+
 };
 
 #endif // KVIEWER_GUI_h

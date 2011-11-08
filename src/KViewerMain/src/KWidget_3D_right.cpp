@@ -32,6 +32,7 @@
 #include "vtkVolumeProperty.h"
 #include "vtkVolumeRayCastMapper.h"
 #include "KVolumeRenderView.h"  
+#include "vtkTransform.h"
 
 #define SP( X )  vtkSmartPointer<X> 
 
@@ -118,8 +119,8 @@ void SaveTimestampedPolyData( vtkPolyData* polydata )
 void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
   //////////////////// Render Window Right : 3D Display /////////////////////////////
-  vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
-  vtkImageData* label = kwidget_3d_right->kv_data->labelDataArray;
+  //vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
+  //vtkImageData* label = kwidget_3d_right->kv_data->labelDataArray;
   //kwidget_3d_right->volRenView->UpdateDisplay( image, label );
   
   kwidget_3d_right->kv3DModelRenderer = vtkSmartPointer<vtkRenderer>::New();

@@ -64,6 +64,9 @@ void KViewerOptions::LoadImage( )
 
   cout << "loaded image ... ";
 
+  //Should it be initialized somewhere else?
+  m_Transform =vtkSmartPointer<vtkTransform>::New();
+
 }
 
 void KViewerOptions::LoadLabel( const std::string& path ){
@@ -75,6 +78,8 @@ void KViewerOptions::LoadLabel( const std::string& path ){
     cout << path << " label file is already loaded! "<< endl;
   }
 }
+
+
 
 int KViewerOptions::GetBrushSize(){
   return (this->paintBrushRad);
@@ -99,6 +104,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   segmentor_iters     = 30;
   time_triggered_seg_update = true;
   seg_time_interval =0.3;  //time interval for performing (automatic) segmentation while painting
+  m_CurrentAngle=0;
 
   LabelArrayFilenames.push_back("");
   drawLabelMaxVal     = getDefaultDrawLabelMaxVal();

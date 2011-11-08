@@ -13,6 +13,7 @@
 #include "vtkInteractorStyleImage.h"
 #include "KSegmentor.h"
 #include "KInteractiveLabelMap.h"
+#include "vtkTransform.h"
 
 using  cv::Ptr;
 class  QVTKWidget;
@@ -35,6 +36,7 @@ public:
   int activeLabelMapIndex; // which label is being functed
 
   int currentSliceIndex;   // which slice we're viewing now
+  int m_CurrentSliceOrigin; // currentSliceIndex in "world coordinates"
   int cacheSliceIndex;     // stored for copy/paste operations on 'c' key
 
   // handle on the QT object, primarily to do update() after some computations
@@ -42,9 +44,6 @@ public:
 
   // update the scaling/display of image slice data in 2D
   vtkSmartPointer<vtkImageReslice>        imageReslicer;
-
-  // update the scaling/display of label data in 2D
-  vtkSmartPointer<vtkImageReslice>        labelReslicer;
 
   // TODO: probably should be encapsulated lower problem is the 'thresholdReslicer' wants it
   vtkSmartPointer<vtkLookupTable>         labelLUT;
@@ -69,7 +68,7 @@ public:
   // handles to data objects and file IO
   cv::Ptr<KDataWarehouse>                  kv_data;
 
-  // written to during mouse callbacks, QT side can put in a QString.
+  // written to during ^ouse callbacks, QT side can put in a QString.
   std::string mouse_position_string;
 
   /** Save the current label map to a unique (time-stamped) file name, .mha format */
@@ -85,6 +84,7 @@ public:
     * connected to a QTVTK widget and interactor
     */
   void Initialize( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
+  void InitializeTransform(char trans=' ');
 
 
   // Callbacks
@@ -123,12 +123,18 @@ Multiple Label Maps
  
   /** called internally when a display update is needed,
       such as when a new labelmap is created */
-  void UpdateMultiLabelMapDisplay( );
+  void UpdateMultiLabelMapDisplay( bool UpdateTransform=false );
+
+  void UpdateTransform();
 
   /** get the one that's being "edited" now */
   vtkSmartPointer<vtkImageData> GetActiveLabelMap( );
 
   static const std::string VERBOSE;
+  bool GetTransformedZ()
+  {
+      return this->m_TransformedZ;
+  }
 
 private:
 
@@ -137,12 +143,21 @@ private:
   KWidget_2D_left & operator=(const KWidget_2D_left &rhs);
   KWidget_2D_left( );
 
+  vtkSmartPointer<vtkLookupTable> satLUT;
+  vtkSmartPointer<vtkImageShiftScale> intensShift;
+
+  bool bNoInputLabelFiles;
+  bool m_TransformedZ;
+
+ vtkTransform* m_SliderTrans;
+
   /** internal common code for saving label files */
   void SaveLabelsInternal( const std::stringstream& ss );
 
   void SetupRenderWindow();
-  void SetupImageDisplay();
+  void SetupImageDisplay(bool transformUpdate=false);
   void SetupLabelDisplay();
+
 };
 
 
