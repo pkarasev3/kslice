@@ -146,6 +146,7 @@ void  KWidget_2D_left::UpdateTransform()
     imageReslicer->AutoCropOutputOff();
     imageReslicer->Modified();
     imageReslicer->UpdateWholeExtent();
+
     imageReslicer->Update();
 
     kv_data->UpdateRawImage(imageReslicer->GetOutput());
@@ -178,6 +179,7 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
     imageReslicer->AutoCropOutputOff();
     imageReslicer->SetInputConnection(intensShift->GetOutputPort());
     imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
+    imageReslicer->SetInterpolationModeToCubic();
 
     std::cout<<"Ini-Image:"<<std::endl;
     std::cout<<"Image-O:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
