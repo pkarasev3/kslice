@@ -33,6 +33,10 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
   {
     cout<<"Left button has been pressed"<<endl;
     buttonDown = !buttonDown; // paint brush down: start draw/erase
+    if(!buttonDown)
+        masterWindow->SetCircleCursorOpacity(0);
+    else
+        masterWindow->SetCircleCursorOpacity(1);
   }
   else if( event == vtkCommand::KeyPressEvent )
   {
@@ -45,9 +49,11 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     switch ( keyPressed ) {
     case keyMinusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad-1;
+      masterWindow->SetCircleCursorSize(kv_opts->paintBrushRad);
       break;
     case keyPlusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad+1;
+      masterWindow->SetCircleCursorSize(kv_opts->paintBrushRad);
       break;
     case keyUpLabelOpacity:
       kv_opts->labelOpacity2D *= 1.05;
@@ -95,5 +101,6 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
 
   // trigger the main window to update text displaying paintbrush info
   this->masterWindow->updatePaintBrushStatus( NULL );
+
 
 }

@@ -65,7 +65,7 @@ void KSegmentor::saveCurrentSliceToPNG(const std::string &fileName) {
 }
 
 
-KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
+KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex, bool contInit)
 {
         int num_slices = image->GetDimensions()[2];
         this->imageVol=image;
@@ -78,7 +78,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->mdims[2] = 1;
         this->penaltyAlpha=0;
         this->seed=0;
-        this->useContInit=1;
+        this->useContInit=contInit;
         this->display=0;
         this->dthresh=500;
         this->iter=200;
@@ -117,14 +117,16 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
 
         this->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
         this->U_t_image= vtkSmartPointer<vtkImageData>::New();
-        this->U_l_slice_image = vtkSmartPointer<vtkImageData>::New();
+
 
         this->U_Integral_image->SetExtent(image->GetExtent());
         this->U_Integral_image->SetScalarTypeToDouble();
+        this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+
         this->U_t_image->SetExtent(image->GetExtent());
         this->U_t_image->SetScalarTypeToDouble();
-        this->U_l_slice_image->SetExtent(image->GetExtent());
-        this->U_l_slice_image->SetScalarTypeToDouble();
+        this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
+
 
         this->m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
@@ -148,12 +150,13 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
         this->jList=NULL;
 
         numdims=numberdims;
-        UseInitContour=useContInit;
-        if(UseInitContour)
+
+        if(this->useContInit)
         {
             this->initializeUserInputImageWithContour();
             std::cout<<"Initializing user input using label data"<<std::endl;
         }
+
         dims[2] = 1;
         dims[1] = 1;
         switch(numdims){
@@ -177,10 +180,14 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex)
 
 
 void KSegmentor::initializeUserInputImageWithContour(){
-    for (int i=0; i<=mdims[0]-1; i++)  {
-        for (int j=0; j<=mdims[1]-1; j++) {
+    int element=0;
+    unsigned short* label3DPointer = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+    for (int i=0; i<=imageVol->GetExtent()[1]-1; i++)  {
+        for (int j=0; j<=imageVol->GetExtent()[3]-1; j++) {
             for(int k=0;k<=imageVol->GetExtent()[5]-1;k++){
-               this->accumulateAndIntegrateUserInputInUserImages( this->labelVol->GetScalarComponentAsDouble(i,j,k,0),i,j,k);
+               //this->accumulateAndIntegrateUserInputInUserImages( this->labelVol->GetScalarComponentAsDouble(i,j,k,0),i,j,k);
+                this->accumulateAndIntegrateUserInputInUserImages((double)label3DPointer[element],element);
+                element++;
         }
      }
   }
@@ -195,13 +202,14 @@ void KSegmentor::accumulateUserInput( double value, int j, int i, int k )
 
 }
 
-void KSegmentor::accumulateAndIntegrateUserInputInUserImages( double value, int i, int j, int k)
+void KSegmentor::accumulateAndIntegrateUserInputInUserImages( double value,const unsigned int element)
 {
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
-    this->U_t_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
-    this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
+    this->ptrU_t_Image[element]=user_input;
+    this->ptrIntegral_Image[element]=user_input;
     //Integrate user input
-    this->U_t_image->SetScalarComponentFromDouble(i,j,k,0,0.5*this->U_Integral_image->GetScalarComponentAsDouble(i,j,k,0));
+    //this->U_t_image->SetScalarComponentFromDouble(i,j,k,0,0.5*this->U_Integral_image->GetScalarComponentAsDouble(i,j,k,0));
+    this->ptrU_t_Image[element]=this->ptrIntegral_Image[element]*0.5;
 }
 
 void KSegmentor::integrateUserInput( int k )
@@ -228,13 +236,17 @@ void KSegmentor::TransformUserInputImages(vtkTransform* transform, bool invert)
       this->m_Reslicer->SetResliceTransform(transform);
     this->m_Reslicer->UpdateWholeExtent();
     this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
+    this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     this->m_Reslicer->SetInput(this->U_t_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
     this->m_Reslicer->Modified();
     this->m_Reslicer->UpdateWholeExtent();
     this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
+    this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
+    this->mdims[0]=U_t_image->GetExtent()[1]-U_t_image->GetExtent()[0]+1;
+    this->mdims[1]=U_t_image->GetExtent()[3]-U_t_image->GetExtent()[2]+1;
 }
 
 void KSegmentor::initializeData()
@@ -265,7 +277,8 @@ void KSegmentor::initializeData()
           this->mask[elemNum]       = (double) ( 0 < ptrCurrLabel[elemNum] );
           //this->U_I_slice[elemNum]  = (U_integral[currSlice].ptr<double>(0))[elemNum];
           //New
-          this->U_I_slice[elemNum] =this->U_Integral_image->GetScalarComponentAsDouble(i,j,this->currSlice,0);
+            unsigned int element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
+            this->U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
           elemNum++;
         }
     }
@@ -276,20 +289,6 @@ void KSegmentor::initializeData()
       ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
       saveCurrentSliceToPNG( ss.str() );
     }
-    /*
-    vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
-    labelWriter->SetInput( this->U_Integral_image);
-    labelWriter->SetFileName( "UIntegral.mhd");
-    labelWriter->Write();
-
-    labelWriter->SetInput( this->U_t_image);
-    labelWriter->SetFileName( "Ut.mhd");
-    labelWriter->Write();
-
-    labelWriter->SetInput( this->U_l_slice_image);
-    labelWriter->SetFileName( "U_l_slice.mhd");
-    labelWriter->Write();
-*/
 }
 
 void KSegmentor::setCurrLabelArray(vtkImageData *label){
@@ -330,7 +329,7 @@ void KSegmentor::intializeLevelSet(){
 
 void KSegmentor::Update()
 {
-  interactive_chanvese(img,phi,U_I_slice,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,iter,rad,lambda,display);
+    interactive_chanvese(img,phi,U_I_slice,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,iter,rad,lambda,display);
 
   if(iList!=NULL){
       delete[] iList;
@@ -363,11 +362,8 @@ void KSegmentor::Update()
 
 void KSegmentor::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-    vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
-    labelWriter->SetInput( this->U_Integral_image);
-    labelWriter->SetFileName( "UIntegral_before.mhd");
-    labelWriter->Write();
-  Mat tmp = 0.9 * U_integral[kFrom];
+
+  Mat tmp =0.9  * U_integral[kFrom];
   tmp.copyTo(U_integral[kTo]);
   for (int i=0;i<=mdims[0]-1; i++)  {
       for (int j=0; j<=mdims[1]-1; j++) {
@@ -375,9 +371,6 @@ void KSegmentor::copyIntegralDuringPaste(int kFrom, int kTo)
           this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
       }
   }
-  labelWriter->SetInput( this->U_Integral_image);
-  labelWriter->SetFileName( "UIntegral_after.mhd");
-  labelWriter->Write();
 }
 
 void KSegmentor::setCurrIndex(int sliceIndex){

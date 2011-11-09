@@ -41,6 +41,7 @@
 
 //TESTING
 #include "vtkMetaImageWriter.h"
+#include "vtkRegularPolygonSource.h"
 
 
 // EVIL:  #include "vtkKWImage.h"
@@ -62,6 +63,7 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   //initializing "times" for seg interval clock
   t1=clock();
   t2=t1;
+  this-> InitializeCircleCursor();
 }
 
 
@@ -78,6 +80,29 @@ void KViewer::updateCoords(vtkObject* obj) {
   qVTK1->setFocus( );
 }
 
+
+/** \brief Creates circle cursor .Should this be moved to KWidget_2D_left?
+  */
+void KViewer::InitializeCircleCursor()
+{
+
+    m_Circle= vtkSmartPointer<vtkRegularPolygonSource>::New();
+    m_Circle->SetNumberOfSides(30);
+    m_Circle->SetRadius(kv_opts->GetBrushSize());
+    m_Circle->SetCenter(0,0,0);
+
+    m_CircleMapper= vtkSmartPointer<vtkPolyDataMapper>::New();
+    m_CircleMapper->SetInputConnection(m_Circle->GetOutputPort());
+
+    m_CircleActor = vtkSmartPointer<vtkActor>::New();
+    m_CircleActor->SetMapper(m_CircleMapper);
+    m_CircleActor->GetProperty()->EdgeVisibilityOn();
+    m_CircleActor->GetProperty()->SetRepresentationToWireframe();
+    m_CircleActor->GetProperty()->SetColor(0,1,0);
+    m_CircleActor->GetProperty()->SetOpacity(0);
+    kwidget_2d_left->kvImageRenderer->AddActor(m_CircleActor);
+}
+
 void KViewer::updatePaintBrushStatus(vtkObject*) {
   std::stringstream ss;
   std::stringstream toggle;
@@ -85,8 +110,12 @@ void KViewer::updatePaintBrushStatus(vtkObject*) {
 
   if( ! image_callback->Erase() ) {
     toggle << "Mode: Draw";
+    if(this->m_CircleActor)
+     this->m_CircleActor->GetProperty()->SetColor(0,1,0);
   } else {
     toggle << "Mode: Erase";
+    if(this->m_CircleActor)
+     this->m_CircleActor->GetProperty()->SetColor(1,0,0);
   }
   if( this->image_callback->ButtonDown() ) {
     toggle << "\t(On)";
@@ -108,6 +137,7 @@ void KViewer::updatePaintBrushStatus(vtkObject*) {
   QString str = QString(ss.str().c_str());
   paintBrushStatus->setText(str);
   qVTK1->setFocus( );
+
 
 }
 
@@ -330,6 +360,9 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                                             0.0, kwidget_2d_left->kvImageRenderer );
 
     kwidget_2d_left->sliceViewPicker->GetPickPosition( event_pos );  // Get the world coordinates of the pick
+
+    this->m_Circle->SetCenter(event_pos);
+
     vector<double>  imageSpacing = kv_opts->imageSpacing;
     int event_PixCoord[3]; 						       				//the X,Y,Z voxel coordinates
     event_PixCoord[0]=  round(event_pos[0]/imageSpacing[0]);
@@ -377,14 +410,14 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
               if( ptrImage[elemNum] < imgMax && ptrImage[elemNum] > imgMin ) {
                 ptrLabel[elemNum] = Label_Fill_Value;
 
-                //Coordinates have to be transformed
-                kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );
-                kseg->accumulateAndIntegrateUserInputInUserImages(Label_Fill_Value,i,j,kk);
+                //kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );
+                kseg->accumulateAndIntegrateUserInputInUserImages(Label_Fill_Value,elemNum);
               }
             }
           }
         }
       }
+
       ///TESTING ONLY
      t2 = clock();
       if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
@@ -407,6 +440,8 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
     kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
     kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
+
+
 }
 
 
