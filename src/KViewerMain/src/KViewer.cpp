@@ -194,8 +194,8 @@ void KViewer::SaveAsSegmentation() {
 
 void KViewer::LoadImage() {
   this->kv_opts->LoadImage( );
-    //Why recursive call of setupQVTKandData( )??
-  //this->setupQVTKandData( );
+
+  this->setupQVTKandData( );
 }
 
 void KViewer::LoadLabelMap(){
@@ -401,17 +401,15 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k; // - floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k; // + floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmin = k - floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmax = k + floor( sqrt(kv_opts->paintBrushRad - distance) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( ptrImage[elemNum] < imgMax && ptrImage[elemNum] > imgMin ) {
                 ptrLabel[elemNum] = Label_Fill_Value;
-
-                //kseg->accumulateUserInput( Label_Fill_Value, i, j, kk );
-                kseg->accumulateAndIntegrateUserInputInUserImages(Label_Fill_Value,elemNum);
+                kseg->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
               }
             }
           }
@@ -431,6 +429,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       qVTK1->update();
     }
   }
+  this->UpdateVolumeStatus();
 }
 
 
@@ -508,6 +507,8 @@ void KViewer::ConnectQTSlots( ) {
   Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updatePaintBrushStatus(vtkObject*)));
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(),
+                       vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
+  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(),
                        vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(),
                        vtkCommand::KeyPressEvent, this, SLOT(handleGenericEvent(vtkObject*, unsigned long)));

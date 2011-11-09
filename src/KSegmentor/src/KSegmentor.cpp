@@ -186,11 +186,13 @@ void KSegmentor::initializeUserInputImageWithContour(){
         for (int j=0; j<=imageVol->GetExtent()[3]-1; j++) {
             for(int k=0;k<=imageVol->GetExtent()[5]-1;k++){
                //this->accumulateAndIntegrateUserInputInUserImages( this->labelVol->GetScalarComponentAsDouble(i,j,k,0),i,j,k);
-                this->accumulateAndIntegrateUserInputInUserImages((double)label3DPointer[element],element);
+                this->accumulateUserInputInUserInputImages((double)label3DPointer[element],element);
                 element++;
         }
      }
   }
+  for(int k=0;k<=imageVol->GetExtent()[5]-1;k++)
+    this->integrateUserInputInUserInputImage(k);
 }
 
 void KSegmentor::accumulateUserInput( double value, int j, int i, int k )
@@ -202,20 +204,32 @@ void KSegmentor::accumulateUserInput( double value, int j, int i, int k )
 
 }
 
-void KSegmentor::accumulateAndIntegrateUserInputInUserImages( double value,const unsigned int element)
+void KSegmentor::accumulateUserInputInUserInputImages( double value,const unsigned int element)
 {
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;
-    this->ptrIntegral_Image[element]=user_input;
     //Integrate user input
     //this->U_t_image->SetScalarComponentFromDouble(i,j,k,0,0.5*this->U_Integral_image->GetScalarComponentAsDouble(i,j,k,0));
-    this->ptrU_t_Image[element]=this->ptrIntegral_Image[element]*0.5;
+    //this->ptrU_t_Image[element]=this->ptrIntegral_Image[element]*0.5;
 }
 
 void KSegmentor::integrateUserInput( int k )
 {
     U_integral[k]  += U_t[k];
     U_t[k]          = 0.5 * U_t[k];
+}
+
+void KSegmentor::integrateUserInputInUserInputImage( int k )
+{
+    unsigned int element3D=0;
+    for (int j=0; j<=mdims[1]-1; j++)  {
+        for (int i=0; i<=mdims[0]-1; i++) {
+            element3D=k*mdims[1]*mdims[0] +j*mdims[0]+i;
+            this->ptrIntegral_Image[element3D]+=this->ptrU_t_Image[element3D];
+            this->ptrU_t_Image[element3D]=this->ptrU_t_Image[element3D]*0.5;
+        }
+    }
+
 }
 
 
@@ -268,7 +282,8 @@ void KSegmentor::initializeData()
 
     this->imgRange=imgRange;
     this->integrateUserInput( currSlice );
-
+    this->integrateUserInputInUserInputImage(currSlice);
+    unsigned int element3D;
     long elemNum=0;
     for (int j=0; j<=mdims[1]-1; j++)  {
         for (int i=0; i<=mdims[0]-1; i++) {
@@ -277,17 +292,21 @@ void KSegmentor::initializeData()
           this->mask[elemNum]       = (double) ( 0 < ptrCurrLabel[elemNum] );
           //this->U_I_slice[elemNum]  = (U_integral[currSlice].ptr<double>(0))[elemNum];
           //New
-            unsigned int element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
-            this->U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
+          element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
+          this->U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
           elemNum++;
         }
     }
 
     bool writeInfoPng = false;
     if( writeInfoPng ) {
-      std::stringstream ss;
+      /*std::stringstream ss;
       ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-      saveCurrentSliceToPNG( ss.str() );
+      saveCurrentSliceToPNG( ss.str() );*/
+        vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
+        labelWriter->SetInput( this->U_Integral_image );
+        labelWriter->SetFileName( "Integral.mhd");
+        labelWriter->Write();
     }
 }
 
@@ -367,7 +386,7 @@ void KSegmentor::copyIntegralDuringPaste(int kFrom, int kTo)
   tmp.copyTo(U_integral[kTo]);
   for (int i=0;i<=mdims[0]-1; i++)  {
       for (int j=0; j<=mdims[1]-1; j++) {
-          double val=this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+          double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
           this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
       }
   }

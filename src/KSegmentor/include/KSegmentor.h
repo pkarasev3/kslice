@@ -63,7 +63,7 @@ class KSegmentor
 
         /** external interface to update at a voxel */
         void accumulateUserInput( double value, int i, int j, int k );
-        void accumulateAndIntegrateUserInputInUserImages( double value,const unsigned int element);
+        void accumulateUserInputInUserInputImages( double value,const unsigned int element);
         void copyIntegralDuringPaste( int kFrom, int kTo );
         void setRadius( int radNew ) {
           rad = radNew;
@@ -75,6 +75,8 @@ class KSegmentor
     private:
         /** internal 'update from input' function */
         void integrateUserInput( int k );
+
+        void integrateUserInputInUserInputImage( int k );
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
