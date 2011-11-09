@@ -357,8 +357,11 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k; // - floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k; // + floor( sqrt(kv_opts->paintBrushRad - distance) );
+            //int kmin = k; // - floor( sqrt(kv_opts->paintBrushRad - distance) );
+            //int kmax = k; // + floor( sqrt(kv_opts->paintBrushRad - distance) );
+            // But, other user (Karl) likes cubic volumes so this now makes more sense. Maybe images should be forced to cubic resample?
+            int kmin = k - floor( sqrt(std::max(0.0f,kv_opts->paintBrushRad - distance) ) );
+            int kmax = k + floor( sqrt(std::max(0.0f,kv_opts->paintBrushRad - distance) ) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
