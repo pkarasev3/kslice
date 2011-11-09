@@ -254,9 +254,10 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   { // must happen after renderers are set up so we can insert actors right away
     this->LoadMultiLabels( kv_opts->LabelArrayFilenames );
     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
+     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex,true)  );
   }
-
- this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
+  else
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
 UpdateMultiLabelMapDisplay( );
 }
 

@@ -50,7 +50,7 @@ class KSegmentor
       vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
     public:
-        KSegmentor( vtkImageData* image, vtkImageData* label, int sliceIndex );
+        KSegmentor( vtkImageData* image, vtkImageData* label, int sliceIndex,bool contInit=false );
         virtual ~KSegmentor();
         void setNumIterations(int itersToRun);
         void setCurrIndex(int sliceIndex);
@@ -63,7 +63,7 @@ class KSegmentor
 
         /** external interface to update at a voxel */
         void accumulateUserInput( double value, int i, int j, int k );
-        void accumulateAndIntegrateUserInputInUserImages( double value, int i, int j, int k);
+        void accumulateAndIntegrateUserInputInUserImages( double value,const unsigned int element);
         void copyIntegralDuringPaste( int kFrom, int kTo );
         void setRadius( int radNew ) {
           rad = radNew;
@@ -84,6 +84,8 @@ class KSegmentor
         vtkImageData *labelVol; //full label volume (at the current time)
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
+        double *ptrIntegral_Image; //ptr to current image slice
+        double *ptrU_t_Image; //ptr to current label slice
 
 
 /** Might (??) own anything else below */
