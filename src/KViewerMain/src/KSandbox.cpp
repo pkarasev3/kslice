@@ -258,10 +258,10 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   kv_opts->maxIntensity        = image2D->GetScalarRange()[1];
 
   std::vector<double> imgOrigin(3);
-  memcpy( &(imgOrigin[0]), imgReader->GetDataOrigin(), 3 * sizeof(double) );
+  memcpy( &(imgOrigin[0]), image2D->GetOrigin(), 3 * sizeof(double) );
   kv_opts->imageOrigin    = imgOrigin;
   std::vector<int> imgExtent(6);
-  memcpy( &(imgExtent[0]), imgReader->GetDataExtent(), 6 * sizeof(int) );
+  memcpy( &(imgExtent[0]), image2D->GetExtent(), 6 * sizeof(int) );
   kv_opts->imageExtent    = imgExtent;
   cout << "image origin and extent: " << Mat( imgOrigin )
        << " ... " << Mat( imgExtent ) << endl;
@@ -278,9 +278,9 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
     kv_data->UpdateRawImage( image2ushort( image2D ));
     kv_data->UpdateLabelDataArray( image2ushort( label2D ));
   }
-  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
-  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
-  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
+  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5*kv_opts->imageSpacing[0];
+  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5*kv_opts->imageSpacing[1];
+  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5*kv_opts->imageSpacing[2];
 
 
   cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
