@@ -112,7 +112,7 @@ void  KWidget_2D_left::InitializeTransform(char transform)
     kv_opts->m_CurrentAngle=90;
     kv_opts->GetTransform()->Identity();
     kv_opts->GetTransform()->PostMultiply();
-    kv_opts->GetTransform()->Translate(-kv_opts->m_Center[0],-kv_opts->m_Center[1],-kv_opts->m_Center[2]);
+    kv_opts->GetTransform()->Translate(-(kv_opts->m_Center[0]+kv_opts->imageOrigin[0]),-(kv_opts->m_Center[1]+kv_opts->imageOrigin[0]),-(kv_opts->m_Center[2]+kv_opts->imageOrigin[2]));
     std::cout<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<std::endl;
     switch(transform)
     {case 'x':
@@ -127,7 +127,7 @@ void  KWidget_2D_left::InitializeTransform(char transform)
     default:
         break;
     }
-    kv_opts->GetTransform()->Translate(kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]);
+    kv_opts->GetTransform()->Translate((kv_opts->m_Center[0]+kv_opts->imageOrigin[0]),(kv_opts->m_Center[1]+kv_opts->imageOrigin[1]),(kv_opts->m_Center[2]+kv_opts->imageOrigin[2]));
 }
 
 void  KWidget_2D_left::UpdateTransform()
@@ -143,7 +143,7 @@ void  KWidget_2D_left::UpdateTransform()
 
 
     imageReslicer->SetOutputDimensionality(3);
-    imageReslicer->AutoCropOutputOff();
+   // imageReslicer->AutoCropOutputOff();
     imageReslicer->Modified();
     imageReslicer->UpdateWholeExtent();
 
@@ -164,6 +164,9 @@ void  KWidget_2D_left::UpdateTransform()
   m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
   imageReslicer->SetResliceTransform(m_SliderTrans);
 
+  std::cout<<"Image-O:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
+  std::cout<<"Image-E:"<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<" "<<std::endl;
+
 
 
 }
@@ -172,11 +175,11 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
 
     satLUT = vtkSmartPointer<vtkLookupTable>::New();
     SetupSaturationLUT( satLUT, kv_opts, kv_data );
-
+    std::cout<<"Image-O-Init:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
     intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
     intensShift->SetInput( kv_data->imageVolumeRaw );
     imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    imageReslicer->AutoCropOutputOff();
+    imageReslicer->SetOutputExtentToDefault();
     imageReslicer->SetInputConnection(intensShift->GetOutputPort());
     imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
     imageReslicer->SetInterpolationModeToCubic();

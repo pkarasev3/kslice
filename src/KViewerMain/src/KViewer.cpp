@@ -218,7 +218,7 @@ int KViewer::round(double a) {
 
 void KViewer::executeSingleSliceSegmentation( )
 {
-  handleGenericEvent( NULL, (unsigned long) 's' );
+  handleGenericEvent( NULL, (unsigned long) 'a' );
 }
 
 void KViewer::copyFromCurrentSlice( )
@@ -268,8 +268,8 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     if( NULL != obj ) { // not null <=> we got here from a vtkCallBack, not a button press
       vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
       keyPressed       = *imgWindowInteractor->GetKeySym();
-    } else if (event == (unsigned long) 's' ) {
-      keyPressed = 's';
+    } else if (event == (unsigned long) 'a' ) {
+      keyPressed = 'a';
     } else if (event == (unsigned long) 'v' ){
       keyPressed = 'v'; // pressing 'paste button' in QT took us here
     } else if (event == (unsigned long) '0' ){
@@ -294,7 +294,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case 'v': // Paste!
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
-    case 's': // run "KSegmentor"
+    case 'a': // run "KSegmentor"
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
       break;
     case '0':
@@ -439,10 +439,25 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 void KViewer::UpdateImageInformation(vtkImageData* image)
 {
     for(int i=0;i<6;i++) kv_opts->imageExtent[i]=image->GetExtent()[i];
-    kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5;
-    kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5;
-    kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5;
+    kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5*kv_opts->imageSpacing[0];
+    kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5*kv_opts->imageSpacing[1];
+    kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5*kv_opts->imageSpacing[2];
 
+    for (int i=0;i<3;i++)
+    {
+        kv_opts->imageSpacing[i]= image->GetSpacing()[i];
+        kv_opts->imageOrigin[i]=image->GetOrigin()[i];
+    }
+
+    kv_opts->numSlices      = kv_opts->imageExtent[5]-kv_opts->imageExtent[4]+1;
+
+    kv_opts->sliderMin  =image->GetOrigin()[2];
+    kv_opts->sliderMax   = kv_opts->numSlices-1;//double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]+ kv_opts->sliderMin;
+
+    this->Slider->setMinimum(kv_opts->sliderMin);
+    this->Slider->setMaximum(kv_opts->sliderMax);
+    kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
+    this->Slider->setSingleStep(kv_opts->sliceZSpace);
 
 }
 
