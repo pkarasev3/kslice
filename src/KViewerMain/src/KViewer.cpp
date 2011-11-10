@@ -194,15 +194,18 @@ void KViewer::SaveAsSegmentation() {
 
 void KViewer::LoadImage() {
   this->kv_opts->LoadImage( );
-
-  this->setupQVTKandData( );
+  if(this->kv_opts->loadImageTrigger==0)
+    this->setupQVTKandData( );
 }
 
 void KViewer::LoadLabelMap(){
   QString path;
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
   this->kv_opts->LoadLabel(path.toStdString());
-  this->setupQVTKandData( );
+  this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
+  this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
+  this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
+  saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
 }
 
 void KViewer::About() {
@@ -449,8 +452,8 @@ void KViewer::setupQVTKandData( )
 { /** \warning LEAKS MEMORY (on multiple file->load) */
   if(kv_opts->loadImageTrigger==1)
   {
-    this->kv_opts->loadImageTrigger=0;
     this->LoadImage();
+    this->kv_opts->loadImageTrigger=0;
   }
   // load the data according to what's in kv_opts now
   setup_file_reader( kv_opts, kv_data );
@@ -483,11 +486,11 @@ void KViewer::setupQVTKandData( )
   interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, image_callback);
   interactor->AddObserver(vtkCommand::KeyPressEvent, image_callback);
 
-  if( ! kv_opts->LabelArrayFilenames[0].empty() ) {
-    assert( NULL != saveAsLineEdit ); // it must be created first!
+  if( ! kv_opts->LabelArrayFilenames.size()==0 ) {
     saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
-
   }
+  else
+      saveAsLineEdit->setText( QString(""));
 
    //initialize display for segmentation interval
   segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
