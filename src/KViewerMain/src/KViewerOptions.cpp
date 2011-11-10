@@ -38,7 +38,7 @@ void KViewerOptions::LoadImage( ){
 void KViewerOptions::LoadLabel( const std::string& path ){
 
   vector<string>::iterator it = std::find(LabelArrayFilenames.begin(),LabelArrayFilenames.end(),path);
-  if( it != LabelArrayFilenames.end() ) {
+  if( it != LabelArrayFilenames.end() || LabelArrayFilenames.size()==0) {
     this->LabelArrayFilenames.push_back(path);
   } else {
     cout << path << " label file is already loaded! "<< endl;
@@ -72,7 +72,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   seg_time_interval =0.3;  //time interval for performing (automatic) segmentation while painting
   m_CurrentAngle=0;
 
-  LabelArrayFilenames.push_back("");
+  //LabelArrayFilenames.push_back("");
   drawLabelMaxVal     = getDefaultDrawLabelMaxVal();
 
   ops >> Option('q', "modelOpacity3D",      modelOpacity3D);
