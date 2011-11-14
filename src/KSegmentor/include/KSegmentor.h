@@ -28,7 +28,7 @@ void waterMark(const std::string& text, cv::Mat & img);
 void getVolumeAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
                                  std::string & volume, bool numberOnly = false,
-                                 const std::string& right_left_both = std::string("both") );
+                                 const std::string& right_left_both = std::string("both"), double center_line = -1.0);
 
 void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
