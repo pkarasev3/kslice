@@ -120,8 +120,10 @@ SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
 
 void getVolumeAsString( const vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 string & volumeString, bool numberOnly, const std::string& right_left_both )
+                                 string & volumeString, bool numberOnly,
+                                 const std::string& right_left_both, double center_line)
 {
+
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
     int dims[3];
     label_map->GetDimensions( dims );
@@ -132,12 +134,16 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     int imin = 0;
     int imax = dims[0];
 
+    if( center_line < 0 ) {
+      center_line = dims[0]/2;
+    }
+
     { // only do lateral or medial half, optionally.
       if( 0 == right_left_both.compare("right") ) {
         imax = dims[0];
-        imin = dims[0]/2;
+        imin = center_line;
       } else if( 0 == right_left_both.compare("left") ) {
-        imax = dims[0]/2;
+        imax = center_line;
         imin = 0;
       }
     }
@@ -168,10 +174,69 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     IFLOG( PrintVerbose, cout << volumeString )
 }
 
+void getXYZExtents( const std::vector<double>& imageSpacing,
+                                 vtkImageData* label_map,
+                                 std::vector<double>& xyzMin, std::vector<double>& xyzMax)
+{
+  short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
+  int dims[3];
+  label_map->GetDimensions( dims );
+
+  double label_range[2];
+  label_map->GetScalarRange( label_range );
+  double Imin = (label_range[1] + label_range[0])/2.0;
+  double xmin = 1e99; double xmax = -1e99;
+  double ymin = 1e99; double ymax = -1e99;
+  double zmin = 1e99; double zmax = -1e99;
+
+  xyzMin = std::vector<double>(3);
+  xyzMax = std::vector<double>(3);
+
+  for (int k = 0; k < dims[2]; k++)    {
+    for (int i = 0; i < dims[0]; i++)      {
+      for (int j = 0; j < dims[1]; j++)    {
+              long elemNum = k * dims[0] * dims[1] + j * dims[0] + i;
+              double I_of_ijk = double( ptrLabel[elemNum] ) ;
+              if( I_of_ijk > Imin ) {
+                if( i < xmin )
+                  xmin = (double) i;
+                if( i > xmax )
+                  xmax = (double) i;
+                if( j < ymin )
+                  ymin = (double) j;
+                if( j > ymax )
+                  ymax = (double) j;
+                if( k < zmin )
+                  zmin = (double) k;
+                if( k > zmax )
+                  zmax = (double) k;
+              }
+      }
+    }
+  }
+
+ // set to zero extent if there is nothing here
+  if( xmax < 0   ) xmax = 0;
+  if( ymax < 0   ) ymax = 0;
+  if( zmax < 0   ) zmax = 0;
+  if( xmin > 1e3 ) xmin = xmax;
+  if( ymin > 1e3 ) ymin = xmax;
+  if( zmin > 1e3 ) zmin = xmax;
+
+  xyzMin[0] = xmin;
+  xyzMin[1] = ymin;
+  xyzMin[2] = zmin;
+  xyzMax[0] = xmax;
+  xyzMax[1] = ymax;
+  xyzMax[2] = zmax;
+
+}
 
 void getXYZExtentsAsString( const vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 string & volumeString, bool numberOnly )
+                                 string & volumeString, std::vector<double>& xyzMin,
+                                 std::vector<double>& xyzMax,
+                                 bool numberOnly )
 {
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
     int dims[3];
@@ -207,6 +272,14 @@ void getXYZExtentsAsString( const vector<double>& imageSpacing,
       }
     }
 
+   // set to zero extent if there is nothing here
+    if( xmax < 0   ) xmax = 0;
+    if( ymax < 0   ) ymax = 0;
+    if( zmax < 0   ) zmax = 0;
+    if( xmin > 1e3 ) xmin = xmax;
+    if( ymin > 1e3 ) ymin = xmax;
+    if( zmin > 1e3 ) zmin = xmax;
+
     double x_size = (xmax - xmin) * imageSpacing[0];
     double y_size = (ymax - ymin) * imageSpacing[1];
     double z_size = (zmax - zmin) * imageSpacing[2];
@@ -218,6 +291,13 @@ void getXYZExtentsAsString( const vector<double>& imageSpacing,
       ss << "X size = " << x_size << ", Y size = " << y_size << ", Z size " << z_size << "  [mm] ";
     }
     volumeString = ss.str();
+
+    xyzMin[0] = xmin;
+    xyzMin[1] = ymin;
+    xyzMin[2] = zmin;
+    xyzMax[0] = xmax;
+    xyzMax[1] = ymax;
+    xyzMax[2] = zmax;
 }
 
 

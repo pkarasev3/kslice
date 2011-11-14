@@ -1,0 +1,2 @@
+add_subdirectory(VolumeRenderDemo)
+add_subdirectory(BatchVoxelComputations)

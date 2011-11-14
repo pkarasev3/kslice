@@ -53,6 +53,11 @@ double *en_chanvese_compute(LL *Lz,double *phi, double *img, long *dims, double 
 void en_chanvese_init(double *img, double *phi, long *dims);
 void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
 
+// functions to minimize RGB vector valued chan-vese energy
+double *en_chanvese_rgb_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam);
+void en_chanvese_rgb_init(double *img, double *phi, long *dims);
+void en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
+
 // functions to minimize constrained yezzi energy
 double *en_yezzi_compute(LL *Lz,double *phi, double *img,long *dims,double *scale, double lam);
 void en_yezzi_init(LL* Lz, double *img, double *phi, long *dims);

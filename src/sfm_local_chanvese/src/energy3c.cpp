@@ -17,6 +17,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+using std::vector;
+
 static double uin, uout, uuser, sumin, sumout,sumuser;
 double ain, aout, auser; // means
 static double sum2in, sum2out, varin, varout;      // variances
@@ -1543,6 +1545,162 @@ void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgR
     //hold the images until a key is pressed
     cv::waitKey(30);
 
+}
 
 
+
+
+
+
+/** new functions in library after clear dividing line
+                                                     _..----.._
+                                                    ]_.--._____[
+                                                  ___|'--'__..|--._
+                              __               """    ;            :
+                            ()_ """"---...__.'""!":  /    ___       :
+                               """---...__\]..__] | /    [ 0 ]      :
+                                          """!--./ /      """        :
+                                   __  ...._____;""'.__________..--..:_
+                                  /  !"''''''!''''''''''|''''/' ' ' ' \"--..__  __..
+                                 /  /.--.    |          |  .'          \' ' '.""--.{'.
+             _...__            >=7 //.-.:    |          |.'             \ ._.__  ' '""'.
+          .-' /    """"----..../ "">==7-.....:______    |                \| |  "";.;-"> \
+          """";           __.."   .--"/"""""----...."""""----.....H_______\_!....'----""""]
+        _..---|._ __..--""       _!.-=_.            """""""""""""""                   ;"""
+       /   .-";-.'--...___     ." .-""; ';""-""-...^..__...-v.^___,  ,__v.__..--^"--""-v.^v,
+      ;   ;   |'.         """-/ ./;  ;   ;\P.        ;   ;        """"____;  ;.--""""// '""<,
+      ;   ;   | 1            ;  ;  '.: .'  ;<   ___.-'._.'------""""""____'..'.--""";;'  o ';
+      '.   \__:/__           ;  ;--""()_   ;'  /___ .-" ____---""""""" __.._ __._   '>.,  ,/;
+        \   \    /"""<--...__;  '_.-'/; ""; ;.'.'  "-..'    "-.      /"/    `__. '.   "---";
+         '.  'v ; ;     ;;    \  \ .'  \ ; ////    _.-" "-._   ;    : ;   .-'__ '. ;   .^".'
+           '.  '; '.   .'/     '. `-.__.' /;;;   .o__.---.__o. ;    : ;   '"";;""' ;v^" .^
+             '-. '-.___.'<__v.^,v'.  '-.-' ;|:   '    :      ` ;v^v^'.'.    .;'.__/_..-'
+                '-...__.___...---""'-.   '-'.;\     'WW\     .'_____..>."^"-""""""""    fsc
+                                      '--..__ '"._..'  '"-;;"""
+                                             """---'""""""
+
+TODO: move these into a struct that maintains state  */
+
+namespace {
+  std::vector<double> uin_rgb(3,0.0);
+  std::vector<double> uout_rgb(3,0.0);
+  std::vector<double> sumin_rgb(3,0.0);
+  std::vector<double> sumout_rgb(3,0.0);
+  std::vector<double> ain_rgb(3,0.0);
+  std::vector<double> aout_rgb(3,0.0);
+}
+
+void en_chanvese_rgb_init(double* img, double* phi, long *dims)
+{
+  double I;
+  int sz = (int) uin_rgb.size();
+  for( int i = 0; i < sz; i++ )
+  {
+    uin_rgb[i]   = 0;    uout_rgb[i] = 0;
+    sumin_rgb[i] = 0;  sumout_rgb[i] = 0;
+    ain_rgb[i]   = 0;    aout_rgb[i] = 0;
+  }
+
+  for(int i=0; i<NUMEL; i++){
+    I = img[i];
+    if(phi[i]<=0){ // Phi zero or negative is Interior
+      sumin_rgb[0]  = sumin_rgb[0]  + I;
+      ain_rgb[0]   += 1.0;
+    }
+    else{  // Phi positive is Exterior
+      sumout_rgb[0]  = sumin_rgb[0]  + I;
+      aout_rgb[0]   += 1.0;
+    }
+  }
+  for( int i = 0; i < sz; i++ ) {
+    if(ain_rgb[i]>0)
+      uin_rgb[i]  = sumin_rgb[i]/ain_rgb[i];
+    if(aout_rgb[i]>0)
+      uout_rgb[i] = sumout_rgb[i]/aout_rgb[i];
+  }
+
+}
+
+double *en_chanvese_rgb_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
+{
+  int x,y,z,idx,n;
+  double *F, *kappa;
+  double a,Ir,Ig,Ib,Fmax;
+  // allocate space for F
+  F = (double*)malloc(Lz->length*sizeof(double));
+  if(F == NULL) return NULL;
+
+  kappa = (double*)malloc(Lz->length*sizeof(double));
+  if(kappa == NULL) return NULL;
+
+  ll_init(Lz);n=0;Fmax=0.0001; //begining of list;
+  while(Lz->curr != NULL){     //loop through list
+    idx = Lz->curr->idx;
+
+    Ir = img[idx];
+    Ig = img[idx+NUMEL];
+    Ib = img[idx+2*NUMEL];
+
+    a  = (Ir-uin_rgb[0])*(Ir-uin_rgb[0])-(Ir-uout_rgb[0])*(Ir-uout_rgb[0]);
+    a += (Ig-uin_rgb[1])*(Ig-uin_rgb[1])-(Ig-uout_rgb[1])*(Ig-uout_rgb[1]);
+    a += (Ib-uin_rgb[2])*(Ib-uin_rgb[2])-(Ib-uout_rgb[2])*(Ib-uout_rgb[2]);
+
+    if(fabs(a)>Fmax)
+      Fmax = fabs(a);
+    F[n] = a;
+    kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+    ll_step(Lz); n++;       //next point
+  }
+  if(scale[0] == 0)
+    scale[0] = Fmax;
+
+  for(int j=0;j<Lz->length;j++){
+    F[j] = F[j]/scale[0]+lam*kappa[j];
+  }
+  free(kappa);
+  return F;
+}
+
+void en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in)
+{
+  int x,y,z,idx;
+  ll_init(Lin2out);
+  while(Lin2out->curr != NULL){
+    idx = Lin2out->curr->idx;
+
+    for( int i = 0; i < 3; i++ ) {
+      sumin_rgb[i]  -= img[idx+i*NUMEL];
+      ain_rgb[i]    -= 1.0;
+      sumout_rgb[i] += img[idx+i*NUMEL];
+      aout_rgb[i]   += 1.0;
+    }
+    ll_remcurr_free(Lin2out);
+
+  }
+
+  ll_init(Lout2in);
+  while(Lout2in->curr != NULL){
+    idx = Lout2in->curr->idx;
+
+    for( int i = 0; i < 3; i++ ) {
+      sumin_rgb[i]  += img[idx+i*NUMEL];
+      ain_rgb[i]    += 1.0;
+      sumout_rgb[i] -= img[idx+i*NUMEL];
+      aout_rgb[i]   -= 1.0;
+    }
+    ll_remcurr_free(Lout2in);
+  }
+
+  for( int i = 0; i < 3; i++ ) {
+    if(uin_rgb[i]>0)
+      uin_rgb[i]  = sumin_rgb[i]/ain_rgb[i];
+    if(uout_rgb[i]>0)
+      uout_rgb[i] = sumout_rgb[i]/aout_rgb[i];
+  }
+
+  bool bPrintMeansInOut = true;
+  if( bPrintMeansInOut ) {
+    std::cout << "mu In:  " << cv::Mat( uin_rgb ) << std::endl;
+    std::cout << "mu Out: " << cv::Mat( uin_rgb ) << std::endl;
+  }
 }
