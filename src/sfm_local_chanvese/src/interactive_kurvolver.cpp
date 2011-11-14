@@ -52,6 +52,8 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     I            = img[idx];
     double U     = U_integral[idx];
     double err   = ( 3.0 * tanh(U / 1.5) - phi[idx] );
+
+    //kappa not used!?
     double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
     double f     = gamma * abs(U) * (F[n] - err);
 
