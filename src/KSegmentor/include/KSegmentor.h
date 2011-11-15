@@ -72,6 +72,12 @@ class KSegmentor
 
         static double defaultKappaParam;
 
+        void UpdateImageSpacing(double* spacing)
+        {
+            for (int i=0;i<3;i++)
+                m_Spacing_mm[i]=spacing[i];
+        }
+
     private:
         /** internal 'update from input' function */
         void integrateUserInput( int k );
@@ -113,6 +119,8 @@ class KSegmentor
         double rad;          //radius of ball used in local-global energies
         double dthresh;
         int display;         //is the debug display on/off if ~=0, will display every X iterations
+
+        double m_Spacing_mm[3];
 
         unsigned short *seg; //seg result from last run of the segmentor
         short *iList;        //row indices of points on zero level set from last run

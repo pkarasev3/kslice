@@ -132,10 +132,12 @@ Multiple Label Maps
   vtkSmartPointer<vtkImageData> GetActiveLabelMap( );
 
   static const std::string VERBOSE;
-  bool GetTransformedZ()
+
+  double* GetOutputSpacing()
   {
-      return this->m_TransformedZ;
+      return m_OutputSpacing;
   }
+
  ///TODO: make private
 vtkTransform* m_SliderTrans;
 private:
@@ -149,7 +151,8 @@ private:
   vtkSmartPointer<vtkImageShiftScale> intensShift;
 
   bool bNoInputLabelFiles;
-  bool m_TransformedZ;
+  double* m_OutputSpacing;
+
 
 
 

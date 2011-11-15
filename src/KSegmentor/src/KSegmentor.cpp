@@ -100,12 +100,11 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         this->img=NULL;
         this->mask=NULL;
 
-        double spacing_mm[3];
-        image->GetSpacing( spacing_mm );
+        image->GetSpacing( m_Spacing_mm );
 
         // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
         // "10" pixels is 3mm in this context.
-        this->rad = 3.0 / std::max( spacing_mm[0],spacing_mm[1] ); // about 3mm in physical units
+        this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
         this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
         this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
         cout << "segmentor using ROI size: " << rad << endl;
@@ -121,10 +120,12 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
 
         this->U_Integral_image->SetExtent(image->GetExtent());
         this->U_Integral_image->SetScalarTypeToDouble();
+        this->U_Integral_image->SetSpacing(image->GetSpacing());
         this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
         this->U_t_image->SetExtent(image->GetExtent());
         this->U_t_image->SetScalarTypeToDouble();
+        this->U_t_image->SetSpacing(image->GetSpacing());
         this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
 
@@ -237,10 +238,13 @@ void KSegmentor::setNumIterations(int itersToRun){
 
 void KSegmentor::TransformUserInputImages(vtkTransform* transform, bool invert)
 {
+    double spacing_mm[3];
+    this->U_Integral_image->GetSpacing( spacing_mm );
     this->m_Reslicer->SetInput(this->U_Integral_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
     this->m_Reslicer->AutoCropOutputOn();
     this->m_Reslicer->SetOutputOrigin(0,0,0);
+    this->m_Reslicer->SetOutputSpacing(m_Spacing_mm);
     this->m_Reslicer->SetOutputDimensionality(3);
     if (invert)
        this->m_Reslicer->SetResliceTransform(transform->GetInverse());
@@ -254,6 +258,8 @@ void KSegmentor::TransformUserInputImages(vtkTransform* transform, bool invert)
 
     this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
     this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+
+     this->U_Integral_image->GetSpacing( spacing_mm );
 
     this->m_Reslicer->SetInput(this->U_t_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
@@ -304,6 +310,12 @@ void KSegmentor::UpdateArraysAfterTransform()
     this->phi        = new double[mdims[0]*mdims[1]*mdims[2]];
     this->label      = new double[mdims[0]*mdims[1]*mdims[2]];
     this->U_I_slice  = new double[ mdims[0]*mdims[1] ];
+
+    this->U_Integral_image->GetSpacing( m_Spacing_mm );
+
+    this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
+    this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
+    this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
 }
 
 

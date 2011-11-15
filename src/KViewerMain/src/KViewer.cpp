@@ -291,7 +291,9 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     keyPressed = '0';
     } else if (event == (unsigned long) '9' ){
      keyPressed = '9';
-}
+    }else if (event == (unsigned long) 'm' ){
+        keyPressed = 'm';
+    }
     int slice_idx                 = kwidget_2d_left->currentSliceIndex;
     int label_idx                 = kwidget_2d_left->activeLabelMapIndex;
 
@@ -322,21 +324,18 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        kv_opts->seg_time_interval-=0.05;
        segmentationInterval->setText("time interval for seg. update: "+ QString::number(kv_opts->seg_time_interval)+" sec");
       break;
+    case 'm':
+        kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
+        break;
     case 'r':
-    {
         kwidget_2d_left->InitializeTransform('x');
         break;
-    }
     case 't':
-    {
         kwidget_2d_left->InitializeTransform('y');
         break;
-    }
     case 'z':
-    {
         kwidget_2d_left->InitializeTransform('z');
         break;
-    }
     default:
       break;
     }
@@ -344,6 +343,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
+        this->UpdateVolumeStatus();
     }
     //
     // DONE: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
