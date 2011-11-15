@@ -34,7 +34,10 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     cout<<"Left button has been pressed"<<endl;
     buttonDown = !buttonDown; // paint brush down: start draw/erase
     if(!buttonDown)
+    {
         masterWindow->SetCircleCursorOpacity(0);
+        masterWindow->UpdateVolumeStatus();
+    }
     else
         masterWindow->SetCircleCursorOpacity(1);
   }

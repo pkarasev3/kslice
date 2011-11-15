@@ -25,9 +25,14 @@ struct KDataWarehouse;
 // The mouse motion callback, to pick the image and recover pixel values
 class KWidget_3D_right
 {
+
 public:
+
+
   KWidget_3D_right( QVTKWidget* qvtk_handle );
   ~KWidget_3D_right( ) { }
+
+  typedef std::vector< std::pair< vtkLODActor*, vtkExtractVOI* > > LabelActorMap3DType;
 
   /*  Member Pointers  */
 
@@ -63,9 +68,14 @@ public:
   
   /** set and re-update the sub volume extractor source data 
     */
-  void UpdateSubVolumeExtractor(vtkImageData* new_subvolume_source );
+  void UpdateSubVolumeExtractor(vtkImageData* new_subvolume_source, unsigned int labNumber=0 );
                              
   void UpdateVolumeRenderer( vtkImageData* image, vtkImageData* label );
+
+  LabelActorMap3DType Get3DLabelMaps()
+  {
+      return multiLabelMaps3D;
+  }
 
   /* Initialization */
 
@@ -77,10 +87,30 @@ public:
 
   void PrintHelp () { }
 
+  unsigned int GetNumberOfLabels()
+  {
+      return multiLabelMaps3D.size();
+  }
+
+  unsigned int SetCurrentNumberOfLabels(unsigned int num)
+  {
+      m_CurrentNumberOfLabels=num;
+  }
+
+
+
+  static void AddNewLabel(Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
+
+
+  LabelActorMap3DType   multiLabelMaps3D;
 private:
   KWidget_3D_right( );
   KWidget_3D_right( const KWidget_3D_right& );
   KWidget_3D_right & operator=(const KWidget_3D_right &rhs);
+
+  unsigned int m_CurrentNumberOfLabels;
+
+
 };
 
 
