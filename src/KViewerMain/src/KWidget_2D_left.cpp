@@ -205,7 +205,7 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
     imageReslicer->Update();
 
 
-    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
+    colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
     colorMap->SetLookupTable(satLUT);
     colorMap->SetInput( imageReslicer->GetOutput() );
     colorMap->Update();
@@ -271,8 +271,9 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex,true)  );
   }
-  else
+  else { // weird, how do we get away with only initializing one of these ??
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+  }
   UpdateMultiLabelMapDisplay( );
 }
 
