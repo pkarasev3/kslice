@@ -161,7 +161,7 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
     // Don't resample, kind of hopeless: better to segment properly and use thinner images!
     //this->labelSubVolumeExtractor = vtkExtractVOI::New();
   multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
-  multiLabelMaps3D[labNumber].second->Update( );
+  multiLabelMaps3D[labNumber].second->UpdateWholeExtent( );
  //SetupLabelActor3D(kwidget_3d_right);
   this->qVTK_widget_right->update( );
 

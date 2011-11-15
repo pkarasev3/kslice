@@ -31,7 +31,6 @@ void KViewerOptions::LoadImage( ){
                                           "Choose an Image file to open",    "../data/",   "*.mha" );
   this->ImageArrayFilename = path.toStdString();
   //Should it be initialized somewhere else?
-  m_Transform =vtkSmartPointer<vtkTransform>::New();
 
 }
 

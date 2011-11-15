@@ -106,10 +106,10 @@ void KWidget_2D_left:: SetupRenderWindow() {
 
 }
 
-void  KWidget_2D_left::InitializeTransform(char transform)
+void  KWidget_2D_left::InitializeTransform(char transform,float angle)
 {
     double  rCenter[3]={kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]};
-    kv_opts->m_CurrentAngle=90;
+    kv_opts->m_CurrentAngle=angle;
     kv_opts->GetTransform()->Identity();
     kv_opts->GetTransform()->PostMultiply();
     kv_opts->GetTransform()->Translate(-(rCenter[0]+kv_opts->imageOrigin[0]),-(rCenter[1]+kv_opts->imageOrigin[1]),-(rCenter[2]+kv_opts->imageOrigin[2]));
@@ -493,12 +493,10 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
     //Add new actor
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
+    multiLabelMaps[activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex,true)  );
 
   }
-
   activeLabelMapIndex = 0;
-  UpdateMultiLabelMapDisplay( );
-
 }
 
 void KWidget_2D_left::AddNewLabelMap( )

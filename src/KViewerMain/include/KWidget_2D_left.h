@@ -85,7 +85,7 @@ public:
     * connected to a QTVTK widget and interactor
     */
   void Initialize( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
-  void InitializeTransform(char trans=' ');
+  void InitializeTransform(char trans=' ',float angle=90);
 
 
   // Callbacks
