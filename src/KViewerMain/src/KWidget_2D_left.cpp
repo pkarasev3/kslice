@@ -269,11 +269,15 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   { // must happen after renderers are set up so we can insert actors right away
     this->LoadMultiLabels( kv_opts->LabelArrayFilenames );
     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
-     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex,true)  );
   }
-  else { // weird, how do we get away with only initializing one of these ??
-    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+
+  for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
+  {
+    vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
+    assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
+    multiLabelMaps[k]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw, kthLabel, currentSliceIndex,true)  );
   }
+
   UpdateMultiLabelMapDisplay( );
 }
 
@@ -404,8 +408,12 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
     Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
-    //kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-    //kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
+
+    // Karl: leave this unless you are 100% sure that it's not needed
+    // this hack causes more consistent GUI state in display (we trick it into refreshing)
+    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
+    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
+
     kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
