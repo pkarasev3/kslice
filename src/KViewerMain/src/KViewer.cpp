@@ -111,11 +111,17 @@ void KViewer::updatePaintBrushStatus(vtkObject*) {
   if( ! image_callback->Erase() ) {
     toggle << "Mode: Draw";
     if(this->m_CircleActor)
+    {
      this->m_CircleActor->GetProperty()->SetColor(0,1,0);
+     this->m_CircleActor->GetProperty()->SetRepresentationToWireframe();
+    }
   } else {
     toggle << "Mode: Erase";
     if(this->m_CircleActor)
+    {
      this->m_CircleActor->GetProperty()->SetColor(1,0,0);
+     this->m_CircleActor->GetProperty()->SetRepresentationToWireframe();
+    }
   }
   if( this->image_callback->ButtonDown() ) {
     toggle << "\t(On)";
@@ -149,7 +155,7 @@ void KViewer::SliceSelect(int SliderVal) {
 
 void KViewer::UpdateVolumeStatus()
 {   // performance note: iterates over the label image, not instantaneous like other labels
-  kv_data->labelDataArray->Update();
+  kv_data->labelDataArray=kwidget_2d_left->GetActiveLabelMap();
 
   std::string volumeDisplay;
   getVolumeAsString( kv_opts->imageSpacing,
@@ -178,7 +184,8 @@ void KViewer::ToggleFillEraseMode() {
 
 void KViewer::UpdateModel3D() {
   //kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
-  kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray);
+  unsigned int activeLabel=kwidget_2d_left->activeLabelMapIndex;
+  kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,activeLabel);
   qVTK1->update();
   qVTK2->update();
 }
@@ -252,6 +259,8 @@ void KViewer::AddNewLabelMap( )
 {
   // create a new label map
   kwidget_2d_left->AddNewLabelMap( );
+  unsigned int labidx=kwidget_2d_left->activeLabelMapIndex;
+  KWidget_3D_right::AddNewLabel(kwidget_3d_right,KInteractiveLabelMap::get_good_color_0to7(labidx));
   this->UpdateVolumeStatus();
   qVTK1->update();
  qVTK1->update();
@@ -268,8 +277,8 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     if( NULL != obj ) { // not null <=> we got here from a vtkCallBack, not a button press
       vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
       keyPressed       = *imgWindowInteractor->GetKeySym();
-    } else if (event == (unsigned long) 'a' ) {
-      keyPressed = 'a';
+    } else if (event == (unsigned long) 's' ) {
+      keyPressed = 's';
     } else if (event == (unsigned long) 'v' ){
       keyPressed = 'v'; // pressing 'paste button' in QT took us here
     } else if (event == (unsigned long) '0' ){
@@ -283,9 +292,11 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     switch ( keyPressed ) {
     case '1':
       kwidget_2d_left->SelectActiveLabelMap( label_idx - 1 );
+      this->UpdateVolumeStatus();
       break;
     case '2':
       kwidget_2d_left->SelectActiveLabelMap( label_idx + 1 );
+       this->UpdateVolumeStatus();
       break;
     case 'b': // update 3D
       // TODO: don't crash on:      UpdateVolumeStatus();
@@ -294,7 +305,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case 'v': // Paste!
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
-    case 'a': // run "KSegmentor"
+    case 's': // run "KSegmentor"
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
       break;
     case '0':
@@ -305,17 +316,17 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        kv_opts->seg_time_interval-=0.05;
        segmentationInterval->setText("time interval for seg. update: "+ QString::number(kv_opts->seg_time_interval)+" sec");
       break;
-    case'r':
+    case 'r':
     {
         kwidget_2d_left->InitializeTransform('x');
         break;
     }
-    case't':
+    case 't':
     {
         kwidget_2d_left->InitializeTransform('y');
         break;
     }
-    case'z':
+    case 'z':
     {
         kwidget_2d_left->InitializeTransform('z');
         break;
@@ -326,7 +337,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     if(keyPressed=='r' ||keyPressed=='t'||keyPressed=='z')
     {
         kwidget_2d_left->UpdateTransform();
-        this->UpdateVolumeStatus();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
     }
     //
@@ -370,7 +380,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
     int event_PixCoord[3]; 						       				//the X,Y,Z voxel coordinates
     event_PixCoord[0]=  round(event_pos[0]/imageSpacing[0]);
     event_PixCoord[1]=  round(event_pos[1]/imageSpacing[1]);
-    event_PixCoord[2]=  slice_idx/imageSpacing[2];
+    event_PixCoord[2]=  slice_idx;
 
     if (0 != event_PixCoord[0] && 0 != event_PixCoord[1] )       {
       // imgWidth: ACROSS, imgV: DOWN, when viewed from the vtk window
@@ -419,11 +429,9 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
         }
       }
 
-      ///TESTING ONLY
      t2 = clock();
       if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
       {
-          std::cout<<t2<<std::endl;
           kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
           t1=t2;
       }
@@ -432,32 +440,37 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       qVTK1->update();
     }
   }
-  this->UpdateVolumeStatus();
 }
 
 
 void KViewer::UpdateImageInformation(vtkImageData* image)
 {
     for(int i=0;i<6;i++) kv_opts->imageExtent[i]=image->GetExtent()[i];
-    kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5*kv_opts->imageSpacing[0];
-    kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5*kv_opts->imageSpacing[1];
-    kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5*kv_opts->imageSpacing[2];
-
     for (int i=0;i<3;i++)
     {
         kv_opts->imageSpacing[i]= image->GetSpacing()[i];
-        kv_opts->imageOrigin[i]=image->GetOrigin()[i];
+        //According to comments in KSandbox origin should remain 0,0,0
+        //kv_opts->imageOrigin[i]=image->GetOrigin()[i];
     }
 
-    kv_opts->numSlices      = kv_opts->imageExtent[5]-kv_opts->imageExtent[4]+1;
+    kv_opts->m_Center[0]= (kv_opts->imageExtent[1]*kv_opts->imageSpacing[0]-kv_opts->imageExtent[0]*kv_opts->imageSpacing[0])*0.5;
+    kv_opts->m_Center[1]= (kv_opts->imageExtent[3]*kv_opts->imageSpacing[1]-kv_opts->imageExtent[2]*kv_opts->imageSpacing[1])*0.5;
+    kv_opts->m_Center[2]= (kv_opts->imageExtent[5]*kv_opts->imageSpacing[2]-kv_opts->imageExtent[4]*kv_opts->imageSpacing[2])*0.5;
 
-    kv_opts->sliderMin  =image->GetOrigin()[2];
+
+
+    kv_opts->numSlices      = kv_opts->imageExtent[5]-kv_opts->imageExtent[4]+1;
+    kv_opts->imgHeight       = kv_opts->imageExtent[3]-kv_opts->imageExtent[2]+1;
+    kv_opts->imgWidth        = kv_opts->imageExtent[1]-kv_opts->imageExtent[0]+1;
+
+    kv_opts->sliderMin  =0;
     kv_opts->sliderMax   = kv_opts->numSlices-1;//double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]+ kv_opts->sliderMin;
 
     this->Slider->setMinimum(kv_opts->sliderMin);
     this->Slider->setMaximum(kv_opts->sliderMax);
     kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
     this->Slider->setSingleStep(kv_opts->sliceZSpace);
+    this->Slider->update();
 
 }
 

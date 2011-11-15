@@ -88,7 +88,7 @@ void KWidget_2D_left:: SetupRenderWindow() {
   kvImageRenderer->AddActor( imageActor );
   if( bNoInputLabelFiles )
     kvImageRenderer->AddActor( multiLabelMaps[0]->labelActor2D );
-  kvImageRenderer->SetBackground(0.5,0.5,0.5);
+  kvImageRenderer->SetBackground(0,0,0);
 
   renderWindowLeft = vtkSmartPointer<vtkRenderWindow>::New();
   renderWindowLeft->AddRenderer( kvImageRenderer );
@@ -108,26 +108,38 @@ void KWidget_2D_left:: SetupRenderWindow() {
 
 void  KWidget_2D_left::InitializeTransform(char transform)
 {
-
+    double  rCenter[3]={kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]};
     kv_opts->m_CurrentAngle=90;
     kv_opts->GetTransform()->Identity();
     kv_opts->GetTransform()->PostMultiply();
-    kv_opts->GetTransform()->Translate(-(kv_opts->m_Center[0]+kv_opts->imageOrigin[0]),-(kv_opts->m_Center[1]+kv_opts->imageOrigin[0]),-(kv_opts->m_Center[2]+kv_opts->imageOrigin[2]));
-    std::cout<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<std::endl;
+    kv_opts->GetTransform()->Translate(-(rCenter[0]+kv_opts->imageOrigin[0]),-(rCenter[1]+kv_opts->imageOrigin[1]),-(rCenter[2]+kv_opts->imageOrigin[2]));
+
+    float corr;
     switch(transform)
     {case 'x':
             kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
+            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
+            rCenter[1]=kv_opts->m_Center[2]+corr;
+            rCenter[2]=kv_opts->m_Center[1];
+
             break;
     case 'y':
             kv_opts->GetTransform()->RotateY(kv_opts->m_CurrentAngle);
+            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
+            rCenter[0]=kv_opts->m_Center[2];
+            rCenter[2]=kv_opts->m_Center[0]-corr;
+
             break;
     case 'z':
             kv_opts->GetTransform()->RotateZ(kv_opts->m_CurrentAngle);
+            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1]);
+            rCenter[0]=kv_opts->m_Center[1]+corr;
+            rCenter[1]=kv_opts->m_Center[0];
             break;
     default:
         break;
     }
-    kv_opts->GetTransform()->Translate((kv_opts->m_Center[0]+kv_opts->imageOrigin[0]),(kv_opts->m_Center[1]+kv_opts->imageOrigin[1]),(kv_opts->m_Center[2]+kv_opts->imageOrigin[2]));
+    kv_opts->GetTransform()->Translate((rCenter[0]+kv_opts->imageOrigin[0]),(rCenter[1]+kv_opts->imageOrigin[1]),(rCenter[2]+kv_opts->imageOrigin[2]));
 }
 
 void  KWidget_2D_left::UpdateTransform()
@@ -138,36 +150,36 @@ void  KWidget_2D_left::UpdateTransform()
     }
     else
     {*/
-      imageReslicer->SetResliceTransform(kv_opts->GetTransform());
+    imageReslicer->SetResliceTransform(kv_opts->GetTransform());
    // }
 
 
     imageReslicer->SetOutputDimensionality(3);
-   // imageReslicer->AutoCropOutputOff();
+    imageReslicer->AutoCropOutputOn();
+    imageReslicer->SetOutputOrigin(0,0,0);
     imageReslicer->Modified();
     imageReslicer->UpdateWholeExtent();
-
     imageReslicer->Update();
+    imageReslicer->UpdateInformation();
+    imageReslicer->GetOutput()->UpdateInformation();
 
     kv_data->UpdateRawImage(imageReslicer->GetOutput());
 
-  imageReslicer-> SetResliceTransform(vtkTransform::New());
-  imageReslicer->SetOutputDimensionality(2);
-  imageReslicer->Modified();
-  imageReslicer->UpdateWholeExtent();
-  imageReslicer->Update();
+    imageReslicer-> SetResliceTransform(vtkTransform::New());
+    imageReslicer->AutoCropOutputOn();
+    imageReslicer->SetOutputDimensionality(2);
+    imageReslicer->Modified();
+    imageReslicer->UpdateWholeExtent();
+    imageReslicer->UpdateInformation();
+    imageReslicer->GetOutput()->UpdateInformation();
+    imageReslicer->Update();
 
-  this->UpdateMultiLabelMapDisplay(true);
+    this->UpdateMultiLabelMapDisplay(true);
 
-  //Why do we have to do this (only for imageReslicer  -not for LabeReslicer)
-  m_SliderTrans->Identity();
-  m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
-  imageReslicer->SetResliceTransform(m_SliderTrans);
-
-  std::cout<<"Image-O:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
-  std::cout<<"Image-E:"<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<" "<<std::endl;
-
-
+    //Why do we have to do this (only for imageReslicer - not for LabelReslicer)
+    m_SliderTrans->Identity();
+    m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
+    imageReslicer->SetResliceTransform(m_SliderTrans);
 
 }
 
@@ -175,18 +187,15 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
 
     satLUT = vtkSmartPointer<vtkLookupTable>::New();
     SetupSaturationLUT( satLUT, kv_opts, kv_data );
-    std::cout<<"Image-O-Init:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
+
     intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
     intensShift->SetInput( kv_data->imageVolumeRaw );
     imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+    imageReslicer->AutoCropOutputOn();
     imageReslicer->SetOutputExtentToDefault();
     imageReslicer->SetInputConnection(intensShift->GetOutputPort());
     imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
     imageReslicer->SetInterpolationModeToCubic();
-
-    std::cout<<"Ini-Image:"<<std::endl;
-    std::cout<<"Image-O:"<<kv_data->imageVolumeRaw->GetOrigin()[0]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[1]<<" "<<kv_data->imageVolumeRaw->GetOrigin()[2]<<" "<<std::endl;
-    std::cout<<"Image-E:"<<kv_data->imageVolumeRaw->GetExtent()[1]<<" "<<kv_data->imageVolumeRaw->GetExtent()[3]<<" "<<kv_data->imageVolumeRaw->GetExtent()[5]<<" "<<std::endl;
 
     imageReslicer->SetOutputDimensionality(2);
 
@@ -243,7 +252,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
       bNoInputLabelFiles = false; // then we DO have input label files
     }
   }
-  this->InitializeTransform();
+
+  //this->InitializeTransform();
   if( bNoInputLabelFiles )
   {
      this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
@@ -259,11 +269,11 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   { // must happen after renderers are set up so we can insert actors right away
     this->LoadMultiLabels( kv_opts->LabelArrayFilenames );
     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
-     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex,true)  );
+     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex,true)  );
   }
   else
-    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
-UpdateMultiLabelMapDisplay( );
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+  UpdateMultiLabelMapDisplay( );
 }
 
 //  ************************************************************************   //
@@ -301,7 +311,7 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
   imageReslicer->SetResliceTransform(m_SliderTrans);
 
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
-    multiLabelMaps[k]->labelReslicer->SetResliceAxesOrigin(  0,  0,  currSliceOrigin );
+    multiLabelMaps[k]->labelReslicer->SetResliceTransform(m_SliderTrans);
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
 
   }
@@ -414,16 +424,12 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
       kseg->Update();
     }
   }
-
   UpdateMultiLabelMapDisplay();
-
 }
 
 
 void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
 
-  // the shallow-copy trick to force instant display update
-  // TODO: is this hack necessary / does it work in newest VTK version?
 
     for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
       if(updateTransform)
@@ -440,8 +446,9 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
         //multiLabelMaps[k]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
         multiLabelMaps[k]->labelDataArray->Modified();
     }
-   /* if(updateTransform)
-              this->m_TransformedZ=!this->m_TransformedZ;*/
+    //if(updateTransform)
+
+              //this->m_TransformedZ=!this->m_TransformedZ;*/
     // update the QVTK display
     qVTK_widget_left->update( );
 }
@@ -479,15 +486,14 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 
     multiLabelMaps.push_back(labelMap);     // bag it in the array
     activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
-    //Add new actor
-    kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
     //Update label data
     this->kv_data->UpdateLabelDataArray(multiLabelMaps[activeLabelMapIndex]->labelDataArray);
 
+    //Add new actor
+    kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
-    //very bad - haveto find out why I need this for proper update
-    //multiLabelMaps[activeLabelMapIndex]->UpdateResliceTransform(-1);
+
   }
 
   activeLabelMapIndex = 0;
@@ -503,7 +509,7 @@ void KWidget_2D_left::AddNewLabelMap( )
   // give the label map handles to kv_opts, image volume, and this widget
   labelMap->RegisterSourceWidget( this,true );
   ///Updating label map after Transform
-  this->kv_data->UpdateLabelDataArray(labelMap->labelDataArray);
+
   multiLabelMaps.push_back(labelMap);            // bag it in the array
   activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
 
@@ -512,9 +518,8 @@ void KWidget_2D_left::AddNewLabelMap( )
     UpdateMultiLabelMapDisplay( );
   }
 
-  if (this->activeLabelMapIndex>0)
-       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex)  );
-
+  if (!bIsInitialization)
+       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), this->currentSliceIndex)  );
 
 }
 
