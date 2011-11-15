@@ -41,7 +41,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
-  bool time_triggered_seg_update;
+  bool  time_triggered_seg_update;
   int   minIntensity;
   int   maxIntensity;
 
