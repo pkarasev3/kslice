@@ -78,6 +78,8 @@ class KSegmentor
 
         void integrateUserInputInUserInputImage( int k );
 
+        void UpdateArraysAfterTransform();
+
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
 

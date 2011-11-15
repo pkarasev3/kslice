@@ -94,7 +94,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   // set default values if they weren't passed as command line args
   paintBrushRad       = 7; // size of brush (radius)
   paintBrushThreshold = 0.05; // only draw if within X times image range of click point
-  modelOpacity3D      = 0.3;
+  modelOpacity3D      = 0.1;
   labelOpacity2D      = 0.7;
   labelInterpolate    = true;
   writeCompressed     = true;

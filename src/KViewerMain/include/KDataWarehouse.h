@@ -85,12 +85,14 @@ public:
   void UpdateRawImage(vtkImageData* raw3DImage)
   {
       this->imageVolumeRaw->DeepCopy(raw3DImage);
+      this->imageVolumeRaw->UpdateInformation();
   }
 
   //Updating label data array acording to current transformation
   void UpdateLabelDataArray(vtkImageData* raw3DLabel)
   {
       this->labelDataArray->DeepCopy(raw3DLabel);
+      this->labelDataArray->UpdateInformation();
   }
 
 

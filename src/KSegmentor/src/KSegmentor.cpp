@@ -208,9 +208,6 @@ void KSegmentor::accumulateUserInputInUserInputImages( double value,const unsign
 {
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;
-    //Integrate user input
-    //this->U_t_image->SetScalarComponentFromDouble(i,j,k,0,0.5*this->U_Integral_image->GetScalarComponentAsDouble(i,j,k,0));
-    //this->ptrU_t_Image[element]=this->ptrIntegral_Image[element]*0.5;
 }
 
 void KSegmentor::integrateUserInput( int k )
@@ -229,7 +226,6 @@ void KSegmentor::integrateUserInputInUserInputImage( int k )
             this->ptrU_t_Image[element3D]=this->ptrU_t_Image[element3D]*0.5;
         }
     }
-
 }
 
 
@@ -243,12 +239,19 @@ void KSegmentor::TransformUserInputImages(vtkTransform* transform, bool invert)
 {
     this->m_Reslicer->SetInput(this->U_Integral_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+    this->m_Reslicer->AutoCropOutputOn();
+    this->m_Reslicer->SetOutputOrigin(0,0,0);
     this->m_Reslicer->SetOutputDimensionality(3);
     if (invert)
        this->m_Reslicer->SetResliceTransform(transform->GetInverse());
     else
       this->m_Reslicer->SetResliceTransform(transform);
+
     this->m_Reslicer->UpdateWholeExtent();
+    this->m_Reslicer->Update();
+    this->m_Reslicer->UpdateInformation();
+    this->m_Reslicer->GetOutput()->UpdateInformation();
+
     this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
     this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
@@ -256,12 +259,55 @@ void KSegmentor::TransformUserInputImages(vtkTransform* transform, bool invert)
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
     this->m_Reslicer->Modified();
     this->m_Reslicer->UpdateWholeExtent();
+    this->m_Reslicer->UpdateInformation();
+    this->m_Reslicer->GetOutput()->UpdateInformation();
+
     this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
     this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-    this->mdims[0]=U_t_image->GetExtent()[1]-U_t_image->GetExtent()[0]+1;
-    this->mdims[1]=U_t_image->GetExtent()[3]-U_t_image->GetExtent()[2]+1;
+    this->UpdateArraysAfterTransform();
+
+
 }
+
+
+void KSegmentor::UpdateArraysAfterTransform()
+{
+    this->mdims=U_t_image->GetDimensions();
+    this->mdims[2]=1;
+
+    switch(numdims){
+    case 3:
+      dimz = (int)mdims[2];
+      dims[2] = dimz;
+    case 2:
+      dimx = (int)mdims[1];
+      dims[1] = dimx;
+    case 1:
+      dimy = (int)mdims[0];
+      dims[0] = dimy;
+    }
+    dims[3] = dims[0]*dims[1];
+    dims[4] = dims[0]*dims[1]*dims[2];
+
+    delete [] seg;
+    delete [] img;
+    delete [] mask;
+    delete [] phi;
+    delete [] label;
+    delete [] U_I_slice;
+
+    this->seg = new  unsigned short[dims[0]*dims[1]*dims[2]];
+
+    this->img        = new double[ mdims[0]*mdims[1] ];
+    this->mask       = new double[ mdims[0]*mdims[1] ];
+    this->phi        = new double[mdims[0]*mdims[1]*mdims[2]];
+    this->label      = new double[mdims[0]*mdims[1]*mdims[2]];
+    this->U_I_slice  = new double[ mdims[0]*mdims[1] ];
+}
+
+
+
 
 void KSegmentor::initializeData()
 {
@@ -276,12 +322,12 @@ void KSegmentor::initializeData()
     { // empty label; so set the proper range
       labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
     }
-    cout << "KSegmentor reads label range: " << labelRange[0] << "," << labelRange[1] << endl;
-    cout << "KSegmentor reads image range: " << imgRange[0] << "," << imgRange[1] << endl;
+    //cout << "KSegmentor reads label range: " << labelRange[0] << "," << labelRange[1] << endl;
+    //cout << "KSegmentor reads image range: " << imgRange[0] << "," << imgRange[1] << endl;
     assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
     this->imgRange=imgRange;
-    this->integrateUserInput( currSlice );
+    //this->integrateUserInput( currSlice );
     this->integrateUserInputInUserInputImage(currSlice);
     unsigned int element3D;
     long elemNum=0;
@@ -290,7 +336,7 @@ void KSegmentor::initializeData()
           // indexing definition:  ptr[k*mdims[1]*mdims[0] +j*mdims[0]+i];
           this->img[elemNum]        = (double) ptrCurrImage[elemNum];
           this->mask[elemNum]       = (double) ( 0 < ptrCurrLabel[elemNum] );
-          //this->U_I_slice[elemNum]  = (U_integral[currSlice].ptr<double>(0))[elemNum];
+
           //New
           element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
           this->U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
@@ -381,7 +427,6 @@ void KSegmentor::Update()
 
 void KSegmentor::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-
   Mat tmp =0.9  * U_integral[kFrom];
   tmp.copyTo(U_integral[kTo]);
   for (int i=0;i<=mdims[0]-1; i++)  {

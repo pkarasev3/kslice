@@ -22,6 +22,7 @@ class  vtkLookupTable;
 
 class KWidget_2D_left
 {
+
 public:
   KWidget_2D_left( QVTKWidget *qVTK_widget_left );
   virtual ~KWidget_2D_left( ) { }
@@ -31,7 +32,7 @@ public:
   vtkSmartPointer<vtkImageActor>          imageActor;
   vtkSmartPointer<vtkImageActor>          labelActor2D;
 
-  // Does this belong in kv_data !?
+
   std::vector< Ptr<KInteractiveLabelMap> > multiLabelMaps;
   int activeLabelMapIndex; // which label is being functed
 
@@ -135,7 +136,8 @@ Multiple Label Maps
   {
       return this->m_TransformedZ;
   }
-
+ ///TODO: make private
+vtkTransform* m_SliderTrans;
 private:
 
   /**  no copying!  */
@@ -149,7 +151,7 @@ private:
   bool bNoInputLabelFiles;
   bool m_TransformedZ;
 
- vtkTransform* m_SliderTrans;
+
 
   /** internal common code for saving label files */
   void SaveLabelsInternal( const std::stringstream& ss );

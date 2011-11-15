@@ -46,18 +46,26 @@ namespace {
 void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   
   Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
-kwidget_3d_right->labelActor3D = vtkSmartPointer<vtkLODActor>::New();
-  kwidget_3d_right->labelSubVolumeExtractor = vtkSmartPointer<vtkExtractVOI>::New();
-  kwidget_3d_right->labelSubVolumeExtractor->SetInput( kv_data->labelDataArray );
-  kwidget_3d_right->labelSubVolumeExtractor->Update();
+  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
 
+  int size=0;
+  kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
+  size=kwidget_3d_right->multiLabelMaps3D.size();
+  kwidget_3d_right->SetCurrentNumberOfLabels(size);
 }
 
 
-void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
+void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color ) {
+
+  const unsigned int labnum=kwidget_3d_right->GetNumberOfLabels()-1;
+  int size=kwidget_3d_right->multiLabelMaps3D.size();
+  vtkExtractVOI* currentExtVOI=kwidget_3d_right->multiLabelMaps3D[labnum].second;
+  std::string name=currentExtVOI->GetClassName();
+  currentExtVOI->SetInput( kwidget_3d_right->kv_data->labelDataArray );
+  currentExtVOI->Update();
   vtkSmartPointer<vtkMarchingCubes> cube_marcher= vtkSmartPointer<vtkMarchingCubes>::New();
-  cube_marcher->SetInputConnection( kwidget_3d_right->labelSubVolumeExtractor->GetOutputPort() );
+  cube_marcher->SetInputConnection( kwidget_3d_right->multiLabelMaps3D[labnum].second->GetOutputPort() );
   cube_marcher->ComputeNormalsOn();
   cube_marcher->SetValue(0,1);
   cube_marcher->ComputeGradientsOn();
@@ -65,7 +73,7 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   vtkSmartPointer<vtkSmoothPolyDataFilter> smoother = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
   smoother->SetInputConnection( cube_marcher->GetOutputPort() );
   smoother->SetFeatureEdgeSmoothing( true );
-  smoother->SetBoundarySmoothing(    true );
+  smoother->SetBoundarySmoothing( true );
   //increased smoothing iterations
   smoother->SetNumberOfIterations(60);
 
@@ -83,23 +91,21 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   polydata = smoother->GetOutput( );
 
 
-  kwidget_3d_right->labelActor3D->SetMapper( labelMapper );
-
-
+  kwidget_3d_right->multiLabelMaps3D[ labnum].first->SetMapper( labelMapper );
 
   vtkSmartPointer<vtkProperty> propSetter=vtkSmartPointer<vtkProperty>::New();
-  propSetter = kwidget_3d_right->labelActor3D->GetProperty();
+  propSetter = kwidget_3d_right->multiLabelMaps3D[labnum].first->GetProperty();
   propSetter->SetRepresentationToWireframe();
   propSetter->SetOpacity(kwidget_3d_right->kv_opts->modelOpacity3D);
-  propSetter->SetAmbient(0);
+  propSetter->SetAmbient(1);
+  propSetter->SetAmbientColor(color[0],color[1],color[2]);
   propSetter->SetDiffuse(1);
-  propSetter->SetDiffuseColor(1,1,1);
-  propSetter->SetSpecular(.1);
-  propSetter->SetSpecularPower(1);
-  propSetter->SetSpecularColor(.7,.49,.25);
+  propSetter->SetDiffuseColor(color[0],color[1],color[2]);
+  propSetter->SetSpecular(0);
+  //propSetter->SetSpecularPower(1);
+  //propSetter->SetSpecularColor(.7,.49,.25);
   propSetter->SetInterpolationToPhong(); // more crazy: propSetter1->SetInterpolationToFlat();
-  kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
-
+  kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->multiLabelMaps3D[labnum].first);
 }
 
 void SaveTimestampedPolyData( vtkPolyData* polydata )
@@ -129,8 +135,8 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeL);
   vtkVolume* volumeI = kwidget_3d_right->volRenView->volumeImage;
   kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeI);
-  kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
-  kwidget_3d_right->kv3DModelRenderer->SetBackground(1.0,1.0,1.0);
+  //kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
+  kwidget_3d_right->kv3DModelRenderer->SetBackground(0,0,0);
   
   
   kwidget_3d_right->renderWindowRight = vtkSmartPointer<vtkRenderWindow>::New();
@@ -147,21 +153,25 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 }
 
-
-
 }  // end anonymous namespace ... todo: move to structs if we feel like it.
 // if we don't feel like it, then these should be member functions!
 
-void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_source ) {
+void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_source, unsigned int labNumber ) {
 
     // Don't resample, kind of hopeless: better to segment properly and use thinner images!
     //this->labelSubVolumeExtractor = vtkExtractVOI::New();
-  this->labelSubVolumeExtractor->SetInput( new_subvolume_source );
-  this->labelSubVolumeExtractor->Update( );
+  multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
+  multiLabelMaps3D[labNumber].second->Update( );
  //SetupLabelActor3D(kwidget_3d_right);
   this->qVTK_widget_right->update( );
 
 }
+
+void KWidget_3D_right::AddNewLabel(Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
+    SetupSubVolumeExtractor( kwidget_3d_right );
+    SetupLabelActor3D( kwidget_3d_right,color);
+}
+
 
 void KWidget_3D_right::AddFocusPoint( int x, int y, int z )
 {
@@ -193,10 +203,13 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
     kwidget_3d_right->volRenView = Ptr<KVolumeRenderView>( new KVolumeRenderView );
     if( !kwidget_3d_right->kv_data ) 
         throw "kv_data does not exist yet!" ;
+
+    kwidget_3d_right->multiLabelMaps3D = std::vector< std::pair< vtkLODActor*, vtkExtractVOI* > >();
     
     SetupRenderWindow( kwidget_3d_right );
     SetupSubVolumeExtractor( kwidget_3d_right );
-    SetupLabelActor3D( kwidget_3d_right );
+    std::vector<double> firstcolor={240/255.0, 163/255.0, 255/255.0};
+    SetupLabelActor3D( kwidget_3d_right,firstcolor );
   }
 }
 

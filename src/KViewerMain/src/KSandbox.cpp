@@ -251,8 +251,8 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   kv_opts->sliderMin      = double(image2D->GetOrigin()[2]);
   kv_opts->sliderMax      = double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]
       + kv_opts->sliderMin;
-  kv_opts->imgHeight            = imgReader->GetHeight();
-  kv_opts->imgWidth            = imgReader->GetWidth();
+  kv_opts->imgHeight            = dataExtent[3]-dataExtent[2]+1;
+  kv_opts->imgWidth            = dataExtent[1]-dataExtent[0]+1;
 
   kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1;
   kv_opts->maxIntensity        = image2D->GetScalarRange()[1];
@@ -278,9 +278,9 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
     kv_data->UpdateRawImage( image2ushort( image2D ));
     kv_data->UpdateLabelDataArray( image2ushort( label2D ));
   }
-  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]-kv_opts->imageExtent[0])*0.5*kv_opts->imageSpacing[0];
-  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]-kv_opts->imageExtent[2])*0.5*kv_opts->imageSpacing[1];
-  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]-kv_opts->imageExtent[4])*0.5*kv_opts->imageSpacing[2];
+  kv_opts->m_Center[0]= (kv_opts->imageExtent[1]*kv_opts->imageSpacing[0]-kv_opts->imageExtent[0]*kv_opts->imageSpacing[0])*0.5;
+  kv_opts->m_Center[1]= (kv_opts->imageExtent[3]*kv_opts->imageSpacing[1]-kv_opts->imageExtent[2]*kv_opts->imageSpacing[1])*0.5;
+  kv_opts->m_Center[2]= (kv_opts->imageExtent[5]*kv_opts->imageSpacing[2]-kv_opts->imageExtent[4]*kv_opts->imageSpacing[2])*0.5;
 
 
   cout<<"ImageArrayFilename: "<<kv_opts->ImageArrayFilename<<"\n";
