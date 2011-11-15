@@ -20,6 +20,8 @@ using cv::Ptr;
 
 namespace vrcl {
 
+  std::vector<double> get_good_color_0to7( int idx );
+
   vtkSmartPointer<vtkImageData> image2ushort( vtkImageData* imageData );
   
   void multiplyImageByLabels( vtkImageData* imgData, vtkImageData* lblData );

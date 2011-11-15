@@ -65,7 +65,7 @@ void KViewerOptions::LoadImage( )
   cout << "loaded image ... ";
 
   //Should it be initialized somewhere else?
-  m_Transform =vtkSmartPointer<vtkTransform>::New();
+  m_Transform = vtkSmartPointer<vtkTransform>::New();
 
 }
 
