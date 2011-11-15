@@ -183,6 +183,8 @@ protected:
     */
   void UpdateImageInformation(vtkImageData* image);
 
+  bool m_RotX,m_RotY,m_RotZ;
+
 };
 
 #endif // KVIEWER_GUI_h
