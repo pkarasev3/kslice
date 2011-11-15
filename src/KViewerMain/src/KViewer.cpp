@@ -260,10 +260,10 @@ void KViewer::AddNewLabelMap( )
   // create a new label map
   kwidget_2d_left->AddNewLabelMap( );
   unsigned int labidx=kwidget_2d_left->activeLabelMapIndex;
-  KWidget_3D_right::AddNewLabel(kwidget_3d_right,KInteractiveLabelMap::get_good_color_0to7(labidx));
+  KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labidx));
   this->UpdateVolumeStatus();
   qVTK1->update();
- qVTK1->update();
+  qVTK2->update();
   cout << "added new label map. total # = " << kwidget_2d_left->multiLabelMaps.size() << endl;
 }
 
@@ -402,8 +402,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k - floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k + floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmin = k - 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmax = k + 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {

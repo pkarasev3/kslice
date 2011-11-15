@@ -33,6 +33,7 @@
 #include "vtkVolumeRayCastMapper.h"
 #include "KVolumeRenderView.h"  
 #include "vtkTransform.h"
+#include "KSandbox.h"
 
 #define SP( X )  vtkSmartPointer<X> 
 
@@ -191,7 +192,9 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                    Ptr<KViewerOptions> kv_opts_input,
                                    Ptr<KDataWarehouse> kv_data_input ) {
 
-  bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
+  // BUG WARNING:
+
+  bool UseVolumeRender =false; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all
                                 // b) it will be too slow to volume render multiple labels
                                 // c) better idea: use x,y,z coords for colormap generation
@@ -205,11 +208,20 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
         throw "kv_data does not exist yet!" ;
 
     kwidget_3d_right->multiLabelMaps3D = std::vector< std::pair< vtkLODActor*, vtkExtractVOI* > >();
+    int numberOfInputLabels = kwidget_3d_right->kv_opts->LabelArrayFilenames.size();
+    if( numberOfInputLabels > 1 ) {
+      std::cout << "resizing size of multLabelMaps3D" << std::endl;
+
+      // ?? Why do we need to set it separately, instead of using the multiLabelMaps3D.size()?
+      //  This seems to be a source of bugs
+      kwidget_3d_right->SetCurrentNumberOfLabels(numberOfInputLabels);
+      kwidget_3d_right->multiLabelMaps3D.resize(numberOfInputLabels);
+    }
     
     SetupRenderWindow( kwidget_3d_right );
     SetupSubVolumeExtractor( kwidget_3d_right );
-    std::vector<double> firstcolor={240/255.0, 163/255.0, 255/255.0};
-    SetupLabelActor3D( kwidget_3d_right,firstcolor );
+    std::vector<double> firstcolor= vrcl::get_good_color_0to7(0); //{240/255.0, 163/255.0, 255/255.0};
+    SetupLabelActor3D( kwidget_3d_right, firstcolor );
   }
 }
 
