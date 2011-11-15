@@ -42,14 +42,14 @@ void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D, bool
 {
   sourceWidget = kwidget2D; // get a 'reverse handle' on the widget whose container I'm in
   
-  RegisterState(    kwidget2D->kv_opts );
+  RegisterState(    sourceWidget->kv_opts );
   if(regNewImage)
     RegisterNewImage( kwidget2D->kv_data->imageVolumeRaw );
-  SetupLabelView(kwidget2D->kv_data->imageVolumeRaw, kwidget2D->currentSliceIndex);
+  SetupLabelView(sourceWidget->multiLabelMaps.size());
 
 }
 
-vector<double> get_good_color_0to7( int idx )
+vector<double> KInteractiveLabelMap::get_good_color_0to7( int idx )
 {
   double rgb[3];
   switch( idx )
@@ -106,7 +106,7 @@ void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image)
   labelDataArray->Update();
 }
 
-void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
+void KInteractiveLabelMap::SetupLabelView(int index)
 {
 
   // connect the GUI display for this label map.
@@ -122,9 +122,14 @@ void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
 
   labelReslicer->SetInputConnection( this->label2D_shifter_scaler->GetOutputPort() );
   labelReslicer->SetOutputDimensionality(2);  //transforming the whole image
-  labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-  labelReslicer->SetResliceAxesOrigin(0,0,sourceWidget->currentSliceIndex);
+  labelReslicer->AutoCropOutputOn();
+  labelReslicer->SetOutputExtentToDefault();
+  labelReslicer->Modified();
+  labelReslicer->UpdateWholeExtent();
+  labelReslicer->SetOutputOrigin(0,0,0);
   labelReslicer->Update();
+
+  labelReslicer->SetResliceTransform(sourceWidget->m_SliderTrans);
 
   // grab a handle on the image ... - what for . not used?
    //imageVolume     = labelDataArray;
@@ -141,7 +146,9 @@ void KInteractiveLabelMap::SetupLabelView(vtkImageData* image, int index)
 
 void KInteractiveLabelMap::UpdateResliceTransform()
 {
-
+    std::cout<<"LAbel-01:"<<this->labelDataArray->GetOrigin()[0]<<" "<<this->labelDataArray->GetOrigin()[1]<<" "<<this->labelDataArray->GetOrigin()[2]<<" "<<std::endl;
+     std::cout<<"LAbel-E1:"<<this->labelDataArray->GetExtent()[1]<<" "<<this->labelDataArray->GetExtent()[3]<<" "<<this->labelDataArray->GetExtent()[5]<<" "<<std::endl;
+    std::cout<<"LAbel-Sp1:"<<this->labelDataArray->GetSpacing()[0]<<" "<<this->labelDataArray->GetSpacing()[1]<<" "<<this->labelDataArray->GetSpacing()[2]<<" "<<std::endl;
     /*if(sourceWidget->GetTransformedZ()==true)
     {
         labelReslicer->SetResliceTransform(kv_opts->GetTransform()->GetInverse());
@@ -152,9 +159,15 @@ void KInteractiveLabelMap::UpdateResliceTransform()
     //}
 
     labelReslicer->SetOutputDimensionality(3);
-    labelReslicer->AutoCropOutputOff();
+    labelReslicer->AutoCropOutputOn();
+    labelReslicer->SetOutputOrigin(0,0,0);
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
+    labelReslicer->Update();
+    labelReslicer->UpdateInformation();
+    labelReslicer->GetOutput()->UpdateInformation();
+
+
 
 
     //Do we kneed this
@@ -162,15 +175,23 @@ void KInteractiveLabelMap::UpdateResliceTransform()
 
     // convert it to unsigned short, our desired internal method...
 
-    this->labelDataArray->DeepCopy(image2ushort( labelReslicer->GetOutput() ));
+    this->labelDataArray->DeepCopy( labelReslicer->GetOutput() );
 
+    std::cout<<"Label-02:"<<this->labelDataArray->GetOrigin()[0]<<" "<<this->labelDataArray->GetOrigin()[1]<<" "<<this->labelDataArray->GetOrigin()[2]<<" "<<std::endl;
+     std::cout<<"Label-E2:"<<this->labelDataArray->GetExtent()[1]<<" "<<this->labelDataArray->GetExtent()[3]<<" "<<this->labelDataArray->GetExtent()[5]<<" "<<std::endl;
+    std::cout<<"Label-Sp2:"<<this->labelDataArray->GetSpacing()[0]<<" "<<this->labelDataArray->GetSpacing()[1]<<" "<<this->labelDataArray->GetSpacing()[2]<<" "<<std::endl;
     //double currSliceOrigin=kv_opts->sliderMin +kv_opts->sliceZSpace*currentSliceIndex;
+
     labelReslicer->SetResliceTransform(vtkTransform::New());
     labelReslicer->SetOutputDimensionality(2);
     labelReslicer->AutoCropOutputOff();
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
+    labelReslicer->UpdateInformation();
+    labelReslicer->GetOutput()->UpdateInformation();
     labelReslicer->Update();
+
+    labelReslicer->SetResliceTransform(sourceWidget->m_SliderTrans);
 }
 
 
