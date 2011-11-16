@@ -74,6 +74,12 @@ void chanvese(double *img, double *phi, double *label, long *dims,
               LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
               int iter,double lambda,  short *plhs,int display);
 
+// "Active Contours Without Edges" - Chan and Vese
+//  img is assumed to be [ r0 g0 b0 r1 g1 b1 ... ]
+void chanvese_rgb(double *img, double *phi, double *label, long *dims,
+              LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
+              int iter,double lambda,  short *plhs,int display);
+
 // "A Variational Framework for Active and Adaptive Segmentation of Vector
 // Valued Images" - Rousson and Deriche
 void meanvar(double *img, double *phi, double *label, long *dims,

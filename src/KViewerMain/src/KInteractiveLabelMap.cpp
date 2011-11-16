@@ -49,45 +49,6 @@ void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D, bool
 
 }
 
-vector<double> KInteractiveLabelMap::get_good_color_0to7( int idx )
-{
-  double rgb[3];
-  switch( idx )
-  {
-  case 0:
-    rgb = {240, 163, 255}; // amethyst
-    break;
-  case 1:
-    rgb = {255,0,16}; // red
-    break;
-  case 2:
-    rgb = {0,117,220}; // blue
-    break;
-  case 3:
-    rgb = {0,153,143}; // turquoise
-    break;
-  case 4:
-    rgb = {194,0,136}; // mallow
-    break;
-  case 5:
-    rgb = {255,80,5}; // zinnia
-    break;
-  case 6:
-    rgb = {43,206,72}; // green
-    break;
-  case 7:
-    rgb = {224,255,102}; // uranium
-    break;
-  default:
-    rgb = {200,200,200};
-    break;
-  }
-  rgb[0] /= 255.0;
-  rgb[1] /= 255.0;
-  rgb[2] /= 255.0;
-  return std::vector<double>(rgb,rgb+3);
-}
-
 void KInteractiveLabelMap::RegisterNewImage( vtkImageData* image)
 {
   if( NULL == kv_opts || NULL == image || NULL == sourceWidget) {

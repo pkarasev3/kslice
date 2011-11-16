@@ -1,7 +1,7 @@
 #include "KSegmentor.h"
 #include "llist.h"
 #include "sfm_local_chanvese_mex.h"
-#include "interactive_kurvolver-edge.h"
+#include "interactive_kurvolver.h"
 #include "vtkImageData.h"
 #include "KSandbox.h"
 #include <omp.h>

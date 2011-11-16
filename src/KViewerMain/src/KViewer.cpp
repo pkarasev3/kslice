@@ -266,7 +266,7 @@ void KViewer::AddNewLabelMap( )
   // create a new label map
   kwidget_2d_left->AddNewLabelMap( );
   unsigned int labidx=kwidget_2d_left->activeLabelMapIndex;
-  KWidget_3D_right::AddNewLabel(kwidget_3d_right,KInteractiveLabelMap::get_good_color_0to7(labidx));
+  KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labidx));
   this->UpdateVolumeStatus();
   qVTK1->update();
   qVTK2->update();
@@ -307,7 +307,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        this->UpdateVolumeStatus();
       break;
     case 'b': // update 3D
-      // TODO: don't crash on:      UpdateVolumeStatus();
        UpdateVolumeStatus();
       break;
     case 'v': // Paste!
@@ -345,18 +344,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         this->UpdateVolumeStatus();
     }
-    //
-    // DONE: make this work inside of kwidget_2d_left, like CopyLabelsFromTo does!
-    // then get rid of 'propagate data' crap, use
-    // the private update function in widget 2d!
-//    if( needToPropagateData ) {
-//      needToPropagateData = false;
-//      // propagate the new "input" into the display objects
-//      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
-//      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
-//      kv_data->labelDataArray = kv_data->labelDataArray_new;
-//      qVTK1->update();
-//    }
+
   }
 
 
@@ -420,8 +408,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k - floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k + floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmin = k - 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmax = k + 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
@@ -470,7 +458,7 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     kv_opts->imgWidth        = kv_opts->imageExtent[1]-kv_opts->imageExtent[0]+1;
 
     kv_opts->sliderMin  =0;
-    kv_opts->sliderMax   = kv_opts->numSlices-1;//double(kv_opts->numSlices)*(kv_opts->imageSpacing)[2]+ kv_opts->sliderMin;
+    kv_opts->sliderMax   = kv_opts->numSlices-1;
 
     this->Slider->setMinimum(kv_opts->sliderMin);
     this->Slider->setMaximum(kv_opts->sliderMax);

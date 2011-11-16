@@ -25,12 +25,44 @@ using std::vector;
 
 namespace po = boost::program_options;
 
-void KViewerOptions::LoadImage( ){
+const std::string tmp_file_name = "kslice.tmp";
+
+std::string ExtractDirectory( const std::string& path )  {
+  return path.substr( 0, path.find_last_of( '/' ) +1 ); // note: no dice on windows, needs backslash
+}
+
+void KViewerOptions::LoadImage( )
+{
+  std::string data_path = "../data/";
+  std::ifstream  cache_reader(tmp_file_name.c_str());
+  cache_reader.open(tmp_file_name.c_str(),ifstream::in);
+
+  if(cache_reader.is_open())
+  { // cache file exists, read it for the previous dir
+    cache_reader.close();
+    std::ifstream data(tmp_file_name.c_str());
+    std::string line;
+    while(std::getline(data,line)) {
+      std::stringstream  lineStream(line);
+      std::string        cell;
+      std::getline(lineStream,cell); //,'\n
+      cout << "read cache line: " << cell << endl;
+      if( !cell.empty() )
+        data_path = cell;
+    }
+    data.close();
+  }
   QString path;
-  path = QFileDialog::getOpenFileName(    NULL,  
-                                          "Choose an Image file to open",    "../data/",   "*.mha" );
+  path = QFileDialog::getOpenFileName( NULL,"Choose an Image file to open",data_path.c_str(),"*.mha" );
   this->ImageArrayFilename = path.toStdString();
-  //Should it be initialized somewhere else?
+
+  // request by Grant: save the last location, too lazy to click
+  std::ofstream  cache_writer;
+  cache_writer.open(tmp_file_name.c_str(),ofstream::out);
+  cache_writer << ExtractDirectory(path.toStdString()) << std::endl;
+  cache_writer.close();
+
+  cout << "loaded image ... ";
 
 }
 
@@ -91,6 +123,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
       ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")
+      ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("help","print help")
       ;
 

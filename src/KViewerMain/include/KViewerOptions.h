@@ -41,7 +41,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
-  bool time_triggered_seg_update;
+  bool  time_triggered_seg_update;
   int   minIntensity;
   int   maxIntensity;
 
@@ -86,7 +86,11 @@ void InitializeTransform()
 
 vtkSmartPointer<vtkTransform> GetTransform()
 {
-    return m_Transform;
+  if( NULL == m_Transform ) {
+    std::cout << "warning, attempted to get null transform... initializing now." << std::endl;
+    m_Transform = vtkSmartPointer<vtkTransform>::New();
+  }
+  return m_Transform;
 }
 
 

@@ -43,6 +43,9 @@ public:
   // handle on the QT object, primarily to do update() after some computations
   QVTKWidget *qVTK_widget_left;
 
+  // contains the 'saturation lookup table', sets windowing range
+  vtkSmartPointer<vtkImageMapToColors> colorMap;
+
   // update the scaling/display of image slice data in 2D
   vtkSmartPointer<vtkImageReslice>        imageReslicer;
 
