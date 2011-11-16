@@ -17,8 +17,12 @@ const char keyPlusBrushSize     ='x';
 const char keyCopyLabelSlice    ='c';
 const char keyPasteLabelSlice   ='v';
 
-const char keyUpShiftSatRange   ='l';
-const char keyDownShiftSatRange ='k';
+const char keyUpShiftSatRange   ='l'; // shift both min and max up
+const char keyDownShiftSatRange ='k'; // shift both min and max down
+const char keyUpMaxSatRange     ='j'; // shift *only max* up
+const char keyDownMaxSatRange     ='J'; // shift *only max* down
+const char keyDownMinSatRange   ='h'; // shift *only min* down
+const char keyUpMinSatRange   ='H'; // shift *only min* up
 
 const char keyUpLabelOpacity    ='p';
 const char keyDownLabelOpacity  ='o';
@@ -75,6 +79,30 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       satLUT_shared->SetTableRange(satRange[0]-stepSize, satRange[1]-stepSize);
       satLUT_shared->Build();
       this->masterWindow->qVTK1->update();
+      break;
+    case keyUpMaxSatRange:
+      satLUT_shared->SetTableRange(satRange[0], satRange[1]+stepSize);
+      satLUT_shared->Build();
+      this->masterWindow->qVTK1->update();
+      break;
+    case keyDownMaxSatRange:
+      if( (satRange[1]-stepSize) > satRange[0] ) {
+        satLUT_shared->SetTableRange(satRange[0], satRange[1]-stepSize);
+        satLUT_shared->Build();
+        this->masterWindow->qVTK1->update();
+      }
+      break;
+    case keyDownMinSatRange:
+      satLUT_shared->SetTableRange(satRange[0]-stepSize, satRange[1]);
+      satLUT_shared->Build();
+      this->masterWindow->qVTK1->update();
+      break;
+    case keyUpMinSatRange:
+      if( (satRange[0]+stepSize) < satRange[1] ) {
+        satLUT_shared->SetTableRange(satRange[0]+stepSize, satRange[1]);
+        satLUT_shared->Build();
+        this->masterWindow->qVTK1->update();
+      }
       break;
     case keyCopyLabelSlice:
       indexSliceCopyFrom = masterWindow->getCurrentSliceIndex( );

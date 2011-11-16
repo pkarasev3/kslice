@@ -49,9 +49,6 @@ public:
     /** ghetto but allows flexibility: reverse handle on the widget */
     void RegisterSourceWidget( KWidget_2D_left* kwidget2D, bool regNewImage );
 
-    static std::vector<double> get_good_color_0to7( int idx );
-    
-        
 
 private:
     //no copying!

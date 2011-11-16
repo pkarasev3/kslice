@@ -93,8 +93,9 @@ public:
   }
 
   unsigned int SetCurrentNumberOfLabels(unsigned int num)
-  {
+  { // TODO: this seems like an invitation to getting out of sync...
       m_CurrentNumberOfLabels=num;
+      return 0;
   }
 
 
