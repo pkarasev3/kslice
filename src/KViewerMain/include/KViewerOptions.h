@@ -32,8 +32,6 @@ public:
   double m_Center[3];
   float m_CurrentAngle;
 
-  //vtkSmartPointer<vtkMetaImageReader> labelFileReader;
-
   std::vector<std::string> LabelArrayFilenames;
   std::string ImageArrayFilename;
 
@@ -41,6 +39,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
+  bool  m_bResampleImageAtStartupToCubicVoxels;
   bool  time_triggered_seg_update;
   int   minIntensity;
   int   maxIntensity;
@@ -78,7 +77,6 @@ void PrintLogo( );
 
 int GetBrushSize();
 
-//void SetupTransform();
 void InitializeTransform()
 {
     this->m_Transform =vtkSmartPointer<vtkTransform>::New();
@@ -89,6 +87,7 @@ vtkSmartPointer<vtkTransform> GetTransform()
   if( NULL == m_Transform ) {
     std::cout << "warning, attempted to get null transform... initializing now." << std::endl;
     m_Transform = vtkSmartPointer<vtkTransform>::New();
+    m_Transform->Identity();
   }
   return m_Transform;
 }
