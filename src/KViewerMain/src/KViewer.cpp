@@ -58,12 +58,18 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   kv_opts           =  Ptr<KViewerOptions>( new KViewerOptions( kv_opts_in ) );
   kv_data           =  Ptr<KDataWarehouse>( new KDataWarehouse( kv_opts ) );
 
+  kv_opts->InitializeTransform();
+
   this->setupQVTKandData( );
   this->updatePaintBrushStatus(NULL);
   //initializing "times" for seg interval clock
   t1=clock();
   t2=t1;
   this-> InitializeCircleCursor();
+
+  m_RotX=false;
+  m_RotY=false;
+  m_RotZ=false;
 }
 
 
@@ -210,8 +216,8 @@ void KViewer::LoadLabelMap(){
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
   this->kv_opts->LoadLabel(path.toStdString());
   this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
-  this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
-  this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
+  //this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
+  //this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
   saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
 }
 
@@ -285,7 +291,9 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     keyPressed = '0';
     } else if (event == (unsigned long) '9' ){
      keyPressed = '9';
-}
+    }else if (event == (unsigned long) 'm' ){
+        keyPressed = 'm';
+    }
     int slice_idx                 = kwidget_2d_left->currentSliceIndex;
     int label_idx                 = kwidget_2d_left->activeLabelMapIndex;
 
@@ -315,21 +323,18 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        kv_opts->seg_time_interval-=0.05;
        segmentationInterval->setText("time interval for seg. update: "+ QString::number(kv_opts->seg_time_interval)+" sec");
       break;
+    case 'm':
+        kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
+        break;
     case 'r':
-    {
         kwidget_2d_left->InitializeTransform('x');
         break;
-    }
     case 't':
-    {
         kwidget_2d_left->InitializeTransform('y');
         break;
-    }
     case 'z':
-    {
         kwidget_2d_left->InitializeTransform('z');
         break;
-    }
     default:
       break;
     }
@@ -337,6 +342,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
+        this->UpdateVolumeStatus();
     }
 
   }
@@ -471,6 +477,7 @@ void KViewer::setupQVTKandData( )
     this->LoadImage();
     this->kv_opts->loadImageTrigger=0;
   }
+
   // load the data according to what's in kv_opts now
   setup_file_reader( kv_opts, kv_data );
 
@@ -487,6 +494,18 @@ void KViewer::setupQVTKandData( )
   kwidget_3d_right = cv::Ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
   KWidget_3D_right::Initialize( kwidget_3d_right, kv_opts, kv_data );
   kwidget_3d_right->PrintHelp( );
+
+  //Add additional labels to 3D view  - not very elegant, but it works...
+  if(kwidget_2d_left->multiLabelMaps.size()>1)
+  {
+      for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      {
+         this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[labnum]->labelDataArray);
+         KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labnum));
+         kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
+       }
+  }
+  //this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[0]->labelDataArray);
 
   // CreateThresholdFilter( );
   ConnectQTSlots( );

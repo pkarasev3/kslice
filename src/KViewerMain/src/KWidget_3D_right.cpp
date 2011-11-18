@@ -161,8 +161,9 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
 
     // Don't resample, kind of hopeless: better to segment properly and use thinner images!
     //this->labelSubVolumeExtractor = vtkExtractVOI::New();
+  assert( labNumber < (int) multiLabelMaps3D.size() );
   multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
-  multiLabelMaps3D[labNumber].second->Update( );
+  multiLabelMaps3D[labNumber].second->UpdateWholeExtent( );
  //SetupLabelActor3D(kwidget_3d_right);
   this->qVTK_widget_right->update( );
 
@@ -194,7 +195,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
 
   // BUG WARNING:
 
-  bool UseVolumeRender =false; // TODO: 3D view needs total rewrite,
+  bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all
                                 // b) it will be too slow to volume render multiple labels
                                 // c) better idea: use x,y,z coords for colormap generation

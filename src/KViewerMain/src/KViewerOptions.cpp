@@ -64,9 +64,6 @@ void KViewerOptions::LoadImage( )
 
   cout << "loaded image ... ";
 
-  //Should it be initialized somewhere else?
-  m_Transform = vtkSmartPointer<vtkTransform>::New();
-
 }
 
 void KViewerOptions::LoadLabel( const std::string& path ){

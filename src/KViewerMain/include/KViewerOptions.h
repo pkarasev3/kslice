@@ -78,7 +78,11 @@ void PrintLogo( );
 
 int GetBrushSize();
 
-void SetupTransform();
+//void SetupTransform();
+void InitializeTransform()
+{
+    this->m_Transform =vtkSmartPointer<vtkTransform>::New();
+}
 
 vtkSmartPointer<vtkTransform> GetTransform()
 {
