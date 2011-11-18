@@ -122,17 +122,18 @@ void KInteractiveLabelMap::UpdateResliceTransform()
     labelReslicer->SetOutputDimensionality(3);
     labelReslicer->AutoCropOutputOn();
     labelReslicer->SetOutputOrigin(0,0,0);
+    labelReslicer->SetOutputSpacing(&(sourceWidget->GetOutputSpacing()[0]));
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
     labelReslicer->Update();
     labelReslicer->UpdateInformation();
     labelReslicer->GetOutput()->UpdateInformation();
 
+    // (PK) TODO: Crashes here, why? During attept to rotate. Try with cubic voxels?
 
 
-
-    //Do we kneed this
-    imageVolume     = labelReslicer->GetOutput();
+    //Do we need this (NO)
+    //imageVolume     = labelReslicer->GetOutput();
 
     // convert it to unsigned short, our desired internal method...
 
