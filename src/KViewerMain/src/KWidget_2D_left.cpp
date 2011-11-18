@@ -497,7 +497,6 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
             label_opacity *= 0.5;
         }
         multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
-        //multiLabelMaps[k]->label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
         multiLabelMaps[k]->labelDataArray->Modified();
     }
     //if(updateTransform)
