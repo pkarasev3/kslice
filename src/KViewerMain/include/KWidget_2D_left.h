@@ -144,6 +144,7 @@ Multiple Label Maps
     for( int k = 0; k < 3; k++ ) {
       m_OutputSpacing[k] = kv_opts->imageSpacing[k];
     }
+    std::cout << "widget2D output spacing = " << cv::Mat( m_OutputSpacing ) << std::endl;
     return m_OutputSpacing;
   }
 
