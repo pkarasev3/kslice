@@ -385,7 +385,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       int k = event_PixCoord[2];
 
       double image_range[2];
-      kv_data->imageVolumeRaw->GetScalarRange( image_range );
+      kwidget_2d_left->color_HSV_LookupTable->GetTableRange(image_range);
       double paintSimilarityMinimum = (image_range[1] - image_range[0]) * kv_opts->paintBrushThreshold;
       double imgValAtClickPoint = kv_data->imageVolumeRaw->GetScalarComponentAsDouble(
             event_PixCoord[0], event_PixCoord[1], event_PixCoord[2], 0 );
@@ -414,7 +414,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
-              if( ptrImage[elemNum] < imgMax && ptrImage[elemNum] > imgMin ) {
+              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
                 ptrLabel[elemNum] = Label_Fill_Value;
                 kseg->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
               }
@@ -498,7 +498,7 @@ void KViewer::setupQVTKandData( )
   //Add additional labels to 3D view  - not very elegant, but it works...
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(int labnum=1; (int)labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
          this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[labnum]->labelDataArray);
          KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labnum));
