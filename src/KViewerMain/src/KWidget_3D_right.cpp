@@ -208,7 +208,6 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                    Ptr<KViewerOptions> kv_opts_input,
                                    Ptr<KDataWarehouse> kv_data_input ) {
 
-  // BUG WARNING:
 
   bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all

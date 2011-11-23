@@ -215,6 +215,7 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   SP(vtkMetaImageReader) labelFileReader = SP(vtkMetaImageReader)::New();
   SP(vtkMetaImageReader) imgReader       = SP(vtkMetaImageReader)::New();
   //Why does name contain "2D" when it ist storing 3D information??
+  // Gute Frage!
   SP(vtkImageData)       label2D   ;//      = SP(vtkImageData)::New();
   SP(vtkImageData)       image2D;//         = SP(vtkImageData)::New();
 
