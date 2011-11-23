@@ -226,8 +226,8 @@ void KViewer::LoadLabelMap(){
   string name = kv_opts->LabelArrayFilenames[0].c_str() ;
   this->kv_opts->LoadLabel(path.toStdString());
   this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
-  //this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
-  //this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
+  this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
+  this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
 
   saveAsLineEdit->setText( QString( name.c_str() ) );
 }

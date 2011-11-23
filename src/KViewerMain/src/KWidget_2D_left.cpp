@@ -546,8 +546,6 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
     //Add new actor
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
-   // multiLabelMaps[activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex,true)  );
-
   }
   activeLabelMapIndex = multiLabelMaps.size()-1;
 }
