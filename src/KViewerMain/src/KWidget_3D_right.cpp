@@ -45,9 +45,10 @@ namespace {
 
 
 void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
-  
-  Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
-  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
+
+// UNUSED VARIABLES
+//  Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
+//  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
 
   int size=0;
   kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
@@ -57,7 +58,13 @@ void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 
 
-void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color ) {
+void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
+{
+
+  /** TODO: Don't use marching cubes to make surface! Utilize the levelset layers that we have,
+    * to directly create the surface normals and mesh it up. Avoid aliasing issues this way,
+    * we know more about the label than just "binary values"!
+    */
 
   const unsigned int labnum=kwidget_3d_right->GetNumberOfLabels()-1;
   int size=kwidget_3d_right->multiLabelMaps3D.size();

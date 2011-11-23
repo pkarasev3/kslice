@@ -176,6 +176,10 @@ void check_extents( vtkImageData* input ) {
 
 SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<double>& rgb_primary )
 {
+  /**  Create the color lookup table for labels. Color is given as input, or a default used if it's empty.
+    *  Set opacity to be higher at the edge of label to show contour. "maxVal" should be on the order of
+    *  the image data being shown in conjunction with the label, probably from one to several thousand.
+    */
   double pR,pG,pB;
   if( rgb_primary.empty() ) {
     pR = 1.0; pG = 0.0; pG = 0.5;
