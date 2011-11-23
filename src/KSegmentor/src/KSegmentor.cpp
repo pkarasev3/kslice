@@ -67,7 +67,7 @@ void KSegmentor::saveCurrentSliceToPNG(const std::string &fileName) {
 
 KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex, bool contInit)
 {
-        int num_slices = image->GetDimensions()[2];
+        // int num_slices = image->GetDimensions()[2]; // unused var!
         this->imageVol=image;
         this->labelVol=label;
         this->currSlice=sliceIndex;
