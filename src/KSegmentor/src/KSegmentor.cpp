@@ -67,7 +67,7 @@ void KSegmentor::saveCurrentSliceToPNG(const std::string &fileName) {
 
 KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex, bool contInit)
 {
-        int num_slices = image->GetDimensions()[2];
+        // int num_slices = image->GetDimensions()[2]; // unused var!
         this->imageVol=image;
         this->labelVol=label;
         this->currSlice=sliceIndex;
@@ -138,14 +138,17 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         this->phi        = new double[mdims[0]*mdims[1]*mdims[2]];
         this->label      = new double[mdims[0]*mdims[1]*mdims[2]];
 
-        U_integral = std::vector< cv::Mat >( num_slices );
-        U_t        = std::vector< cv::Mat >( num_slices );
+
         cout << "I think the # of rows is: " << mdims[0] << ", # of cols is: " << mdims[1] << endl;
-        for( int k = 0; k < num_slices; k++ )
-        { /** per-slice user updates  */
-          U_integral[k] = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
-          U_t[k]        = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
-        }
+
+// NOT USING THESE ANYMORE (?)  replace with raw double* pointers
+//        U_integral = std::vector< cv::Mat >( num_slices );
+//        U_t        = std::vector< cv::Mat >( num_slices );
+//        for( int k = 0; k < num_slices; k++ )
+//        { /** per-slice user updates  */
+//          U_integral[k] = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
+//          U_t[k]        = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
+//        }
 
         this->iList=NULL;
         this->jList=NULL;
@@ -174,9 +177,12 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         dims[3] = dims[0]*dims[1];
         dims[4] = dims[0]*dims[1]*dims[2];
 
+        cout << "num dims = " << numdims << "; initialized ksegmentor with dims[0,1,2] = "
+             << dims[0] << "," << dims[1] << "," << dims[2] << endl;
+
         this->seg = new  unsigned short[dims[0]*dims[1]*dims[2]];
         initializeData();
-       intializeLevelSet();
+        intializeLevelSet();
 }
 
 
@@ -200,6 +206,7 @@ void KSegmentor::accumulateUserInput( double value, int j, int i, int k )
 { // clicking: set the U_t values, +/- 1.0 ( phi < 0 is inside! )
     assert( j < U_t[k].cols );
     assert( i < U_t[k].rows );
+    assert(0); // Why is this method called, rotation will break it!
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     U_t[k].at<double>(i,j) = user_input ;
 
@@ -213,6 +220,8 @@ void KSegmentor::accumulateUserInputInUserInputImages( double value,const unsign
 
 void KSegmentor::integrateUserInput( int k )
 {
+  // TODO: Is this called anywhere? Seems like it wouldn't work with rotation
+  assert(0); // Why is this called, rotation will break it!
     U_integral[k]  += U_t[k];
     U_t[k]          = 0.5 * U_t[k];
 }
@@ -334,8 +343,6 @@ void KSegmentor::initializeData()
     { // empty label; so set the proper range
       labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
     }
-    //cout << "KSegmentor reads label range: " << labelRange[0] << "," << labelRange[1] << endl;
-    //cout << "KSegmentor reads image range: " << imgRange[0] << "," << imgRange[1] << endl;
     assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
     this->imgRange=imgRange;
@@ -406,7 +413,9 @@ void KSegmentor::intializeLevelSet(){
 
 void KSegmentor::Update()
 {
-    interactive_chanvese(img,phi,U_I_slice,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,iter,rad,lambda,display);
+    interactive_chanvese(img,phi,U_I_slice,label,dims,
+                         Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
+                         iter,rad,lambda,display);
 
   if(iList!=NULL){
       delete[] iList;

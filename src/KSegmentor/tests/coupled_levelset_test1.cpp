@@ -8,7 +8,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
-#include "koupled_kurvolver.h"
+#include "KoupledKurvolver.h"
 #include "boost/shared_ptr.hpp"
 #include "boost/program_options.hpp"
 #include "boost/lexical_cast.hpp"

@@ -14,7 +14,6 @@ class vtkImageData;
 
 class vtkTransform;
 struct LL;
-// Don't include shit we can forward-declare!
 
 
 namespace vrcl
@@ -32,7 +31,8 @@ void getVolumeAsString( const std::vector<double>& imageSpacing,
 
 void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
-                                 std::string & volumeString, bool numberOnly = false );
+                                 std::string & volumeString, std::vector<double>& minXYZ,
+                                 std::vector<double>& maxXYZ, bool numberOnly = false );
 
 /** in-place, copy a slice from index a to index b in volume */
 void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
@@ -76,6 +76,11 @@ class KSegmentor
         {
             for (int i=0;i<3;i++)
                 m_Spacing_mm[i]=spacing[i];
+        }
+        void GetImageSpacing(double* spacing)
+        {
+            for (int i=0;i<3;i++)
+                spacing[i]=m_Spacing_mm[i];
         }
 
     private:

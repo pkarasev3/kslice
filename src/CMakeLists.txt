@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(KSliceModules)
+project(KSlice3D)
 
 find_package(VTK)
 IF(NOT VTK_DIR)
@@ -107,10 +107,10 @@ include_directories(
         ${KSlice_include}
 )
 
-add_subdirectory(util/getopt)
+add_subdirectory(util/getopt)  # DEPRECATED, Use boost::program_options instead, or raw argv[k] when lazy
 add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
-add_subdirectory(SampleApplications/VolumeRenderDemo)
+add_subdirectory(SampleApplications)
 add_subdirectory(KSegmentor)
 
 set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)

@@ -136,9 +136,16 @@ Multiple Label Maps
 
   static const std::string VERBOSE;
 
-  double* GetOutputSpacing()
+  std::vector<double> GetOutputSpacing()
   {
-      return m_OutputSpacing;
+    if( m_OutputSpacing.size() != 3 ) {
+      m_OutputSpacing = std::vector<double>(3,1.0);
+    }
+    for( int k = 0; k < 3; k++ ) {
+      m_OutputSpacing[k] = kv_opts->imageSpacing[k];
+    }
+    std::cout << "widget2D output spacing = " << cv::Mat( m_OutputSpacing ) << std::endl;
+    return m_OutputSpacing;
   }
 
  ///TODO: make private
@@ -154,7 +161,7 @@ private:
   vtkSmartPointer<vtkImageShiftScale> intensShift;
 
   bool bNoInputLabelFiles;
-  double* m_OutputSpacing;
+  std::vector<double> m_OutputSpacing;
 
 
 
