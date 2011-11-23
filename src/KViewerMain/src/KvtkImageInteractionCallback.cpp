@@ -111,12 +111,12 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     case 'w':
     case 'R':
       this->masterWindow->MoveSlider(  1 ); // right slider
-      this->masterWindow->UpdateVolumeStatus();
+      //this->masterWindow->UpdateVolumeStatus();
       break;
     case 'q':
     case 'L':
       this->masterWindow->MoveSlider( -1 ); // left slider
-      this->masterWindow->UpdateVolumeStatus();
+      //this->masterWindow->UpdateVolumeStatus();
       break;
     case 'd': // toggle draw/erase
       erase = ! erase;

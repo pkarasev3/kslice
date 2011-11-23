@@ -122,7 +122,7 @@ void KInteractiveLabelMap::UpdateResliceTransform()
     labelReslicer->SetOutputDimensionality(3);
     labelReslicer->AutoCropOutputOn();
     labelReslicer->SetOutputOrigin(0,0,0);
-    labelReslicer->SetOutputSpacing(sourceWidget->GetOutputSpacing());
+    labelReslicer->SetOutputSpacing(kv_opts->imageSpacing[0],kv_opts->imageSpacing[1],kv_opts->imageSpacing[2]);
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
     labelReslicer->Update();

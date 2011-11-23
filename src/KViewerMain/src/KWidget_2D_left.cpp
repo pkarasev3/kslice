@@ -230,7 +230,7 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
     imageReslicer->SetOutputExtentToDefault();
     imageReslicer->SetInputConnection(intensShift->GetOutputPort());
     imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
-    imageReslicer->SetInterpolationModeToCubic();
+    imageReslicer->InterpolateOff();
 
     imageReslicer->SetOutputDimensionality(2);
 

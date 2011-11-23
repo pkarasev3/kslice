@@ -98,7 +98,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
 
   minIntensity        = 1;
   maxIntensity        = 5000;
-  segmentor_iters     = 30;
+  segmentor_iters     = 10;
   time_triggered_seg_update = true;
   seg_time_interval =0.3;  //time interval for performing (automatic) segmentation while painting
   m_CurrentAngle=0;
