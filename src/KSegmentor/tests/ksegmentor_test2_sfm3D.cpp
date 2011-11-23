@@ -279,9 +279,9 @@ int main( int argc, char* argv[] )
 
         if( opts.verbose )
         {
-            vtkIndent indentVTK=vtkIndent::vtkIndent(0);
-            image->PrintSelf(std::cout, indentVTK);
-            label->PrintSelf(std::cout, indentVTK);
+            //vtkIndent indentVTK=new vtkIndent(0);
+            image->PrintSelf(std::cout, vtkIndent(0));
+            label->PrintSelf(std::cout, vtkIndent(0));
         }
         cout << "running RunTest_Segment3D, iters = " << opts.segmentor_iters << ", kappa = " << opts.smoothness_kappa << endl;
         RunTest_Segment3D(image,label,opts.segmentor_iters,opts.smoothness_kappa); // should update label in-place
