@@ -60,11 +60,11 @@ void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color ) {
 
   const unsigned int labnum=kwidget_3d_right->GetNumberOfLabels()-1;
-  int size=kwidget_3d_right->multiLabelMaps3D.size();
+
   vtkExtractVOI* currentExtVOI=kwidget_3d_right->multiLabelMaps3D[labnum].second;
-  std::string name=currentExtVOI->GetClassName();
   currentExtVOI->SetInput( kwidget_3d_right->kv_data->labelDataArray );
   currentExtVOI->Update();
+
   vtkSmartPointer<vtkMarchingCubes> cube_marcher= vtkSmartPointer<vtkMarchingCubes>::New();
   cube_marcher->SetInputConnection( kwidget_3d_right->multiLabelMaps3D[labnum].second->GetOutputPort() );
   cube_marcher->ComputeNormalsOn();
@@ -151,6 +151,7 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
   qvtk->GetRenderWindow()->GetInteractor( )->SetInteractorStyle( 
                                               kwidget_3d_right->interactor_style_3DTrackball );
   qvtk->SetRenderWindow( kwidget_3d_right->renderWindowRight );
+  qvtk->GetRenderWindow()->GetInteractor( )->SetDesiredUpdateRate(2);
 
 }
 
@@ -194,7 +195,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
 
   // BUG WARNING:
 
-  bool UseVolumeRender =false; // TODO: 3D view needs total rewrite,
+  bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all
                                 // b) it will be too slow to volume render multiple labels
                                 // c) better idea: use x,y,z coords for colormap generation

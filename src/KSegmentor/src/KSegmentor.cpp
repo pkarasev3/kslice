@@ -454,7 +454,8 @@ void KSegmentor::setCurrIndex(int sliceIndex){
 }
 
 KSegmentor::~KSegmentor(){
-        delete [] this->mdims;
+
+        //delete [] this->mdims;//Causes trouble! Haveto find out why!!
         delete [] this->img;
         delete [] this->mask;
         delete [] this->imgRange;

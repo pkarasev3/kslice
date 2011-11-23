@@ -67,9 +67,18 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   t2=t1;
   this-> InitializeCircleCursor();
 
-  m_RotX=false;
+  m_RotX=true;
   m_RotY=false;
   m_RotZ=false;
+  if(kwidget_2d_left->multiLabelMaps.size()>1)
+  {
+      for(int labnum=0;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      {
+         kwidget_2d_left->SelectActiveLabelMap( labnum );
+         kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
+       }
+  }
+
 }
 
 
@@ -94,7 +103,7 @@ void KViewer::InitializeCircleCursor()
 
     m_Circle= vtkSmartPointer<vtkRegularPolygonSource>::New();
     m_Circle->SetNumberOfSides(30);
-    m_Circle->SetRadius(kv_opts->GetBrushSize());
+    m_Circle->SetRadius(kv_opts->GetBrushSize()*kv_opts->imageSpacing[0]);
     m_Circle->SetCenter(0,0,0);
 
     m_CircleMapper= vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -214,11 +223,13 @@ void KViewer::LoadImage() {
 void KViewer::LoadLabelMap(){
   QString path;
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
+  string name = kv_opts->LabelArrayFilenames[0].c_str() ;
   this->kv_opts->LoadLabel(path.toStdString());
   this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
   //this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
   //this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->kwidget_2d_left->currentSliceIndex,true)  );
-  saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );
+
+  saveAsLineEdit->setText( QString( name.c_str() ) );
 }
 
 void KViewer::About() {
@@ -327,13 +338,34 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
         break;
     case 'r':
-        kwidget_2d_left->InitializeTransform('x');
+        if(this->m_RotX)
+         kwidget_2d_left->InitializeTransform('x');
+        else
+          kwidget_2d_left->InitializeTransform('x',-90);
+        this->m_RotX=!this->m_RotX;
         break;
     case 't':
-        kwidget_2d_left->InitializeTransform('y');
+        if(this->m_RotY)
+         kwidget_2d_left->InitializeTransform('y');
+        else
+          kwidget_2d_left->InitializeTransform('y',-90);
+        this->m_RotY=!this->m_RotY;
         break;
     case 'z':
-        kwidget_2d_left->InitializeTransform('z');
+        if(this->m_RotZ)
+         kwidget_2d_left->InitializeTransform('z');
+        else
+          kwidget_2d_left->InitializeTransform('z',-90);
+        this->m_RotZ=!this->m_RotZ;
+        break;
+    case 'i': //For TESTING purposes
+         this->SliceSelect(0);
+        for(int sl=0;sl<this->Slider->maximum();sl++)
+        {
+            kwidget_2d_left->RunSegmentor(sl,kv_opts->multilabel_sgmnt_mode);
+            this->SliceSelect(sl+1);
+        }
+        this->SliceSelect(slice_idx);
         break;
     default:
       break;
@@ -342,7 +374,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
-        this->UpdateVolumeStatus();
     }
 
   }
@@ -408,8 +439,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k - 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k + 0*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmin = k - 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmax = k + 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {
@@ -440,18 +471,18 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 void KViewer::UpdateImageInformation(vtkImageData* image)
 {
     for(int i=0;i<6;i++) kv_opts->imageExtent[i]=image->GetExtent()[i];
-    for (int i=0;i<3;i++)
-    {
-        kv_opts->imageSpacing[i]= image->GetSpacing()[i];
+
+    // for (int i=0;i<3;i++)
+   // {
+    //Already done in InitializeTransform
+        //kv_opts->imageSpacing[i]= image->GetSpacing()[i];
         //According to comments in KSandbox origin should remain 0,0,0
         //kv_opts->imageOrigin[i]=image->GetOrigin()[i];
-    }
+    //}
 
     kv_opts->m_Center[0]= (kv_opts->imageExtent[1]*kv_opts->imageSpacing[0]-kv_opts->imageExtent[0]*kv_opts->imageSpacing[0])*0.5;
     kv_opts->m_Center[1]= (kv_opts->imageExtent[3]*kv_opts->imageSpacing[1]-kv_opts->imageExtent[2]*kv_opts->imageSpacing[1])*0.5;
     kv_opts->m_Center[2]= (kv_opts->imageExtent[5]*kv_opts->imageSpacing[2]-kv_opts->imageExtent[4]*kv_opts->imageSpacing[2])*0.5;
-
-
 
     kv_opts->numSlices      = kv_opts->imageExtent[5]-kv_opts->imageExtent[4]+1;
     kv_opts->imgHeight       = kv_opts->imageExtent[3]-kv_opts->imageExtent[2]+1;
@@ -501,7 +532,7 @@ void KViewer::setupQVTKandData( )
       for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
          this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[labnum]->labelDataArray);
-         KWidget_3D_right::AddNewLabel(kwidget_3d_right,KInteractiveLabelMap::get_good_color_0to7(labnum));
+         KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labnum));
          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
        }
   }
@@ -529,7 +560,21 @@ void KViewer::setupQVTKandData( )
 
    //initialize display for segmentation interval
   segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
+  qVTK1->setUpdatesEnabled(true);
+  qVTK2->setUpdatesEnabled(true);
+  qVTK1->update();
+  qVTK2->update();
+  qVTK1->setFocus( );
 
+  if(kwidget_2d_left->multiLabelMaps.size()>1)
+  {
+      for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      {
+          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
+          qVTK1->update();
+          qVTK2->update();
+      }
+  }
   qVTK1->setUpdatesEnabled(true);
   qVTK2->setUpdatesEnabled(true);
   qVTK1->update();
@@ -542,14 +587,11 @@ void KViewer::ConnectQTSlots( ) {
 
   Connections = SP(vtkEventQtSlotConnect)::New();
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
-  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updatePaintBrushStatus(vtkObject*)));
-  Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(),
-                       vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
-  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(),
-                       vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
-  Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(),
-                       vtkCommand::KeyPressEvent, this, SLOT(handleGenericEvent(vtkObject*, unsigned long)));
+  Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
+  Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::KeyPressEvent, this, SLOT(handleGenericEvent(vtkObject*, unsigned long)));
+
+  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
 
   connect(Slider,SIGNAL(valueChanged(int)), this, SLOT(SliceSelect(int)));
 

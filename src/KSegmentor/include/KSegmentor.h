@@ -72,7 +72,7 @@ class KSegmentor
 
         static double defaultKappaParam;
 
-        void UpdateImageSpacing(double* spacing)
+        void UpdateImageSpacing(std::vector<double> spacing)
         {
             for (int i=0;i<3;i++)
                 m_Spacing_mm[i]=spacing[i];
