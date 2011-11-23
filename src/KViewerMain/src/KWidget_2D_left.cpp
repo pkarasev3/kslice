@@ -230,7 +230,7 @@ void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
     imageReslicer->SetOutputExtentToDefault();
     imageReslicer->SetInputConnection(intensShift->GetOutputPort());
     imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
-    imageReslicer->SetInterpolationModeToCubic();
+    imageReslicer->InterpolateOff();
 
     imageReslicer->SetOutputDimensionality(2);
 
@@ -545,8 +545,6 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 
     //Add new actor
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
-
-   // multiLabelMaps[activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, this->currentSliceIndex,true)  );
 
   }
   activeLabelMapIndex = multiLabelMaps.size()-1;

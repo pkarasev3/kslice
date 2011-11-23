@@ -77,6 +77,7 @@ class KSegmentor
             for (int i=0;i<3;i++)
                 m_Spacing_mm[i]=spacing[i];
         }
+
         void GetImageSpacing(double* spacing)
         {
             for (int i=0;i<3;i++)
