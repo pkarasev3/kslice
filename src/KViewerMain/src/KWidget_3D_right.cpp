@@ -45,9 +45,10 @@ namespace {
 
 
 void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
-  
-  Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
-  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
+
+// UNUSED VARIABLES
+//  Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
+//  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
 
   int size=0;
   kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
@@ -57,7 +58,13 @@ void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 
 
-void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color ) {
+void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
+{
+
+  /** TODO: Don't use marching cubes to make surface! Utilize the levelset layers that we have,
+    * to directly create the surface normals and mesh it up. Avoid aliasing issues this way,
+    * we know more about the label than just "binary values"!
+    */
 
   const unsigned int labnum=kwidget_3d_right->GetNumberOfLabels()-1;
 
@@ -162,6 +169,15 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
 
     // Don't resample, kind of hopeless: better to segment properly and use thinner images!
     //this->labelSubVolumeExtractor = vtkExtractVOI::New();
+//  if( labNumber < (int) multiLabelMaps3D.size() ) {
+ // 
+ // }
+    //kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
+  std::pair<vtkLODActor*,vtkExtractVOI*>  pairElement =   multiLabelMaps3D[labNumber];
+  if( pairElement.second == NULL ) {
+    std::cout << "warning, null pair of LOD/VOI!" << std::endl;
+  }  
+    
   multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
   multiLabelMaps3D[labNumber].second->UpdateWholeExtent( );
  //SetupLabelActor3D(kwidget_3d_right);
@@ -193,14 +209,13 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                    Ptr<KViewerOptions> kv_opts_input,
                                    Ptr<KDataWarehouse> kv_data_input ) {
 
-  // BUG WARNING:
 
   bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
                                 // a) it doesn't support multiple levels at all
                                 // b) it will be too slow to volume render multiple labels
                                 // c) better idea: use x,y,z coords for colormap generation
                                 // in conjunction with polydata actors
-  if(UseVolumeRender) {
+ if(UseVolumeRender) {
     // Turn off volume view temporarily for speed
     kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
     kwidget_3d_right->kv_data = kv_data_input;
@@ -209,20 +224,11 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
         throw "kv_data does not exist yet!" ;
 
     kwidget_3d_right->multiLabelMaps3D = std::vector< std::pair< vtkLODActor*, vtkExtractVOI* > >();
-    int numberOfInputLabels = kwidget_3d_right->kv_opts->LabelArrayFilenames.size();
-    if( numberOfInputLabels > 1 ) {
-      std::cout << "resizing size of multLabelMaps3D" << std::endl;
-
-      // ?? Why do we need to set it separately, instead of using the multiLabelMaps3D.size()?
-      //  This seems to be a source of bugs
-      kwidget_3d_right->SetCurrentNumberOfLabels(numberOfInputLabels);
-      kwidget_3d_right->multiLabelMaps3D.resize(numberOfInputLabels);
-    }
     
     SetupRenderWindow( kwidget_3d_right );
     SetupSubVolumeExtractor( kwidget_3d_right );
-    std::vector<double> firstcolor= vrcl::get_good_color_0to7(0); //{240/255.0, 163/255.0, 255/255.0};
-    SetupLabelActor3D( kwidget_3d_right, firstcolor );
+    std::vector<double> firstcolor={240/255.0, 163/255.0, 255/255.0};
+    SetupLabelActor3D( kwidget_3d_right,firstcolor );
   }
 }
 

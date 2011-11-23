@@ -122,18 +122,13 @@ void KInteractiveLabelMap::UpdateResliceTransform()
     labelReslicer->SetOutputDimensionality(3);
     labelReslicer->AutoCropOutputOn();
     labelReslicer->SetOutputOrigin(0,0,0);
-    labelReslicer->SetOutputSpacing(kv_opts->imageSpacing[0],kv_opts->imageSpacing[1],kv_opts->imageSpacing[2]);
+    labelReslicer->SetOutputSpacing(&(sourceWidget->GetOutputSpacing()[0]));
+
     labelReslicer->Modified();
     labelReslicer->UpdateWholeExtent();
     labelReslicer->Update();
     labelReslicer->UpdateInformation();
     labelReslicer->GetOutput()->UpdateInformation();
-
-
-
-
-    //Do we kneed this
-    imageVolume     = labelReslicer->GetOutput();
 
     // convert it to unsigned short, our desired internal method...
 

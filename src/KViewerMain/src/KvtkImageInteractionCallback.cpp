@@ -47,6 +47,7 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
   }
   else if( event == vtkCommand::KeyPressEvent )
   {
+    bool   bUpdatedSatLut = false;
     double satRange[2];
     satLUT_shared->GetTableRange(satRange);
     double  stepSize                               = (satRange[1]-satRange[0])*0.01;
@@ -74,34 +75,40 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       satLUT_shared->SetTableRange(satRange[0]+stepSize, satRange[1]+stepSize);
       satLUT_shared->Build();
       this->masterWindow->qVTK1->update();
+      bUpdatedSatLut = true;
       break;
     case keyDownShiftSatRange:
       satLUT_shared->SetTableRange(satRange[0]-stepSize, satRange[1]-stepSize);
       satLUT_shared->Build();
       this->masterWindow->qVTK1->update();
+      bUpdatedSatLut = true;
       break;
     case keyUpMaxSatRange:
       satLUT_shared->SetTableRange(satRange[0], satRange[1]+stepSize);
       satLUT_shared->Build();
       this->masterWindow->qVTK1->update();
+      bUpdatedSatLut = true;
       break;
     case keyDownMaxSatRange:
       if( (satRange[1]-stepSize) > satRange[0] ) {
         satLUT_shared->SetTableRange(satRange[0], satRange[1]-stepSize);
         satLUT_shared->Build();
         this->masterWindow->qVTK1->update();
+        bUpdatedSatLut = true;
       }
       break;
     case keyDownMinSatRange:
       satLUT_shared->SetTableRange(satRange[0]-stepSize, satRange[1]);
       satLUT_shared->Build();
       this->masterWindow->qVTK1->update();
+      bUpdatedSatLut = true;
       break;
     case keyUpMinSatRange:
       if( (satRange[0]+stepSize) < satRange[1] ) {
         satLUT_shared->SetTableRange(satRange[0]+stepSize, satRange[1]);
         satLUT_shared->Build();
         this->masterWindow->qVTK1->update();
+        bUpdatedSatLut = true;
       }
       break;
     case keyCopyLabelSlice:
@@ -127,6 +134,9 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       break;
     default:
       break;
+    }
+    if( bUpdatedSatLut ) {
+      cout << "updated satLUT range: " << satLUT_shared->GetTableRange()[0] << ", " << satLUT_shared->GetTableRange()[1] << endl;
     }
   }
 
