@@ -74,7 +74,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         this->mdims = new int[3];
         image->GetDimensions( mdims );
         this->numberdims=2;
-
+        this->m_bUseEdgeBased = false;
         this->mdims[2] = 1;
         this->penaltyAlpha=0;
         this->seed=0;
@@ -413,9 +413,19 @@ void KSegmentor::intializeLevelSet(){
 
 void KSegmentor::Update()
 {
-    interactive_chanvese(img,phi,U_I_slice,label,dims,
-                         Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                         iter,rad,lambda,display);
+
+
+    if( !m_bUseEdgeBased ) {
+        interactive_chanvese(img,phi,U_I_slice,label,dims,
+                             Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
+                             iter,rad,lambda,display);
+    } else {
+        interactive_edgebased(img,phi,U_I_slice,label,dims,
+                             Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
+                              iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1]);
+    }
+
+
 
   if(iList!=NULL){
       delete[] iList;

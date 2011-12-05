@@ -439,8 +439,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k - 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k + 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmin = k - 0*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int kmax = k + 0*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
             kmin     = (kmin >= 0 ) ? kmin : 0;
             kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
             for( int kk = kmin; kk <= kmax; kk++) {

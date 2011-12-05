@@ -125,6 +125,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")
       ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("resampleToCubicVoxels,r",po::value<bool>(&m_bResampleImageAtStartupToCubicVoxels)->default_value(0),"(NOT IMPLEMENTED!!!) True or False (0,1), resample image at startup to cubic voxels?")
+      ("useEdgeBased,e",po::value<bool>(&m_bUseEdgeBased)->default_value(0),"Use Edge Based Cost !?")
       ("help","print help")
       ;
 

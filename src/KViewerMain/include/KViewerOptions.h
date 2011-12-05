@@ -39,6 +39,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
+  bool  m_bUseEdgeBased;
   bool  m_bResampleImageAtStartupToCubicVoxels;
   bool  time_triggered_seg_update;
   int   minIntensity;
