@@ -4,6 +4,39 @@
 using std::endl;
 using std::cout;
 
+void interactive_edgebased(double *img, double *phi, double* U_integral, double *label, long *dims,
+                    LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
+                    int iter, double rad, double lambda, int display, double ImgMin, double ImgMax )
+{
+    double *F;
+    double scale[1];
+    scale[0] = 0.0;
+    //initialize datastructures and statistics
+    en_lrbac_init(Lz,img,phi,dims,rad);
+    for(int i=0;i<iter;i++){
+      // compute force
+      F = en_edgebased_compute(Lz,phi,img,dims, scale,lambda,rad, ImgMin, ImgMax);
+
+      /** TODO: currently uses approximation for input observer. port the full double-loop version from
+          matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
+      // apply controller, modify F in-place
+      apply_control_function( Lz, phi, F, U_integral, img, iter, dims );
+
+      //perform iteration
+      ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);
+
+      //update statistics
+      en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
+
+    }
+    if( display > 0 )
+      cout << "done sfls iters: " << iter << endl;
+
+    en_lrbac_destroy();
+
+
+}
+
 void interactive_chanvese(double *img, double *phi, double* U_integral, double *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display)

@@ -315,6 +315,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
     assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
     multiLabelMaps[k]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw, kthLabel, currentSliceIndex,true)  );
+    multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -452,11 +453,13 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
     Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
 
-    // Karl: leave this unless you are 100% sure that it's not needed
-    // this hack causes more consistent GUI state in display (we trick it into refreshing)
-    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
+    // Ok maybe it is no longer needed ...  testing w/o it !
+//    // Karl: leave this unless you are 100% sure that it's not needed
+//    // this hack causes more consistent GUI state in display (we trick it into refreshing)
+//    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
+//    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
 
     kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
     kseg->setCurrIndex( slice_index );
@@ -567,8 +570,10 @@ void KWidget_2D_left::AddNewLabelMap( )
     UpdateMultiLabelMapDisplay( );
   }
 
-  if (!bIsInitialization)
-       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), this->currentSliceIndex)  );
+  if (!bIsInitialization) {
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>( new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), this->currentSliceIndex)  );
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
+  }
 
 }
 

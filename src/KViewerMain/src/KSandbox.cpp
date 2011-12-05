@@ -190,8 +190,8 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
   }
   SP(vtkLookupTable) labelLUT = SP(vtkLookupTable)::New();
   double mid[4]  = {pR,pG,pB,0.5};
-  double far[4]  = {pR,pG,pB,0.9};
-  double near[4] = {pR,pG,pB/2,0.4};
+  double far[4]  = {pR,pG,pB,0.05};
+  double near[4] = {pR,pG,pB,0.5};
   double transparent[4] = {0,0,0,0};
   double main[4]         = {pR,pG,pB,0.3};
 

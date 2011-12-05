@@ -5,6 +5,9 @@
 #include "llist.h"
 #include "sparse3c.h"
 
+// functions to minimize edge-based (kslice-CT) energy
+double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double ImgMin, double ImgMax);
+
 // functions to minimize lrbac (vessel, yezzi) energy
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh);
 void en_lrbac_vessel_yz_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh);

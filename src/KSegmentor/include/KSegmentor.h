@@ -84,6 +84,24 @@ class KSegmentor
                 spacing[i]=m_Spacing_mm[i];
         }
 
+        void SetUseEdgeBasedEnergy( bool useEdgeBased )
+        {
+            m_bUseEdgeBased = useEdgeBased;
+        }
+        bool GetUseEdgeBasedEnergy( )
+        {
+            return m_bUseEdgeBased;
+        }
+
+        void SetSaturationRange( double dmin, double dmax ) {
+            if( dmax > dmin ) {
+                m_SatRange[0] = dmin;
+                m_SatRange[1] = dmax;
+            } else {
+                std::cout << "bogus min/max attempted set! " << std::endl;
+            }
+        }
+
     private:
         /** internal 'update from input' function */
         void integrateUserInput( int k );
@@ -127,6 +145,8 @@ class KSegmentor
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];
+        double m_SatRange[2];
+        bool   m_bUseEdgeBased; // do we use edge-based energy?
 
         unsigned short *seg; //seg result from last run of the segmentor
         short *iList;        //row indices of points on zero level set from last run
