@@ -21,7 +21,7 @@
 #include <vtkMath.h>
 #include <cmath>
 #include <vector>
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
 
 #define SP( X )  vtkSmartPointer<X> 
 using namespace std;

@@ -12,6 +12,7 @@
 #include "QVTKWidget.h"
 #include "KSandbox.h"
 #include "KSegmentor.h"
+#include "KSegmentor3D.h"
 #include "KDataWarehouse.h"
 #include "vtkImageContinuousDilate3D.h"
 #include "vtkMetaImageReader.h"
@@ -314,7 +315,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   {
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
     assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
-    multiLabelMaps[k]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw, kthLabel, currentSliceIndex,true)  );
+    multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
   }
 
@@ -452,7 +453,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
   if( !bAllLabels )
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
-    Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
 
     // Ok maybe it is no longer needed ...  testing w/o it !
@@ -461,22 +462,23 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
 //    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
 //    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
 
-    kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
+    //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
-    kseg->initializeData();
-    kseg->intializeLevelSet();
+    //kseg->initializeData();
+    //kseg->intializeLevelSet();
     kseg->Update();
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
     { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
-      Ptr<KSegmentor> kseg          = multiLabelMaps[label_idx]->ksegmentor;
-      kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
+      Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+      //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
       kseg->setNumIterations( kv_opts->segmentor_iters );
       kseg->setCurrIndex( slice_index );
-      kseg->initializeData();
-      kseg->intializeLevelSet();
+      //Initialization moved to Update method in kseg.
+      //kseg->initializeData();
+      //kseg->intializeLevelSet();
       kseg->Update();
     }
   }
@@ -571,7 +573,7 @@ void KWidget_2D_left::AddNewLabelMap( )
   }
 
   if (!bIsInitialization) {
-      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>( new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), this->currentSliceIndex)  );
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
   }
 

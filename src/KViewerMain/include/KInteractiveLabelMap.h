@@ -8,11 +8,12 @@
 #include "vtkImageShiftScale.h"
 #include "vtkImageMapToColors.h"
 #include "vtkLookupTable.h"
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
+#include "KSegmentor3D.h"
 
 struct KViewerOptions;
 class  KWidget_2D_left;
-using  vrcl::KSegmentor;
+using  vrcl::KSegmentorBase;
 
 class KInteractiveLabelMap
 {
@@ -26,7 +27,7 @@ public:
     vtkSmartPointer<vtkImageMapToColors>  colorMap;
     vtkSmartPointer<vtkImageData>         labelDataArray;
     vtkSmartPointer<vtkImageShiftScale>   label2D_shifter_scaler;
-    cv::Ptr<KSegmentor>                   ksegmentor;
+    cv::Ptr<KSegmentorBase>                   ksegmentor;
 
 
     /** raw pointers: stuff someone else owns */

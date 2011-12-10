@@ -19,31 +19,14 @@ struct LL;
 namespace vrcl
 {
 
-/** write string on top of image data in-place*/
-void waterMark(const std::string& text, cv::Mat & img);
-
-/** compute volume (non-zero elements) in label map, insert to string "xyz mL^3
-    optionally, pass "left" or "right" to do only lateral or medial side. */
-void getVolumeAsString( const std::vector<double>& imageSpacing,
-                                 vtkImageData* label_map,
-                                 std::string & volume, bool numberOnly = false,
-                                 const std::string& right_left_both = std::string("both"), double center_line = -1.0);
-
-void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
-                                 vtkImageData* label_map,
-                                 std::string & volumeString, std::vector<double>& minXYZ,
-                                 std::vector<double>& maxXYZ, bool numberOnly = false );
-
-/** in-place, copy a slice from index a to index b in volume */
-void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
-
-/** remove 3D islands: erode slightly, dilate a lot, AND this with original */
-vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
-                                               int erode_sz=3, int dilate_sz=5);
 class KSegmentor
 {
-    private:
+protected:
+          KSegmentor(bool){} //dummy constructor forderived classes
+
+private:
       KSegmentor(); // prevent invalid initialization
+
 
       vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
 
@@ -52,48 +35,49 @@ class KSegmentor
     public:
         KSegmentor( vtkImageData* image, vtkImageData* label, int sliceIndex,bool contInit=false );
         virtual ~KSegmentor();
-        void setNumIterations(int itersToRun);
-        void setCurrIndex(int sliceIndex);
-        void initializeData();
-        void setCurrLabelArray(vtkImageData *label);
-        void intializeLevelSet();
-        void TransformUserInputImages(vtkTransform* transform, bool invert=false );
-        void initializeUserInputImageWithContour();
-        void Update();
+        virtual void setNumIterations(int itersToRun);
+        virtual void setCurrIndex(int sliceIndex);
+        virtual void initializeData();
+        virtual void setCurrLabelArray(vtkImageData *label);
+        virtual void intializeLevelSet();
+        virtual void TransformUserInputImages(vtkTransform* transform, bool invert=false );
+        virtual void initializeUserInputImageWithContour();
+        virtual void Update();
 
         /** external interface to update at a voxel */
         void accumulateUserInput( double value, int i, int j, int k );
-        void accumulateUserInputInUserInputImages( double value,const unsigned int element);
-        void copyIntegralDuringPaste( int kFrom, int kTo );
-        void setRadius( int radNew ) {
+        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+        virtual void copyIntegralDuringPaste( int kFrom, int kTo );
+        virtual void setRadius( int radNew ) {
           rad = radNew;
         }
-        void saveCurrentSliceToPNG( const std::string& fileName);
+        virtual void saveCurrentSliceToPNG( const std::string& fileName);
 
         static double defaultKappaParam;
 
-        void UpdateImageSpacing(double* spacing)
+        virtual void UpdateImageSpacing(double* spacing)
         {
             for (int i=0;i<3;i++)
                 m_Spacing_mm[i]=spacing[i];
         }
 
-        void GetImageSpacing(double* spacing)
+        virtual void GetImageSpacing(double* spacing)
         {
             for (int i=0;i<3;i++)
                 spacing[i]=m_Spacing_mm[i];
         }
 
-        void SetUseEdgeBasedEnergy( bool useEdgeBased )
+        virtual void SetUseEdgeBasedEnergy( bool useEdgeBased )
         {
             m_bUseEdgeBased = useEdgeBased;
         }
-        bool GetUseEdgeBasedEnergy( )
+
+        virtual bool GetUseEdgeBasedEnergy( )
         {
             return m_bUseEdgeBased;
         }
 
-        void SetSaturationRange( double dmin, double dmax ) {
+        virtual void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {
                 m_SatRange[0] = dmin;
                 m_SatRange[1] = dmax;
@@ -106,12 +90,12 @@ class KSegmentor
         /** internal 'update from input' function */
         void integrateUserInput( int k );
 
-        void integrateUserInputInUserInputImage( int k );
+        virtual void integrateUserInputInUserInputImage( int k );
 
-        void UpdateArraysAfterTransform();
+        virtual void UpdateArraysAfterTransform();
 
         /** write to png file. rescale to 255, make sure it has .png ending */
-        void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
+        virtual void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
 
 /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
