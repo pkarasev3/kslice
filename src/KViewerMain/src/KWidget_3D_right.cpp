@@ -74,29 +74,29 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<doubl
 
   vtkSmartPointer<vtkMarchingCubes> cube_marcher= vtkSmartPointer<vtkMarchingCubes>::New();
   cube_marcher->SetInputConnection( kwidget_3d_right->multiLabelMaps3D[labnum].second->GetOutputPort() );
-  cube_marcher->ComputeNormalsOn();
   cube_marcher->SetValue(0,1);
-  cube_marcher->ComputeGradientsOn();
+  //cube_marcher->ComputeGradientsOn();
 
-  vtkSmartPointer<vtkSmoothPolyDataFilter> smoother = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+  /*vtkSmartPointer<vtkSmoothPolyDataFilter> smoother = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
   smoother->SetInputConnection( cube_marcher->GetOutputPort() );
   smoother->SetFeatureEdgeSmoothing( true );
   smoother->SetBoundarySmoothing( true );
   //increased smoothing iterations
-  smoother->SetNumberOfIterations(60);
+  smoother->SetNumberOfIterations(60);*/
 
   vtkSmartPointer<vtkPolyDataNormals> labSurfNormals = vtkSmartPointer<vtkPolyDataNormals>::New();
-  labSurfNormals->SetInputConnection(  smoother->GetOutputPort() );
-  labSurfNormals->SetFeatureAngle(10);
-  labSurfNormals->SetSplitting( true );
+  labSurfNormals->SetInputConnection(  cube_marcher->GetOutputPort() );
+  labSurfNormals->FlipNormalsOn();
+  //labSurfNormals->SetFeatureAngle(10);
+  //labSurfNormals->SetSplitting( true );
 
   vtkSmartPointer<vtkDataSetMapper> labelMapper = vtkSmartPointer<vtkDataSetMapper>::New();
   labelMapper->SetInputConnection( labSurfNormals->GetOutputPort() );
   labelMapper->SetImmediateModeRendering(1);
-  //labelMapper->Update();
+  labelMapper->Update();
 
   vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
-  polydata = smoother->GetOutput( );
+  polydata = labSurfNormals->GetOutput();
 
 
   kwidget_3d_right->multiLabelMaps3D[ labnum].first->SetMapper( labelMapper );
