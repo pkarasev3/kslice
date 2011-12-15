@@ -1,5 +1,6 @@
 #include "lsops3c.h"
 #include <math.h>
+#include <iostream>
 
 namespace
 {
@@ -282,7 +283,6 @@ double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, double *
   return pmin;
 }
 
-
 void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2){
   int x,y,z,idx;
   int i,j,k;
@@ -312,6 +312,179 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
         phi[idx] = 0;
       }
     }
+  }
+
+  //scan Lz to create Ln1 and Lp1
+  ll_init(Lz);
+  while(Lz->curr != NULL){
+    x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
+
+    if(((y+1)<DIMY) && abs((int)label[idx+OFFY])==3){//up
+      if(phi[idx+OFFY]<0){//in
+        label[idx+OFFY]=-1; phi[idx+OFFY]=-1;
+        ll_pushnew(Ln1,x,y+1,z,idx+OFFY);
+      }
+      else{                //out
+        label[idx+OFFY]=1; phi[idx+OFFY]=1;
+        ll_pushnew(Lp1,x,y+1,z,idx+OFFY);
+      }
+    }
+    if(((y-1)>=0)   && abs((int)label[idx-OFFY])==3){//down
+      if(phi[idx-OFFY]<0){ //in
+        label[idx-OFFY]=-1; phi[idx-OFFY]=-1;
+        ll_pushnew(Ln1,x,y-1,z,idx-OFFY);
+      }
+      else{                //out
+        label[idx-OFFY]=1; phi[idx-OFFY]=1;
+        ll_pushnew(Lp1,x,y-1,z,idx-OFFY);
+      }
+    }
+    if(((x+1)<DIMX) && abs((int)label[idx+OFFX])==3){//right
+      if(phi[idx+OFFX]<0){//in
+        label[idx+OFFX]=-1; phi[idx+OFFX]=-1;
+        ll_pushnew(Ln1,x+1,y,z,idx+OFFX);
+      }
+      else{                //out
+        label[idx+OFFX]=1; phi[idx+OFFX]=1;
+        ll_pushnew(Lp1,x+1,y,z,idx+OFFX);
+      }
+    }
+    if(((x-1)>=0)   && abs((int)label[idx-OFFX])==3){//left
+      if(phi[idx-OFFX]<0){ //in
+        label[idx-OFFX]=-1; phi[idx-OFFX]=-1;
+        ll_pushnew(Ln1,x-1,y,z,idx-OFFX);
+      }
+      else{                //out
+        label[idx-OFFX]=1; phi[idx-OFFX]=1;
+        ll_pushnew(Lp1,x-1,y,z,idx-OFFX);
+      }
+    }
+    if(((z+1)<DIMZ) && abs((int)label[idx+OFFZ])==3){//front
+      if(phi[idx+OFFZ]<0){//in
+        label[idx+OFFZ]=-1; phi[idx+OFFZ]=-1;
+        ll_pushnew(Ln1,x,y,z+1,idx+OFFZ);
+      }
+      else{                //out
+        label[idx+OFFZ]=1; phi[idx+OFFZ]=1;
+        ll_pushnew(Lp1,x,y,z+1,idx+OFFZ);
+      }
+    }
+    if(((z-1)>=0) && abs((int)label[idx-OFFZ])==3 ){//back
+      if(phi[idx-OFFZ]<0){ //in
+        label[idx-OFFZ]=-1; phi[idx-OFFZ]=-1;
+        ll_pushnew(Ln1,x,y,z-1,idx-OFFZ);
+      }
+      else{                //out
+        label[idx-OFFZ]=1; phi[idx-OFFZ]=1;
+        ll_pushnew(Lp1,x,y,z-1,idx-OFFZ);
+      }
+    }
+
+    ll_step(Lz);
+  }
+
+
+  //scan Ln1 to create Ln2
+  ll_init(Ln1);
+  while(Ln1->curr != NULL){
+    x = Ln1->curr->x; y = Ln1->curr->y; z = Ln1->curr->z; idx = Ln1->curr->idx;
+
+    if(((y+1)<DIMY) && label[idx+OFFY]==-3){//up
+        label[idx+OFFY]=-2; phi[idx+OFFY]=-2;
+        ll_pushnew(Ln2,x,y+1,z,idx+OFFY);
+    }
+    if(((y-1)>=0) && label[idx-OFFY]==-3){//down
+        label[idx-OFFY]=-2; phi[idx-OFFY]=-2;
+        ll_pushnew(Ln2,x,y-1,z,idx-OFFY);
+    }
+    if(((x+1)<DIMX) && label[idx+OFFX]==-3){//right
+        label[idx+OFFX]=-2; phi[idx+OFFX]=-2;
+        ll_pushnew(Ln2,x+1,y,z,idx+OFFX);
+    }
+    if(((x-1)>=0) && label[idx-OFFX]==-3){//left
+        label[idx-OFFX]=-2; phi[idx-OFFX]=-2;
+        ll_pushnew(Ln2,x-1,y,z,idx-OFFX);
+    }
+    if(((z+1)<DIMZ) && label[idx+OFFZ]==-3){//front
+        label[idx+OFFZ]=-2; phi[idx+OFFZ]=-2;
+        ll_pushnew(Ln2,x,y,z+1,idx+OFFZ);
+    }
+    if(((z-1)>=0) && label[idx-OFFZ]==-3){//back
+        label[idx-OFFZ]=-2; phi[idx-OFFZ]=-2;
+        ll_pushnew(Ln2,x,y,z-1,idx-OFFZ);
+    }
+    ll_step(Ln1);
+  }
+
+  //scan Lp1 to create Lp2
+  ll_init(Lp1);
+  while(Lp1->curr != NULL){
+    x = Lp1->curr->x; y = Lp1->curr->y; z = Lp1->curr->z; idx = Lp1->curr->idx;
+
+    if(((y+1)<DIMY) && label[idx+OFFY]==3){//up
+        label[idx+OFFY]=2; phi[idx+OFFY]=2;
+        ll_pushnew(Lp2,x,y+1,z,idx+OFFY);
+    }
+    if(((y-1)>=0) && label[idx-OFFY]==3){//down
+        label[idx-OFFY]=2; phi[idx-OFFY]=2;
+        ll_pushnew(Lp2,x,y-1,z,idx-OFFY);
+    }
+    if(((x+1)<DIMX) && label[idx+OFFX]==3){//right
+        label[idx+OFFX]=2; phi[idx+OFFX]=2;
+        ll_pushnew(Lp2,x+1,y,z,idx+OFFX);
+    }
+    if(((x-1)>=0) && label[idx-OFFX]==3){//left
+        label[idx-OFFX]=2; phi[idx-OFFX]=2;
+        ll_pushnew(Lp2,x-1,y,z,idx-OFFX);
+    }
+    if(((z+1)<DIMZ) && label[idx+OFFZ]==3){//front
+        label[idx+OFFZ]=2; phi[idx+OFFZ]=2;
+        ll_pushnew(Lp2,x,y,z+1,idx+OFFZ);
+    }
+    if(((z-1)>=0) && label[idx-OFFZ]==3){//back
+        label[idx-OFFZ]=2; phi[idx-OFFZ]=2;
+        ll_pushnew(Lp2,x,y,z-1,idx-OFFZ);
+    }
+    ll_step(Lp1);
+  }
+}
+
+void ls_mask2phi3c_update(std::vector< unsigned int > updateVector, std::vector< std::vector<unsigned int> > coordVector,  double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2){
+  int x,y,z,idx;
+  int  flag=0;
+  //only update in locations that have been changed
+  for (int i =0; i<updateVector.size();i++){
+  //for(x=0;x<DIMX;x++) for(y=0;y<DIMY;y++) for(z=0;z<DIMZ;z++){
+     //idx = (int)(z*DIMXY+x*DIMY+y);
+      idx=updateVector[i];
+      y=coordVector[i][0];
+      x=coordVector[i][1];
+      z=coordVector[i][2];
+        //mark the inside and outside of label and phi
+        if(mask[idx]<1e-3)
+        {
+            label[idx] =  3; phi[idx]= 3;
+        }
+        else
+        {
+            label[idx] = -3; phi[idx]=-3;
+        }
+        if(mask[idx] !=0){
+          flag = 0;
+          //if any neighbors are 1;
+          if(((y+1)<DIMY) && mask[idx+OFFY]<1e-3){flag = 1;}//up
+          if(((y-1)>=0)   && mask[idx-OFFY]<1e-3){flag = 1;}//down
+          if(((x+1)<DIMX) && mask[idx+OFFX]<1e-3){flag = 1;}//right
+          if(((x-1)>=0)   && mask[idx-OFFX]<1e-3){flag = 1;}//left
+          if(((z+1)<DIMZ) && mask[idx+OFFZ]<1e-3){flag = 1;}//front
+          if(((z-1)>=0)   && mask[idx-OFFZ]<1e-3){flag = 1;}//back
+          if(flag){
+            ll_pushnew(Lz,x,y,z,idx);
+            label[idx] = 0;
+            phi[idx] = 0;
+          }
+        }
+
   }
 
   //scan Lz to create Ln1 and Lp1

@@ -40,7 +40,6 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     if(!buttonDown)
     {
         masterWindow->SetCircleCursorOpacity(0);
-        masterWindow->UpdateVolumeStatus();
     }
     else
         masterWindow->SetCircleCursorOpacity(1);
