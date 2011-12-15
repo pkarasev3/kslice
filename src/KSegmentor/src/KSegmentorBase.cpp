@@ -276,7 +276,7 @@ void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
     unsigned int element=0;
     for (int i=0;i<=this->dimx-1; i++)  {
         for (int j=0; j<=this->dimy-1; j++) {
-            double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+            double val=1*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
             this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
             if(val>0)
             {

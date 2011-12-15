@@ -265,8 +265,8 @@ void KViewer::MoveSlider( int shiftNumberOfSlices )
 {
   int currentSlice  = this->kwidget_2d_left->currentSliceIndex;
   int newSliceIndex = currentSlice + shiftNumberOfSlices;
-  this->kwidget_2d_left->currentSliceIndex=newSliceIndex;
   if( newSliceIndex < this->kv_opts->numSlices   &&  newSliceIndex >= 0 ) {
+    this->kwidget_2d_left->currentSliceIndex=newSliceIndex;
     this->SliceSelect( newSliceIndex );
     this->Slider->setValue( newSliceIndex );
   }
@@ -360,13 +360,15 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         this->m_RotZ=!this->m_RotZ;
         break;
     case 'i': //For TESTING purposes
-         this->SliceSelect(0);
-        for(int sl=0;sl<this->Slider->maximum();sl++)
+         //this->SliceSelect(0);
+        for(int sl=slice_idx;sl<slice_idx+10;sl++)
         {
             kwidget_2d_left->RunSegmentor(sl,kv_opts->multilabel_sgmnt_mode);
+            this->queueCopyFromCurrentSlice( sl );
+            kwidget_2d_left->CopyLabelsFromTo( sl, sl+1, kv_opts->multilabel_paste_mode );
             this->SliceSelect(sl+1);
         }
-        this->SliceSelect(slice_idx);
+        this->UpdateVolumeStatus();
         break;
     default:
       break;
