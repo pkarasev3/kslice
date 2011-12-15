@@ -199,6 +199,10 @@ void  KWidget_2D_left::UpdateTransform()
     imageReslicer->GetOutput()->UpdateInformation();
 
     kv_data->UpdateRawImage(imageReslicer->GetOutput());
+    for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
+    {
+      multiLabelMaps[k]->ksegmentor->ptrCurrImage=static_cast<unsigned short*>(imageReslicer->GetOutput()->GetScalarPointer());
+    }
 
     imageReslicer->SetResliceTransform(vtkTransform::New());
     imageReslicer->AutoCropOutputOn();
@@ -462,7 +466,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
 //    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
 //    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
 
-    //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
+    kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
     //kseg->initializeData();
@@ -488,14 +492,15 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
 
 void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
 
-
     for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
-      if(updateTransform)
-      {
-        multiLabelMaps[k]->UpdateResliceTransform();
-        multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
-        multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
-      }
+        if(updateTransform)
+        {
+            multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
+            multiLabelMaps[k]->UpdateResliceTransform();
+            multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
+            multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
+
+        }
 
         double label_opacity = kv_opts->labelOpacity2D;
         if( k != activeLabelMapIndex ) {

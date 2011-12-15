@@ -236,11 +236,6 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
     this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-    vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
-    labelWriter->SetInput(this->U_Integral_image);
-      labelWriter->SetFileName("CurrIntegral_at.mhd");
-      labelWriter->Write();
-
     this->UpdateArraysAfterTransform();
 
 }

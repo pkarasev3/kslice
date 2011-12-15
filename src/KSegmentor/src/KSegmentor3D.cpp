@@ -92,19 +92,7 @@ namespace vrcl
 
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
-/*
-        vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
-        labelWriter->SetInput( createVTKImageFromPointer<double>(this->mask, dims,spc ));
-          labelWriter->SetFileName("CurrMask_at.mhd");
-          labelWriter->Write();
 
-          labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrImage, dims,spc ));
-            labelWriter->SetFileName("CurrImage_at.mhd");
-            labelWriter->Write();
-
-            labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrLabel, dims,spc ));
-              labelWriter->SetFileName("CurrLabel_at.mhd");
-              labelWriter->Write();*/
     }
 
 
@@ -139,23 +127,6 @@ namespace vrcl
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
 
-        vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
-        labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrImage, dims,spc ));
-          labelWriter->SetFileName("CurrImage.mhd");
-          labelWriter->Write();
-
-          labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrLabel, dims,spc ));
-            labelWriter->SetFileName("CurrLabel.mhd");
-            labelWriter->Write();
-
-            labelWriter->SetInput(this->U_Integral_image);
-              labelWriter->SetFileName("CurrIntegral.mhd");
-              labelWriter->Write();
-
-              labelWriter->SetInput(createVTKImageFromPointer<double>(this->mask, dims,spc ));
-                labelWriter->SetFileName("CurrMask.mhd");
-                labelWriter->Write();
-
       if(this->m_UpdateVector.size()!=0)
             ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
 
@@ -183,9 +154,6 @@ namespace vrcl
       //get number and coordinates of point (row, col) on the zero level set
       prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
 
-        labelWriter->SetInput( this->labelVol);
-        labelWriter->SetFileName("LabVol.mhd");
-        labelWriter->Write();
       //threshold phi to find segmentation label,
       // assign it to appropriate range of label!
       // shift and scale from [-3,3] to [0,1] x max_label

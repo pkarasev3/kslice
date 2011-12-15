@@ -48,8 +48,31 @@ namespace vrcl {
   vtkSmartPointer<vtkLookupTable> create_default_labelLUT( double maxVal,
               const std::vector<double>& rgb_primary = std::vector<double>()  );
 
+  //vtkSmartPointer<vtkImageData> createVTKImageFromPointer(unsigned short* imagePointer, long int dims[3], double spacing[3]);
 
 
+  template<class InputType>
+  vtkSmartPointer<vtkImageData> createVTKImageFromPointer(InputType* imagePointer, long int dims[3], double spacing[3])
+  {
+      vtkSmartPointer<vtkImageData> imgvol = vtkSmartPointer<vtkImageData>::New( );
+      imgvol->SetDimensions( dims[0],dims[1],dims[2] );
+      imgvol->SetNumberOfScalarComponents(1);
+      imgvol->SetSpacing( spacing );
+      imgvol->SetOrigin( 0,0,0 );
+      imgvol->SetScalarTypeToUnsignedShort( );
+      imgvol->AllocateScalars( );
+      unsigned short* outputImgPointer=static_cast<unsigned short*>(imgvol->GetScalarPointer());
+      long element=0;
+
+      for (int k=0; k<dims[0]; k++) {
+          for (int j=0; j<dims[1]; j++)  {
+              for (int i=0; i<dims[2]; i++, element++) {
+                  outputImgPointer[element]=imagePointer[element];
+              }
+          }
+      }
+      return imgvol;
+  }
 }
 
 #endif
