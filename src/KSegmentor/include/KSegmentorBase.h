@@ -66,7 +66,7 @@ class KSegmentorBase
             m_CoordinatesVector.push_back(coord);
         }
 
-        void copyIntegralDuringPaste( int kFrom, int kTo );
+        virtual void copyIntegralDuringPaste( int kFrom, int kTo );
 
         void setRadius( int radNew ) {
           rad = radNew;
@@ -128,6 +128,7 @@ class KSegmentorBase
         virtual void integrateUserInputInUserInputImage()=0;
 
         virtual void UpdateArraysAfterTransform()=0;
+
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( const cv::Mat& source, const std::string& fileName );

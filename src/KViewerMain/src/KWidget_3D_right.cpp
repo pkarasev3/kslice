@@ -46,10 +46,6 @@ namespace {
 
 void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
-// UNUSED VARIABLES
-//  Ptr<KDataWarehouse> kv_data = kwidget_3d_right->kv_data;
-//  vtkExtractVOI* labelSubVolumeExtractor = vtkExtractVOI::New();
-
   int size=0;
   kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
   size=kwidget_3d_right->multiLabelMaps3D.size();
