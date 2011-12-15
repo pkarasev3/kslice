@@ -445,13 +445,14 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             zmin     = (zmin >= 0 ) ? zmin : 0;
             zmax     = (zmax < kv_opts->numSlices-1 ) ? zmax : kv_opts->numSlices-1;
             for( int kk = zmin; kk <= zmax; kk++) {
-                coord.push_back(i);
-                coord.push_back(j);
-                coord.push_back(kk);
+
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
                 if(ptrLabel[elemNum]==0||(Label_Fill_Value==0 && ptrLabel[elemNum]==1))
                 {
+                    coord.push_back(i);
+                    coord.push_back(j);
+                    coord.push_back(kk);
                     kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
                     kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
                     coord.clear();

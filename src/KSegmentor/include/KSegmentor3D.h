@@ -25,6 +25,7 @@ namespace vrcl
 
 class KSegmentor3D : public KSegmentorBase
 {
+    clock_t t1, t2;
     public:
         static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit);
         virtual ~KSegmentor3D();
