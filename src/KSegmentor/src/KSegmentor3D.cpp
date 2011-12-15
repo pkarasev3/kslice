@@ -186,6 +186,7 @@ namespace vrcl
         m_CoordinatesVector.clear();
     }
 
+
     KSegmentor3D::~KSegmentor3D(){
 
             //delete [] this->mdims;//Causes trouble! Haveto find out why!!
