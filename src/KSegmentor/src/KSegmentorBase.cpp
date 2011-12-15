@@ -74,7 +74,6 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->Sp2=NULL ;
     segPointer->Lin2out=NULL ;
     segPointer->Lout2in=NULL ;
-    segPointer->seg=NULL;
     segPointer->img=NULL;
     segPointer->mask=NULL;
 
@@ -105,31 +104,24 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imgRange   = new double[2];
     segPointer->labelRange = new double[2];
 
-    segPointer->phi        = new double[segPointer->mdims[0]*segPointer->mdims[1]*segPointer->mdims[2]];
-    segPointer->label      = new double[segPointer->mdims[0]*segPointer->mdims[1]*segPointer->mdims[2]];
-    segPointer->mask     = new double[segPointer->mdims[0]*segPointer->mdims[1]*segPointer->mdims[2]];
-    segPointer->img     = new double[segPointer->mdims[0]*segPointer->mdims[1]*segPointer->mdims[2]];
-
-
-    cout << "I think the # of rows is: " << segPointer->mdims[0] << ", # of cols is: " << segPointer->mdims[1] << endl;
+    cout << "I think the # of rows is: " << segPointer->mdims[1] << ", # of cols is: " << segPointer->mdims[0] << endl;
 
     segPointer->iList=NULL;
     segPointer->jList=NULL;
 
-    if(segPointer->useContInit)
-    {
-       std::cout<<"Initializing user input using label data"<<std::endl;
-        segPointer->initializeUserInputImageWithContour();
-    }
-
     //Set dimensions
     segPointer->dimz = (int)segPointer->mdims[2];
-    segPointer->dimx = (int)segPointer->mdims[1];
-    segPointer->dimy = (int)segPointer->mdims[0];
+    segPointer->dimy = (int)segPointer->mdims[1];
+    segPointer->dimx = (int)segPointer->mdims[0];
+
+    segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+    segPointer->label      = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+    segPointer->mask     = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+    segPointer->img       = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
 
     segPointer->dims[2] = segPointer->dimz;
-    segPointer->dims[1] = segPointer->dimx;
-    segPointer->dims[0] = segPointer->dimy;
+    segPointer->dims[1] = segPointer->dimy;
+    segPointer->dims[0] = segPointer->dimx;
 
     segPointer->dims[3] = segPointer->dims[0]*segPointer->dims[1];
     segPointer->dims[4] = segPointer->dims[0]*segPointer->dims[1]*segPointer->dims[2];
@@ -137,9 +129,16 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
 
-    segPointer->seg = new  unsigned short[segPointer->dims[0]*segPointer->dims[1]*segPointer->dims[2]];
-    //segPointer->initializeData();
-    //segPointer->intializeLevelSet();
+}
+
+
+void KSegmentorBase::UpdateMask()
+{
+    for (int element=0;element<this->m_UpdateVector.size();element++)
+    {
+        unsigned int el=this->m_UpdateVector[element];
+        this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+    }
 }
 
 void KSegmentorBase::saveMatToPNG( const cv::Mat& sliceImg, const std::string& fileName )
@@ -160,32 +159,40 @@ void KSegmentorBase::saveMatToPNG( const cv::Mat& sliceImg, const std::string& f
     cv::imwrite(png_name, saveImg );
 }
 
-void KSegmentorBase::initializeUserInputImageWithContour(){
-    int element=0;
-    unsigned short* label3DPointer = static_cast<unsigned short*>(labelVol->GetScalarPointer());
-    for (int i=0; i<=imageVol->GetExtent()[1]-1; i++)  {
-        for (int j=0; j<=imageVol->GetExtent()[3]-1; j++) {
-            for(int k=0;k<=imageVol->GetExtent()[5]-1;k++){
-                this->accumulateUserInputInUserInputImages((double)label3DPointer[element],element);
-                element++;
+void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
+    this->m_UpdateVector.clear();
+    this->m_CoordinatesVector.clear();
+    unsigned int element=0;
+    std::vector<unsigned int> coord;
+    int mult=50;//Which value is appropriate ??
+    //Image extents are used according to definition in lsops3c.cpp
+    for (int i=0; i<=this->dimx-1; i++) {
+        for (int j=0; j<=this->dimy-1; j++)  {
+            for (int k=0; k<=this->dimz-1; k++) {
+                element=k*dimx*dimy +j*dimx+i;
+                if(accumulate)
+                    this->accumulateUserInputInUserInputImages((double)ptrCurrLabel[element],element);
+                if(ptrCurrLabel[element]>0)
+                {
+                    this->AddPointToUpdateVector(element);
+                    coord.push_back(i);
+                    coord.push_back(j);
+                    coord.push_back(k);
+                    this->AddPointToCoordinatesVector(coord);
+                    coord.clear();
+                }
         }
      }
   }
-  for(int k=0;k<=imageVol->GetExtent()[5]-1;k++)
-    this->integrateUserInputInUserInputImage(k);
+  this->integrateUserInputInUserInputImage();
+  this->m_UpdateVector.clear();
+  this->m_CoordinatesVector.clear();
 }
 
 
-void KSegmentorBase::integrateUserInputInUserInputImage( int k )
-{
-    unsigned int element3D=0;
-    for (int j=0; j<=mdims[1]-1; j++)  {
-        for (int i=0; i<=mdims[0]-1; i++) {
-            element3D=k*mdims[1]*mdims[0] +j*mdims[0]+i;
-            this->ptrIntegral_Image[element3D]+=this->ptrU_t_Image[element3D];
-            this->ptrU_t_Image[element3D]=this->ptrU_t_Image[element3D]*0.5;
-        }
-    }
+void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
+    double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
+    this->ptrU_t_Image[element]=user_input;
 }
 
 
@@ -229,6 +236,11 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
     this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
+    vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
+    labelWriter->SetInput(this->U_Integral_image);
+      labelWriter->SetFileName("CurrIntegral_at.mhd");
+      labelWriter->Write();
+
     this->UpdateArraysAfterTransform();
 
 }
@@ -262,17 +274,28 @@ void KSegmentorBase::intializeLevelSet(){
 
     //initialize lists, phi, and labels
     ls_mask2phi3c(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
-
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-  for (int i=0;i<=mdims[0]-1; i++)  {
-      for (int j=0; j<=mdims[1]-1; j++) {
-          double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
-          this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
-      }
-  }
+    std::vector <unsigned int> coord;
+    unsigned int element=0;
+    for (int i=0;i<=this->dimx-1; i++)  {
+        for (int j=0; j<=this->dimy-1; j++) {
+            double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+            this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
+            if(val>0)
+            {
+                element=kTo*dimx*dimy +j*dimx+i;
+                this->AddPointToUpdateVector(element);
+                coord.push_back(i);
+                coord.push_back(j);
+                coord.push_back(kTo);
+                this->AddPointToCoordinatesVector(coord);
+                coord.clear();
+            }
+        }
+    }
 }
 
 KSegmentorBase::~KSegmentorBase()

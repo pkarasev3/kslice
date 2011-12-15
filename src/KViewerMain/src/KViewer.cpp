@@ -325,6 +325,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case 's': // run "KSegmentor"
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
+      this->UpdateVolumeStatus();
       break;
     case '0':
        kv_opts->seg_time_interval+=0.05;
@@ -409,11 +410,11 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
     if (0 != event_PixCoord[0] && 0 != event_PixCoord[1] )       {
       // imgWidth: ACROSS, imgV: DOWN, when viewed from the vtk window
-      int imax = std::min(event_PixCoord[0]+kv_opts->paintBrushRad,(kv_opts->imgWidth-1));
-      int jmax = std::min(event_PixCoord[1]+kv_opts->paintBrushRad,(kv_opts->imgHeight-1));
-      int jmin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);
-      int imin = std::max(event_PixCoord[0]-kv_opts->paintBrushRad,0);
-      int k = event_PixCoord[2];
+      int xmax = std::min(event_PixCoord[0]+kv_opts->paintBrushRad,(kv_opts->imgWidth-1));
+      int ymax = std::min(event_PixCoord[1]+kv_opts->paintBrushRad,(kv_opts->imgHeight-1));
+      int ymin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);
+      int xmin = std::max(event_PixCoord[0]-kv_opts->paintBrushRad,0);
+      int z = event_PixCoord[2];
 
       double image_range[2];
       kwidget_2d_left->color_HSV_LookupTable->GetTableRange(image_range);
@@ -428,9 +429,9 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       kv_data->labelDataArray=kwidget_2d_left->multiLabelMaps[label_idx]->labelDataArray;
       unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray->GetScalarPointer());
       unsigned short *ptrImage=static_cast<unsigned short*>(kv_data->imageVolumeRaw->GetScalarPointer());
-
-      for (int i=imin; i<=imax; i++)  {
-        for (int j=jmin; j<=jmax; j++) {
+      std::vector<unsigned int> coord;
+      for (int i=xmin; i<=xmax; i++)  {
+        for (int j=ymin; j<=ymax; j++) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
                                 (j-event_PixCoord[1])*(j-event_PixCoord[1])*1.0 , 0.5 ) + 1e-3;
           if( distance < kv_opts->paintBrushRad ) {
@@ -439,16 +440,26 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int kmin = k - 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int kmax = k + 1*floor( sqrt(kv_opts->paintBrushRad - distance) );
-            kmin     = (kmin >= 0 ) ? kmin : 0;
-            kmax     = (kmax < kv_opts->numSlices ) ? kmax : kv_opts->numSlices;
-            for( int kk = kmin; kk <= kmax; kk++) {
+            int zmin = z - 1*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            int zmax = z + 1*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            zmin     = (zmin >= 0 ) ? zmin : 0;
+            zmax     = (zmax < kv_opts->numSlices-1 ) ? zmax : kv_opts->numSlices-1;
+            for( int kk = zmin; kk <= zmax; kk++) {
+                coord.push_back(i);
+                coord.push_back(j);
+                coord.push_back(kk);
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
+                if(ptrLabel[elemNum]==0||(Label_Fill_Value==0 && ptrLabel[elemNum]==1))
+                {
+                    kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
+                    kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
+                    coord.clear();
+                }
                 ptrLabel[elemNum] = Label_Fill_Value;
                 //if(kk==k) //User integration only in current slice or not?
                     kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
+
               }
             }
           }

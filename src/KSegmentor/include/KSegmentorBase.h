@@ -51,12 +51,20 @@ class KSegmentorBase
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet();
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
-        void initializeUserInputImageWithContour();
+        void initializeUserInputImageWithContour(bool accumulate=true);
         virtual void Update()=0;
 
         /** external interface to update at a voxel */
 
-        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element)=0;
+        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+
+        void AddPointToUpdateVector(unsigned int element){
+            m_UpdateVector.push_back(element);
+        }
+
+        void AddPointToCoordinatesVector(std::vector<unsigned int> coord){
+            m_CoordinatesVector.push_back(coord);
+        }
 
         void copyIntegralDuringPaste( int kFrom, int kTo );
 
@@ -108,11 +116,16 @@ class KSegmentorBase
 
         vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
+        std::vector<unsigned int > m_UpdateVector;
+        std::vector< std::vector<unsigned int> > m_CoordinatesVector;
+
         void InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit);
+        void InitializeMaskAndImage();
+        void UpdateMask();
 
         virtual void initializeData()=0;
 
-        virtual void integrateUserInputInUserInputImage( int k )=0;
+        virtual void integrateUserInputInUserInputImage()=0;
 
         virtual void UpdateArraysAfterTransform()=0;
 
@@ -122,6 +135,7 @@ class KSegmentorBase
         /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
+public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
         double *ptrIntegral_Image; //ptr to current image slice

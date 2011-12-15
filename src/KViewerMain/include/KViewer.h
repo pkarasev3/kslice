@@ -163,6 +163,7 @@ protected:
   Ptr<KWidget_2D_left>   kwidget_2d_left;
   Ptr<KWidget_3D_right>  kwidget_3d_right;
 
+
   clock_t t1, t2;
 
   /** \brief Creates circle cursor
