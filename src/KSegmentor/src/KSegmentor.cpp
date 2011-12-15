@@ -368,10 +368,6 @@ void KSegmentor::initializeData()
       /*std::stringstream ss;
       ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
       saveCurrentSliceToPNG( ss.str() );*/
-        vtkSmartPointer<vtkMetaImageWriter> labelWriter=   vtkSmartPointer<vtkMetaImageWriter>::New();
-        labelWriter->SetInput( this->U_Integral_image );
-        labelWriter->SetFileName( "Integral.mhd");
-        labelWriter->Write();
     }
 }
 
