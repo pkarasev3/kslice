@@ -495,10 +495,10 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
     for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
         if(updateTransform)
         {
-            multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
             multiLabelMaps[k]->UpdateResliceTransform();
             multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
             multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
+            multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
 
         }
 
