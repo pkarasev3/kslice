@@ -9,6 +9,8 @@
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <ctime>
+
 using std::string;
 using cv::Mat;
 
@@ -109,9 +111,9 @@ namespace vrcl
         this->imgRange=imgRange;
 
         long elemNum=0;
-        for (int k=0; k<dimx; k++) {
-            for (int j=0; j<dimy; j++)  {
-                for (int i=0; i<dimz; i++,elemNum++) {
+        for (int k=0; k<=dimx-1; k++) {
+            for (int j=0; j<=dimy-1; j++)  {
+                for (int i=0; i<=dimz-1; i++,elemNum++) {
                     this->mask[elemNum]=(double) ( 0 < ptrCurrLabel[elemNum] );
                     this->img[elemNum] = (double) ptrCurrImage[elemNum];
                 }
@@ -127,20 +129,21 @@ namespace vrcl
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
 
-      if(this->m_UpdateVector.size()!=0)
+        if(this->m_UpdateVector.size()!=0)
             ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
+
 
         if( !m_bUseEdgeBased ) {
             /*short plhs[1];
             chanvese(img,phi,label,dims,
                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
                      iter,lambda,plhs,display);*/
-           interactive_chanvese(img,phi,ptrIntegral_Image,label,dims,
+            interactive_chanvese(img,phi,ptrIntegral_Image,label,dims,
                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
                                  iter,rad,lambda,display);
         } else {
             interactive_edgebased(img,phi,ptrIntegral_Image,label,dims,
-                                 Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
+                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
                                   iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1]);
         }
 
@@ -151,36 +154,36 @@ namespace vrcl
             delete[] jList;
         }
 
-      //get number and coordinates of point (row, col) on the zero level set
-      prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
+        //get number and coordinates of point (row, col) on the zero level set
+        prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
 
-      //threshold phi to find segmentation label,
-      // assign it to appropriate range of label!
-      // shift and scale from [-3,3] to [0,1] x max_label
-      long elemNum=0;
-      double mult=labelRange[1] / 4.0;
-      for (int k=0; k<dimz; k++) {
-          for (int j=0; j<dimy; j++)  {
-              for (int i=0; i<dimx; i++) {
-                  double phi_val = phi[elemNum];
+        //threshold phi to find segmentation label,
+        // assign it to appropriate range of label!
+        // shift and scale from [-3,3] to [0,1] x max_label
+        long elemNum=0;
+        double mult=labelRange[1] / 4.0;
+        for (int k=0; k<dimz; k++) {
+            for (int j=0; j<dimy; j++)  {
+                for (int i=0; i<dimx; i++) {
+                    double phi_val = phi[elemNum];
 
-                  double phi_out = (-phi_val + 3.0) / 6.0;
+                    double phi_out = (-phi_val + 3.0) / 6.0;
 
-                  double outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
-                                                          (phi_out > 0.8) +
-                                                          (phi_out > 0.65) +
-                                                          (phi_out > 0.5) )
-                                                        * mult );
-                  ptrCurrLabel[elemNum] =outputVal;
-                  elemNum++;
-              }
-          }
-      }
+                    double outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
+                                                            (phi_out > 0.8) +
+                                                            (phi_out > 0.65) +
+                                                            (phi_out > 0.5) )
+                                                          * mult );
+                    ptrCurrLabel[elemNum] =outputVal;
+                    elemNum++;
+                }
+            }
+        }
 
-      //Still needed? For copy/paste?
-      //prevSlice = currSlice;
-      m_UpdateVector.clear();
-      m_CoordinatesVector.clear();
+        //Still needed? For copy/paste?
+        //prevSlice = currSlice;
+        m_UpdateVector.clear();
+        m_CoordinatesVector.clear();
     }
 
     KSegmentor3D::~KSegmentor3D(){

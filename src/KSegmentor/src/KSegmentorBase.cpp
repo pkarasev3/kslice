@@ -164,8 +164,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     this->m_CoordinatesVector.clear();
     unsigned int element=0;
     std::vector<unsigned int> coord;
-    int mult=50;//Which value is appropriate ??
-    //Image extents are used according to definition in lsops3c.cpp
+
     for (int i=0; i<=this->dimx-1; i++) {
         for (int j=0; j<=this->dimy-1; j++)  {
             for (int k=0; k<=this->dimz-1; k++) {
