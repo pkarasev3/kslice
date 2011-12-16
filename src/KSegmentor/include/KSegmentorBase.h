@@ -111,6 +111,21 @@ class KSegmentorBase
             }
         }
 
+        void SetPlaneCenter(double* center)
+        {
+            this->m_PlaneCenter=center;
+        }
+
+        void SetPlaneNormalVector(double* normal)
+        {
+            this->m_PlaneNormalVector=normal;
+        }
+
+        void SetDistanceWeight(float dw)
+        {
+            this->m_DistWeight=dw;
+        }
+
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
 
@@ -136,6 +151,9 @@ class KSegmentorBase
         /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
+        double* m_PlaneNormalVector, *m_PlaneCenter;
+        float m_DistWeight;
+
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice

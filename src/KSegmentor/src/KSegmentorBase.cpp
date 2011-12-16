@@ -58,6 +58,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     //Should we keep these abolute values in here
     segPointer->dthresh=500;
     segPointer->iter=500;
+    segPointer->m_DistWeight=0;
     segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
@@ -276,7 +277,7 @@ void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
     unsigned int element=0;
     for (int i=0;i<=this->dimx-1; i++)  {
         for (int j=0; j<=this->dimy-1; j++) {
-            double val=1*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+            double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
             this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
             if(val>0)
             {

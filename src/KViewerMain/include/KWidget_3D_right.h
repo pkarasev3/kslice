@@ -14,6 +14,7 @@
 #include "KViewerOptions.h"
 #include "KVolumeRenderView.h"
 #include "opencv2/core/core.hpp"
+#include "vtkImagePlaneWidget.h"
 
 
 using cv::Ptr;
@@ -98,10 +99,27 @@ public:
       return 0;
   }
 
+  void MoveSlice(int increment)
+  {
+      if(m_SliceIndex+increment>=0)
+         m_SliceIndex+=increment;
+      m_PlaneWidgetZ->SetSliceIndex(m_SliceIndex);
+      m_PlaneWidgetZ->UpdatePlacement();
+  }
+
+  void MoveSliceTo(int index)
+  {
+      m_SliceIndex=index;
+      m_PlaneWidgetZ->SetSliceIndex(m_SliceIndex);
+      m_PlaneWidgetZ->UpdatePlacement();
+  }
 
 
   static void AddNewLabel(Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
 
+  vtkImagePlaneWidget* GetImagePlane(){
+      return m_PlaneWidgetZ;
+  }
 
   LabelActorMap3DType   multiLabelMaps3D;
 private:
@@ -109,7 +127,10 @@ private:
   KWidget_3D_right( const KWidget_3D_right& );
   KWidget_3D_right & operator=(const KWidget_3D_right &rhs);
 
+  vtkImagePlaneWidget* m_PlaneWidgetZ;
+
   unsigned int m_CurrentNumberOfLabels;
+  unsigned int m_SliceIndex;
 
 
 };

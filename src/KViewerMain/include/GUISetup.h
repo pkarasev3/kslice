@@ -35,7 +35,7 @@ public:
   /** 3D Widgets, do the heavy graphics work */
   QVTKWidget *qVTK1, *qVTK2;
   /** labels to display status on screen */
-  QLabel *coord, *paintBrushStatus, *volumeOfLabelmap,*segmentationInterval;
+  QLabel *coord, *paintBrushStatus, *volumeOfLabelmap,*segmentationInterval,*distweight;
 
   /** static labels, keyboard tips */
   QLabel *copyPasteKeyTip, *contrastKeyTip, *segmentTip, *drawEraseTip;
@@ -180,6 +180,10 @@ public:
     segmentationInterval->setObjectName(QString::fromUtf8("timeIntervalForSeg"));
     segmentationInterval->setAlignment(Qt::AlignCenter);
 
+    distweight = new QLabel(centralwidget);
+    distweight->setObjectName(QString::fromUtf8("distanceWeight"));
+    distweight->setAlignment(Qt::AlignCenter);
+
 
     /* Line Edit, TODO: Move Saving functionality to menu */
     saveAsLineEdit = new QLineEdit( GUI );
@@ -193,6 +197,7 @@ public:
     statusVBoxLayout->addWidget( paintBrushStatus );
     statusVBoxLayout->addWidget( volumeOfLabelmap );
     statusVBoxLayout->addWidget( segmentationInterval );
+    statusVBoxLayout->addWidget( distweight );
 
     hToolbar = new QHBoxLayout();
     hToolbar->addWidget(FillEraseButton);
@@ -259,7 +264,8 @@ public:
 
     coord->setText(QApplication::translate("GUI", "Awaiting Mouse Input on Label Map", 0, QApplication::UnicodeUTF8));
     volumeOfLabelmap->setText(QApplication::translate("GUI", "Volume: not yet computed", 0, QApplication::UnicodeUTF8));
-    segmentationInterval->setText(QApplication::translate("GUI", "time interval for seg. update:", 0, QApplication::UnicodeUTF8));
+    distweight->setText(QApplication::translate("GUI", "dist. weight:", 0, QApplication::UnicodeUTF8));
+    segmentationInterval->setText(QApplication::translate("GUI", "seg. int.:", 0, QApplication::UnicodeUTF8));
     paintBrushStatus->setText(QApplication::translate("GUI", "Toggled: Draw", 0, QApplication::UnicodeUTF8));
 
     contrastKeyTip->setText(QApplication::translate("GUI", "Contrast up/down keys: [l,k]; Label Opacity up/down keys: [o,p]", 0, QApplication::UnicodeUTF8));

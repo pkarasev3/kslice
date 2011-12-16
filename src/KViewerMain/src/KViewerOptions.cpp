@@ -101,7 +101,9 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   segmentor_iters     = 10;
   time_triggered_seg_update = true;
   seg_time_interval =0.3;  //time interval for performing (automatic) segmentation while painting
+  distWeight=0.3;
   m_CurrentAngle=0;
+  //m_PlaneCenter = new double[3];
 
   //LabelArrayFilenames.push_back("");
   drawLabelMaxVal     = getDefaultDrawLabelMaxVal();
