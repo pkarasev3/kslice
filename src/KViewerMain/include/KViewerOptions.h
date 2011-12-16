@@ -29,8 +29,12 @@ public:
   double  paintBrushThreshold; 
   int     loadImageTrigger;
   float     seg_time_interval;
+  float    distWeight;
   double m_Center[3];
   float m_CurrentAngle;
+  double* m_PlaneNormalVector;
+  double m_PlaneCenter[3];
+
 
   std::vector<std::string> LabelArrayFilenames;
   std::string ImageArrayFilename;

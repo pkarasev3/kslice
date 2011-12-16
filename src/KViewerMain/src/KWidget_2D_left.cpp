@@ -321,13 +321,16 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
     multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
+    multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
   for (int s=0;s<3;s++)
     kv_opts->imageSpacing[s]=this->GetActiveLabelMap( )->GetSpacing()[s];
+
   //I think that makes sense,otherwise KSlice crashed everytime you load a new image with different dims when labels were pre-loaded
   kv_opts_input->LabelArrayFilenames.clear();
+
   UpdateMultiLabelMapDisplay( );
 }
 
@@ -368,7 +371,6 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
     multiLabelMaps[k]->labelReslicer->SetResliceTransform(m_SliderTrans);
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
-
   }
 
 }
@@ -499,7 +501,6 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
             multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
             multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
             multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
-
         }
 
         double label_opacity = kv_opts->labelOpacity2D;

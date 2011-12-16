@@ -151,6 +151,10 @@ public slots:
       this->m_CircleActor->GetProperty()->SetOpacity(opacity);
   }
 
+  Ptr<KWidget_3D_right> Get3DWidget()
+  {
+      return kwidget_3d_right;
+  }
 
 protected:
   vtkSmartPointer<vtkEventQtSlotConnect>  Connections;

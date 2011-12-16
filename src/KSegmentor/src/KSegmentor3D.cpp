@@ -95,6 +95,19 @@ namespace vrcl
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
 
+                vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
+                labelWriter->SetInput( createVTKImageFromPointer<double>(this->mask, dims,spc ));
+                  labelWriter->SetFileName("CurrMask_at.mhd");
+                  labelWriter->Write();
+
+                  labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrImage, dims,spc ));
+                    labelWriter->SetFileName("CurrImage_at.mhd");
+                    labelWriter->Write();
+
+                    labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrLabel, dims,spc ));
+                      labelWriter->SetFileName("CurrLabel_at.mhd");
+                      labelWriter->Write();
+
     }
 
 
@@ -138,9 +151,9 @@ namespace vrcl
             chanvese(img,phi,label,dims,
                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
                      iter,lambda,plhs,display);*/
-            interactive_chanvese(img,phi,ptrIntegral_Image,label,dims,
+            interactive_chanvese_ext(this->m_UpdateVector,this->m_CoordinatesVector,img,phi,ptrIntegral_Image,label,dims,
                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                                 iter,rad,lambda,display);
+                                 iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         } else {
             interactive_edgebased(img,phi,ptrIntegral_Image,label,dims,
                                   Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,

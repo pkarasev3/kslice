@@ -35,6 +35,7 @@
 #include "vtkTransform.h"
 #include "KSandbox.h"
 
+
 #define SP( X )  vtkSmartPointer<X> 
 
 using cv::Ptr;
@@ -175,6 +176,7 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
   }  
     
   multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
+  multiLabelMaps3D[labNumber].second->Modified();
   multiLabelMaps3D[labNumber].second->UpdateWholeExtent( );
  //SetupLabelActor3D(kwidget_3d_right);
   this->qVTK_widget_right->update( );
@@ -212,6 +214,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                 // c) better idea: use x,y,z coords for colormap generation
                                 // in conjunction with polydata actors
  if(UseVolumeRender) {
+     kwidget_3d_right->m_SliceIndex=1;
     // Turn off volume view temporarily for speed
     kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
     kwidget_3d_right->kv_data = kv_data_input;
@@ -225,6 +228,29 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
     SetupSubVolumeExtractor( kwidget_3d_right );
     std::vector<double> firstcolor={240/255.0, 163/255.0, 255/255.0};
     SetupLabelActor3D( kwidget_3d_right,firstcolor );
+
+    kwidget_3d_right->m_PlaneWidgetZ =vtkImagePlaneWidget::New();
+    QVTKWidget* qvtk = kwidget_3d_right->qVTK_widget_right;
+
+    kwidget_3d_right->m_PlaneWidgetZ->SetInput(kwidget_3d_right->kv_data->imageVolumeRaw);
+    kwidget_3d_right->m_PlaneWidgetZ->SetSliceIndex(kwidget_3d_right->m_SliceIndex);
+    kwidget_3d_right->m_PlaneWidgetZ->SetInteractor( qvtk->GetRenderWindow()->GetInteractor( ) );
+    kwidget_3d_right->m_PlaneWidgetZ->SetCurrentRenderer(kwidget_3d_right->kv3DModelRenderer);
+    kwidget_3d_right->m_PlaneWidgetZ->SetKeyPressActivationValue('n');
+
+    kwidget_3d_right->m_PlaneWidgetZ->RestrictPlaneToVolumeOn();
+    kwidget_3d_right->m_PlaneWidgetZ->GetPlaneProperty()->SetColor(1,0,0);
+
+    kwidget_3d_right->m_PlaneWidgetZ->TextureInterpolateOn();
+    kwidget_3d_right->m_PlaneWidgetZ->SetResliceInterpolateToLinear();
+    kwidget_3d_right->m_PlaneWidgetZ->SetPlaneOrientationToZAxes();
+
+    kwidget_3d_right->m_PlaneWidgetZ->SetEnabled(1);
+
+    kwidget_3d_right->m_PlaneWidgetZ->GetTexturePlaneProperty()->SetOpacity(0.5);
+    kwidget_3d_right->m_PlaneWidgetZ->DisplayTextOn();
+    kwidget_3d_right->m_PlaneWidgetZ->UpdatePlacement();
+
   }
 }
 

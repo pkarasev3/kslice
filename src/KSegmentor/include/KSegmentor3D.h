@@ -34,6 +34,9 @@ class KSegmentor3D : public KSegmentorBase
         /** external interface to update at a voxel */
         void accumulateUserInputInUserInputImages( double value,const unsigned int element);
 
+
+
+
     private:
 
         KSegmentor3D(){}
@@ -44,6 +47,7 @@ class KSegmentor3D : public KSegmentorBase
         void integrateUserInputInUserInputImage();
 
         void UpdateArraysAfterTransform();
+
 };
 
 

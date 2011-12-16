@@ -165,6 +165,12 @@ void KViewer::updatePaintBrushStatus(vtkObject*) {
 void KViewer::SliceSelect(int SliderVal) {
   double currSliceOrigin=kv_opts->sliderMin +kv_opts->sliceZSpace*SliderVal;
   kwidget_2d_left->CallbackSliceSlider( SliderVal, currSliceOrigin );
+  for (int i=0;i<3;i++)
+      this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
+  this->kv_opts->m_PlaneNormalVector=this->Get3DWidget()->GetImagePlane()->GetNormal();
+
+  this->Get3DWidget()->MoveSliceTo(SliderVal);
+  this->UpdateVolumeStatus();
   qVTK1->update();
 }
 
@@ -200,7 +206,7 @@ void KViewer::ToggleFillEraseMode() {
 void KViewer::UpdateModel3D() {
   //kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
   unsigned int activeLabel=kwidget_2d_left->activeLabelMapIndex;
-  kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,activeLabel);
+  kwidget_3d_right->UpdateSubVolumeExtractor(kwidget_2d_left->GetActiveLabelMap(),activeLabel);
   qVTK1->update();
   qVTK2->update();
 }
@@ -328,12 +334,25 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       this->UpdateVolumeStatus();
       break;
     case '0':
-       kv_opts->seg_time_interval+=0.05;
-       segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
+       //kv_opts->seg_time_interval+=0.05;
+        kv_opts->distWeight+=0.05;
+        distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
+        }
       break;
     case '9':
-       kv_opts->seg_time_interval-=0.05;
-       segmentationInterval->setText("time interval for seg. update: "+ QString::number(kv_opts->seg_time_interval)+" sec");
+       //kv_opts->seg_time_interval-=0.05;
+        if((kv_opts->distWeight-0.05)<0)
+            kv_opts->distWeight=0;
+        else
+            kv_opts->distWeight-=0.05;
+        distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
+        }
       break;
     case 'm':
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
@@ -475,10 +494,13 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
           t1=t2;
       }
+       //this->UpdateVolumeStatus();
       kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified();
-     // kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
+      //kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
       qVTK1->update();
+      qVTK2->update();
     }
+
   }
 }
 
@@ -511,6 +533,14 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     kv_opts->sliceZSpace    = kv_opts->imageSpacing[2];
     this->Slider->setSingleStep(kv_opts->sliceZSpace);
     this->Slider->update();
+    for (int i=0;i<3;i++)
+        this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
+    kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
+    for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+    {
+        this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
+        this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
+    }
 
 }
 
@@ -551,6 +581,18 @@ void KViewer::setupQVTKandData( )
          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
        }
   }
+
+  for (int i=0;i<3;i++)
+      this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
+  kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
+
+  for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+  {
+      this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
+      this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
+  }
+
+
   //this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[0]->labelDataArray);
 
   // CreateThresholdFilter( );
@@ -575,6 +617,7 @@ void KViewer::setupQVTKandData( )
 
    //initialize display for segmentation interval
   segmentationInterval->setText("time interval for seg. update: "+QString::number(kv_opts->seg_time_interval)+" sec");
+  distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
   qVTK1->setUpdatesEnabled(true);
   qVTK2->setUpdatesEnabled(true);
   qVTK1->update();
@@ -606,6 +649,8 @@ void KViewer::ConnectQTSlots( ) {
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
   Connections->Connect(qVTK1->GetRenderWindow()->GetInteractor(), vtkCommand::KeyPressEvent, this, SLOT(handleGenericEvent(vtkObject*, unsigned long)));
 
+  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::KeyPressEvent, this, SLOT(handleGenericEvent(vtkObject*, unsigned long)));
+  Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
   Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
 
   connect(Slider,SIGNAL(valueChanged(int)), this, SLOT(SliceSelect(int)));
