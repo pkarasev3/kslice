@@ -314,7 +314,13 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
 
   //else
    // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
-
+  vtkMetaImageReader*reader = vtkMetaImageReader::New();
+  if(kv_opts_input->m_SpeedImageFileName!="")
+  {
+      reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
+      reader->SetDataScalarTypeToDouble();
+      reader->Update();
+  }
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
   {
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
@@ -322,6 +328,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
+    if(kv_opts_input->m_SpeedImageFileName!="")
+        multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -372,6 +380,7 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
     multiLabelMaps[k]->labelReslicer->SetResliceTransform(m_SliderTrans);
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
   }
+  std::cout<<"origin: "<<currSliceOrigin<<std::endl;
 
 }
 
@@ -581,6 +590,16 @@ void KWidget_2D_left::AddNewLabelMap( )
   if (!bIsInitialization) {
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
+      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
+      if(kv_opts->m_SpeedImageFileName!="")
+      {
+          vtkMetaImageReader*reader = vtkMetaImageReader::New();
+          reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str());
+          reader->SetDataScalarTypeToDouble();
+          reader->Update();
+          multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+      }
   }
 
 }

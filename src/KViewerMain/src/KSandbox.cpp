@@ -32,7 +32,7 @@ vector<double> get_good_color_0to7( int idx )
   switch( idx )
   {
   case 0:
-    rgb = {240, 163, 255}; // amethyst
+    rgb = {255, 163, 255}; // amethyst
     break;
   case 1:
     rgb = {255,0,16}; // red
@@ -208,28 +208,6 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
   IFLOG("create_default_labelLUT_verbose", cout << " Created default Label LUT! " << endl; )
       return labelLUT;
 }
-/*
-vtkSmartPointer<vtkImageData> createVTKImageFromPointer(unsigned short* imagePointer, long int dims[3], double spacing[3])
-{
-    vtkSmartPointer<vtkImageData> imgvol = vtkSmartPointer<vtkImageData>::New( );
-      imgvol->SetDimensions( dims[0],dims[1],dims[2] );
-      imgvol->SetNumberOfScalarComponents(1);
-      imgvol->SetSpacing( spacing );
-      imgvol->SetOrigin( 0,0,0 );
-      imgvol->SetScalarTypeToUnsignedShort( );
-      imgvol->AllocateScalars( );
-      unsigned short* outputImgPointer=static_cast<unsigned short*>(imgvol->GetScalarPointer());
-      long element=0;
-
-      for (int k=0; k<dims[0]; k++) {
-          for (int j=0; j<dims[1]; j++)  {
-              for (int i=0; i<dims[2]; i++, element++) {
-                  outputImgPointer[element]=imagePointer[element];
-              }
-          }
-      }
-      return imgvol;
-}*/
 
 void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data) {
 

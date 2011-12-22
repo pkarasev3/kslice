@@ -67,6 +67,7 @@ public slots:
   /**  \brief Handle slider update and show new slice in QVTK window
     */
   void SliceSelect(int SliderVal);
+  void SliderCB( int sliceNum );
 
   /**  \brief Callback for 'click on toggle draw/erase button'
     */

@@ -16,6 +16,7 @@
 #include <fstream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <omp.h>
 
 using std::vector;
 
@@ -30,6 +31,8 @@ static double imgMin, imgMax,   binWidth;
 long numdims;
 double engEval;
 bool UseInitContour=1;
+
+
 
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
@@ -423,7 +426,6 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
     if(uout>0) uout = sumout/aout;
 }
 
-
 void en_lrbac_destroy(){
     if(gball!=NULL)
         free(gball);
@@ -436,6 +438,41 @@ void en_lrbac_destroy(){
     if(Sout!=NULL)
         free(Sout);
 }
+
+double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
+{
+    int x,y,z,idx;
+    double *F, *kappa;
+    double a;
+    // allocate space for F
+    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
+    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
+    int n=0;
+    ll_init(Lz);
+    double Fmax = 0.00001; //begining of list;
+
+
+    while(Lz->curr != NULL)
+    {          //loop through list
+        x = Lz->curr->x;
+        y = Lz->curr->y;
+        z = Lz->curr->z;
+        idx = Lz->curr->idx;
+        a = speedimg[idx];
+        if(fabs(a)> Fmax)   Fmax = fabs(a);
+        F[n] = -a;
+        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+        ll_step(Lz); n++;       //next point
+    }
+    if(scale[0]==0)
+        scale[0] = Fmax;
+        for(int j=0;j<Lz->length;j++){
+            F[j] = F[j]/scale[0]+lam*kappa[j];
+        }
+    free(kappa);
+    return F;
+}
+
 
 double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
@@ -484,32 +521,43 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
                 }
             }
         }
+        // TODO: cleanup / verify in matlab these make sense... doing it from memory now.
+        // TODO: make it isotropic, if desired. Better to use the spatial spacing though.
         double edge_force = 0.0;
         double Ix = block_img[2][1][1] - block_img[0][1][1] +
                    (block_img[2][0][1] - block_img[0][0][1])*0.5 +
-                   (block_img[2][2][1] - block_img[0][2][1])*0.5;
+                   (block_img[2][2][1] - block_img[0][2][1])*0.5 +
+                   (block_img[2][1][2] - block_img[0][1][2])*0.5 +
+                   (block_img[2][1][0] - block_img[0][1][0])*0.5;
         double Iy = block_img[1][2][1] - block_img[1][0][1]+
                    (block_img[0][2][1] - block_img[0][0][1])*0.5 +
-                   (block_img[2][2][1] - block_img[2][0][1])*0.5;
-        double Iz = block_img[1][1][2] - block_img[1][1][0];
+                   (block_img[2][2][1] - block_img[2][0][1])*0.5 +
+                   (block_img[1][2][2] - block_img[0][0][2])*0.5 +
+                   (block_img[1][2][0] - block_img[2][0][0])*0.5;
+        double Iz = (block_img[1][1][2] - block_img[1][1][0])*3.0;
         double Px = block_phi[2][1][1] - block_phi[0][1][1]+
                    (block_phi[2][0][1] - block_phi[0][0][1])*0.5 +
                    (block_phi[2][2][1] - block_phi[0][2][1])*0.5;
         double Py = block_phi[1][2][1] - block_phi[1][0][1]+
                    (block_phi[0][2][1] - block_phi[0][0][1])*0.5 +
                    (block_phi[2][2][1] - block_phi[2][0][1])*0.5;
-        double Pz = block_phi[1][1][2] - block_phi[1][1][0];
-        edge_force = Ix * Px + Iy * Py + Iz * Pz;
+        double Pz = (block_phi[1][1][2] - block_phi[1][1][0])*2.0;
+        Px        = Px * (x > 0) * (x < (DIMX-1) );
+        Py        = Py * (y > 0) * (y < (DIMY-1) );
+        Pz        = Pz * (z > 0) * (z < (DIMZ-1) );
+
+        edge_force = Ix * Px + Iy * Py + Iz * Pz ;
         //edge_force *= (abs(Ix)+abs(Iy)+abs(Iz) )/3.0;
 
         if(Ain[idx] <0){
             en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
         }
-        if(Ain[idx] >0) u = Sin[idx] /Ain[idx];
-        if(Aout[idx]>0) v = Sout[idx]/Aout[idx];
-        a = (I-u)*(I-u)-(I-v)*(I-v) ;
-        a = 0*a - edge_force;
-        if(fabs(a)> Fmax)   Fmax = fabs(a);
+        //if(Ain[idx] >0) u = Sin[idx] /Ain[idx];
+        //if(Aout[idx]>0) v = Sout[idx]/Aout[idx];
+        //a = (I-u)*(I-u)-(I-v)*(I-v) ;
+        a = -edge_force;
+        if(fabs(a)> Fmax)
+          Fmax = fabs(a);
         F[n] = a;
         kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
         ll_step(Lz); n++;       //next point

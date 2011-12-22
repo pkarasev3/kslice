@@ -117,20 +117,12 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     case 'w':
     case 'R':
       this->masterWindow->MoveSlider(  1 ); // right slider
-      //this->masterWindow->UpdateVolumeStatus();
-      masterWindow->Get3DWidget()->MoveSlice(1);
-      for (int i=0;i<3;i++)
-          this->kv_opts->m_PlaneCenter[i]=masterWindow->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
-      this->masterWindow->UpdateVolumeStatus();
 
       break;
     case 'q':
     case 'L':
       this->masterWindow->MoveSlider( -1 ); // left slider
-      masterWindow->Get3DWidget()->MoveSlice(-1);
-      for (int i=0;i<3;i++)
-          this->kv_opts->m_PlaneCenter[i]=masterWindow->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
-      this->masterWindow->UpdateVolumeStatus();
+
       break;
     case 'd': // toggle draw/erase
       erase = ! erase;

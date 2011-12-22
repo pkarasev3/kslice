@@ -169,9 +169,6 @@ void KViewer::SliceSelect(int SliderVal) {
       this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
   this->kv_opts->m_PlaneNormalVector=this->Get3DWidget()->GetImagePlane()->GetNormal();
 
-  this->Get3DWidget()->MoveSliceTo(SliderVal);
-  this->UpdateVolumeStatus();
-  qVTK1->update();
 }
 
 void KViewer::UpdateVolumeStatus()
@@ -267,6 +264,13 @@ void KViewer::queueCopyFromCurrentSlice(int idxFrom)
   kwidget_2d_left->cacheSliceIndex = idxFrom; // bag it for pasting later
 }
 
+
+void KViewer::SliderCB( int sliceNum )
+{
+    int sliceDiff=sliceNum-this->kwidget_2d_left->currentSliceIndex;
+    MoveSlider(sliceDiff);
+}
+
 void KViewer::MoveSlider( int shiftNumberOfSlices )
 {
   int currentSlice  = this->kwidget_2d_left->currentSliceIndex;
@@ -274,8 +278,13 @@ void KViewer::MoveSlider( int shiftNumberOfSlices )
   if( newSliceIndex < this->kv_opts->numSlices   &&  newSliceIndex >= 0 ) {
     this->kwidget_2d_left->currentSliceIndex=newSliceIndex;
     this->SliceSelect( newSliceIndex );
+    this->Get3DWidget()->MoveSliceTo(newSliceIndex);
     this->Slider->setValue( newSliceIndex );
   }
+  this->qVTK2->setFocus( );
+  this->qVTK1->update();
+  this->qVTK2->update();
+  this->qVTK1->setFocus( );
 }
 
 void KViewer::AddNewLabelMap( )
@@ -331,7 +340,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case 's': // run "KSegmentor"
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
-      this->UpdateVolumeStatus();
+      //this->UpdateVolumeStatus();
       break;
     case '0':
        //kv_opts->seg_time_interval+=0.05;
@@ -357,7 +366,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case 'm':
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
         break;
-    case 'r':
+    case 'e':
         if(this->m_RotX)
          kwidget_2d_left->InitializeTransform('x');
         else
@@ -389,18 +398,24 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         }
         this->UpdateVolumeStatus();
         break;
+    case 'u':
+         this->UpdateVolumeStatus();
     default:
       break;
     }
-    if(keyPressed=='r' ||keyPressed=='t'||keyPressed=='z')
+    if(keyPressed=='e' ||keyPressed=='t'||keyPressed=='z')
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
+        int id=  kwidget_2d_left->activeLabelMapIndex;
+        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        {
+            kwidget_2d_left->SelectActiveLabelMap( k);
+            this->UpdateVolumeStatus();
+        }
+        kwidget_2d_left->SelectActiveLabelMap(id);
     }
-
   }
-
-
 }
 
 void KViewer::mousePaintEvent(vtkObject* obj) {
@@ -468,20 +483,17 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             for( int kk = zmin; kk <= zmax; kk++) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
-              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
-                if(ptrLabel[elemNum]==0||(Label_Fill_Value==0 && ptrLabel[elemNum]==1))
-                {
-                    coord.push_back(i);
-                    coord.push_back(j);
-                    coord.push_back(kk);
-                    kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
-                    kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
-                    coord.clear();
-                }
-                ptrLabel[elemNum] = Label_Fill_Value;
+              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {    
+                coord.push_back(i);
+                coord.push_back(j);
+                coord.push_back(kk);
+                kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
+                kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
+                coord.clear();
+
                 //if(kk==k) //User integration only in current slice or not?
                     kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
-
+                                    ptrLabel[elemNum] = 1000;
               }
             }
           }
@@ -653,7 +665,7 @@ void KViewer::ConnectQTSlots( ) {
   Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(mousePaintEvent(vtkObject*)));
   Connections->Connect(qVTK2->GetRenderWindow()->GetInteractor(), vtkCommand::MouseMoveEvent, this, SLOT(updateCoords(vtkObject*)));
 
-  connect(Slider,SIGNAL(valueChanged(int)), this, SLOT(SliceSelect(int)));
+  connect(Slider,SIGNAL(valueChanged(int)), this, SLOT(SliderCB(int)));
 
   //  connect(maxThreshSlider,SIGNAL(valueChanged(int)), this, SLOT(maxThreshSliderChanged(int)));
   //  connect(minThreshSlider,SIGNAL(valueChanged(int)), this, SLOT(minThreshSliderChanged(int)));

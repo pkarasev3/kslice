@@ -46,7 +46,7 @@ class KSegmentorBase
 {
 
     public:
-        ~KSegmentorBase();
+        virtual ~KSegmentorBase()=0;
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet();
@@ -126,6 +126,7 @@ class KSegmentorBase
             this->m_DistWeight=dw;
         }
 
+
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
 
@@ -172,6 +173,8 @@ public:
         double *img;         // single slice!
         double *mask;        // single slice!
 
+         double* m_CustomSpeedImgPointer;
+
         double penaltyAlpha; //regularizer for "user constraints" experiments
         double *seed;        //again, only used in functions for "user constraints" experiments
         bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
@@ -207,7 +210,7 @@ public:
         long dimz,dimy,dimx;
         LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        LL *Lin2out, *Lout2in;
+        LL *Lin2out, *Lout2in,*Lchanged;
 };
 
 

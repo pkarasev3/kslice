@@ -416,9 +416,9 @@ void KSegmentor::Update()
                              Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
                              iter,rad,lambda,display);
     } else {
-        interactive_edgebased(img,phi,U_I_slice,label,dims,
+     /*   interactive_edgebased(speedimg,img,phi,U_I_slice,label,dims,
                              Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                              iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1]);
+                              iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1]);*/
     }
 
 

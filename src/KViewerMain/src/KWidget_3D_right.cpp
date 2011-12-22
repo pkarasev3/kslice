@@ -27,6 +27,7 @@
 #include "vtkVolumeRayCastCompositeFunction.h"
 #include "vtkVolumeMapper.h"
 #include "vtkXMLPolyDataWriter.h"
+#include "vtkPolyDataWriter.h"
 #include "vtkColorTransferFunction.h"
 #include "vtkVolume.h"
 #include "vtkVolumeProperty.h"
@@ -91,10 +92,6 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<doubl
   labelMapper->SetInputConnection( labSurfNormals->GetOutputPort() );
   labelMapper->SetImmediateModeRendering(1);
   labelMapper->Update();
-
-  vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
-  polydata = labSurfNormals->GetOutput();
-
 
   kwidget_3d_right->multiLabelMaps3D[ labnum].first->SetMapper( labelMapper );
 
@@ -164,11 +161,6 @@ void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_source, unsigned int labNumber ) {
 
-    // Don't resample, kind of hopeless: better to segment properly and use thinner images!
-    //this->labelSubVolumeExtractor = vtkExtractVOI::New();
-//  if( labNumber < (int) multiLabelMaps3D.size() ) {
- // 
- // }
     //kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
   std::pair<vtkLODActor*,vtkExtractVOI*>  pairElement =   multiLabelMaps3D[labNumber];
   if( pairElement.second == NULL ) {
@@ -214,7 +206,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
                                 // c) better idea: use x,y,z coords for colormap generation
                                 // in conjunction with polydata actors
  if(UseVolumeRender) {
-     kwidget_3d_right->m_SliceIndex=1;
+     kwidget_3d_right->m_SliceIndex=0;
     // Turn off volume view temporarily for speed
     kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
     kwidget_3d_right->kv_data = kv_data_input;
@@ -233,7 +225,6 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
     QVTKWidget* qvtk = kwidget_3d_right->qVTK_widget_right;
 
     kwidget_3d_right->m_PlaneWidgetZ->SetInput(kwidget_3d_right->kv_data->imageVolumeRaw);
-    kwidget_3d_right->m_PlaneWidgetZ->SetSliceIndex(kwidget_3d_right->m_SliceIndex);
     kwidget_3d_right->m_PlaneWidgetZ->SetInteractor( qvtk->GetRenderWindow()->GetInteractor( ) );
     kwidget_3d_right->m_PlaneWidgetZ->SetCurrentRenderer(kwidget_3d_right->kv3DModelRenderer);
     kwidget_3d_right->m_PlaneWidgetZ->SetKeyPressActivationValue('n');
@@ -247,7 +238,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
 
     kwidget_3d_right->m_PlaneWidgetZ->SetEnabled(1);
 
-    kwidget_3d_right->m_PlaneWidgetZ->GetTexturePlaneProperty()->SetOpacity(0.5);
+    kwidget_3d_right->m_PlaneWidgetZ->GetTexturePlaneProperty()->SetOpacity(1);
     kwidget_3d_right->m_PlaneWidgetZ->DisplayTextOn();
     kwidget_3d_right->m_PlaneWidgetZ->UpdatePlacement();
 
