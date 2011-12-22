@@ -44,6 +44,7 @@ double KSegmentorBase::defaultKappaParam = 0.5;
 
 void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit)
 {
+    segPointer->m_CustomSpeedImgPointer=NULL;
     segPointer->imageVol=image;
     segPointer->labelVol=label;
 
@@ -185,6 +186,17 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
      }
   }
   this->integrateUserInputInUserInputImage();
+    double spc[3];
+    this->U_Integral_image->GetSpacing(spc);
+
+    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+    labelWriter->SetFileName( "0-Integral0.mhd");
+    labelWriter->Write();
+
+    labelWriter->SetInput(this->U_Integral_image );
+    labelWriter->SetFileName( "0-IntegralImage0.mhd");
+    labelWriter->Write();*/
   this->m_UpdateVector.clear();
   this->m_CoordinatesVector.clear();
 }
@@ -266,9 +278,10 @@ void KSegmentorBase::intializeLevelSet(){
     Lp2 = ll_create();
     Lin2out = ll_create();
     Lout2in = ll_create();
+    Lchanged =ll_create();
 
     //initialize lists, phi, and labels
-    ls_mask2phi3c(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
+    ls_mask2phi3c_ext(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
@@ -295,24 +308,6 @@ void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 
 KSegmentorBase::~KSegmentorBase()
 {
-        //delete [] this->mdims;//Causes trouble! Have to find out why!!
-        delete [] this->img;
-        delete [] this->mask;
-        delete [] this->imgRange;
-        delete [] this->labelRange;
-        delete [] this->phi;
-        delete [] this->label;
-        delete [] this->seg;
-        delete [] this->iList;
-        delete [] this->jList;
-
-        ll_destroy(Lz);
-        ll_destroy(Ln1);
-        ll_destroy(Ln2);
-        ll_destroy(Lp1);
-        ll_destroy(Lp2);
-        ll_destroy(Lin2out);
-        ll_destroy(Lout2in);
 }
 
 

@@ -26,6 +26,7 @@ double *en_lrbac_gball(double rad);
 void en_lrbac_destroy();
 void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad);
 
+
 // functions to minimize bhattacharyya energy
 double *en_bhattacharyya_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam);
 void en_bhattacharyya_init(double *img, double *phi, long *dims);
@@ -55,6 +56,9 @@ void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
 double *en_chanvese_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam);
 void en_chanvese_init(double *img, double *phi, long *dims);
 void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
+
+
+double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam);
 
 // functions to minimize RGB vector valued chan-vese energy
 double *en_chanvese_rgb_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam);

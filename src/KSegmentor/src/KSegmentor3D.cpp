@@ -9,6 +9,7 @@
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
 
+
 #include <ctime>
 
 using std::string;
@@ -45,11 +46,10 @@ namespace vrcl
 
     void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
     {
-        double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
+        double user_input      = -10.0 * ( value > 0.5 ) + 10.0 * ( value <= 0.5 );
         //Changed accumulation! (+=) instead of (+)
-        this->ptrU_t_Image[element]+=user_input;
+            this->ptrU_t_Image[element]=user_input;
     }
-
 
     void KSegmentor3D::integrateUserInputInUserInputImage()
     {
@@ -92,22 +92,6 @@ namespace vrcl
         //this->initializeUserInputImageWithContour(false);
         this->intializeLevelSet();
 
-        double spc[3];
-        this->U_Integral_image->GetSpacing(spc);
-
-                vtkMetaImageWriter* labelWriter=   vtkMetaImageWriter::New();
-                labelWriter->SetInput( createVTKImageFromPointer<double>(this->mask, dims,spc ));
-                  labelWriter->SetFileName("CurrMask_at.mhd");
-                  labelWriter->Write();
-
-                  labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrImage, dims,spc ));
-                    labelWriter->SetFileName("CurrImage_at.mhd");
-                    labelWriter->Write();
-
-                    labelWriter->SetInput( createVTKImageFromPointer<unsigned short>(this->ptrCurrLabel, dims,spc ));
-                      labelWriter->SetFileName("CurrLabel_at.mhd");
-                      labelWriter->Write();
-
     }
 
 
@@ -119,7 +103,7 @@ namespace vrcl
         { // empty label; so set the proper range
           labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
         }
-        assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
+        //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
         this->imgRange=imgRange;
 
@@ -139,62 +123,102 @@ namespace vrcl
         this->integrateUserInputInUserInputImage();
         this->UpdateMask();
 
-        double spc[3];
-        this->U_Integral_image->GetSpacing(spc);
-
         if(this->m_UpdateVector.size()!=0)
-            ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
+            ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
 
-
-        if( !m_bUseEdgeBased ) {
-            /*short plhs[1];
-            chanvese(img,phi,label,dims,
-                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                     iter,lambda,plhs,display);*/
-            interactive_chanvese_ext(this->m_UpdateVector,this->m_CoordinatesVector,img,phi,ptrIntegral_Image,label,dims,
-                                 Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                                 iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
-        } else {
-            interactive_edgebased(img,phi,ptrIntegral_Image,label,dims,
-                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                                  iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1]);
+        if (m_CustomSpeedImgPointer!=NULL)
+        {
+            interactive_customspeed(this->m_CustomSpeedImgPointer,img,phi,ptrIntegral_Image,label,dims,
+                                    Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                    iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         }
-
-        if(iList!=NULL){
-            delete[] iList;
+        else if( m_bUseEdgeBased ) {
+            interactive_edgebased_ext(img,phi,ptrIntegral_Image,label,dims,
+                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                  iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         }
-        if(jList!=NULL){
-            delete[] jList;
-        }
+        else
+            interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                     iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
 
         //get number and coordinates of point (row, col) on the zero level set
-        prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
+        //prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
 
         //threshold phi to find segmentation label,
         // assign it to appropriate range of label!
         // shift and scale from [-3,3] to [0,1] x max_label
+/*
         long elemNum=0;
         double mult=labelRange[1] / 4.0;
-        for (int k=0; k<dimz; k++) {
-            for (int j=0; j<dimy; j++)  {
-                for (int i=0; i<dimx; i++) {
-                    double phi_val = phi[elemNum];
+        for (int k=0; k<dimz-1; k++) {
+                    for (int j=0; j<dimy-1; j++)  {
+                        for (int i=0; i<dimx-1; i++) {
+                            double phi_val = phi[elemNum];
 
-                    double phi_out = (-phi_val + 3.0) / 6.0;
-
-                    double outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
-                                                            (phi_out > 0.8) +
-                                                            (phi_out > 0.65) +
-                                                            (phi_out > 0.5) )
-                                                          * mult );
-                    ptrCurrLabel[elemNum] =outputVal;
-                    elemNum++;
+                            double phi_out = (-phi_val + 3.0) / 6.0;
+                            double outputVal= (unsigned short) ( ( (phi_out > 0.95) +
+                                                                    (phi_out > 0.8) +
+                                                                    (phi_out > 0.65) +
+                                                                    (phi_out > 0.5) )
+                                                                  * mult );
+                            ptrCurrLabel[elemNum] =outputVal;
+                            elemNum++;
+                        }
+                    }
                 }
-            }
+        */
+        long elemNum=0;
+       double mult=labelRange[1] / 4.0;
+        elemNum=0;
+        int x,y,z,idx;
+
+        double phi_val = 0;
+        double phi_out = 0;
+        double outputVal=0;
+        ll_init(Lchanged);
+
+        while(Lchanged->curr != NULL)
+        {          //loop through list
+          x = Lchanged->curr->x;
+          y = Lchanged->curr->y;
+          z = Lchanged->curr->z;
+          idx = (z)*dimx*dimy +(x)*dimx+(y);
+          phi_val = phi[idx];
+          phi_out = (-phi_val + 3.0) / 6.0;
+          outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
+                                           (phi_out > 0.8) +
+                                           (phi_out > 0.65) +
+                                           (phi_out > 0.5) )
+                                            *mult);
+          ptrCurrLabel[idx] =outputVal;
+         ll_step(Lchanged);
         }
 
-        //Still needed? For copy/paste?
-        //prevSlice = currSlice;
+        ll_remcurr_free(Lchanged);
+
+        double spc[3];
+        this->U_Integral_image->GetSpacing(spc);
+
+        /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+        labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+        labelWriter->SetFileName( "0-Integral.mhd");
+        labelWriter->Write();
+
+        labelWriter->SetInput(this->U_Integral_image );
+        labelWriter->SetFileName( "0-IntegralImage.mhd");
+        labelWriter->Write();
+
+        labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrU_t_Image,this->U_Integral_image->GetDimensions(), spc) );
+        labelWriter->SetFileName( "0-U_t.mhd");
+        labelWriter->Write();
+
+
+        labelWriter->SetInput(this->U_t_image);
+        labelWriter->SetFileName( "0-U_t-image.mhd");
+        labelWriter->Write();*/
+
+
         m_UpdateVector.clear();
         m_CoordinatesVector.clear();
     }
@@ -220,6 +244,7 @@ namespace vrcl
             ll_destroy(Lp2);
             ll_destroy(Lin2out);
             ll_destroy(Lout2in);
+             ll_destroy(Lchanged);
     }
 
 }

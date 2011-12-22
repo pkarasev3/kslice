@@ -157,7 +157,7 @@ void mexFunctionReplacement(long numberdims, int *mdims,
         cout << "running chanvese() ... " << endl;
         chanvese(img,phi,label,dims,
                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,
-                 contour_iters,smoothness_lambda,plhs,display);
+                 10,0.5,plhs,display);
         break;
     case 1:
         cout << "running kappa() ... " << endl;
