@@ -136,7 +136,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
 void KSegmentorBase::UpdateMask()
 {
-    for (int element=0;element<this->m_UpdateVector.size();element++)
+    int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+    for (int element=0;element<Nelements;element++)
     {
         unsigned int el=this->m_UpdateVector[element];
         this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );

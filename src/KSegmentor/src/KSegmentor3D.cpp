@@ -54,7 +54,8 @@ namespace vrcl
     void KSegmentor3D::integrateUserInputInUserInputImage()
     {
         int pos=0;
-        for (int element=0;element<this->m_UpdateVector.size();element++)
+        int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+        for (int element=0;element<Nelements;element++)
         {
             pos=this->m_UpdateVector[element];
             this->ptrIntegral_Image[pos]+=this->ptrU_t_Image[pos];
