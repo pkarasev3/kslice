@@ -315,7 +315,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   //else
    // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
   vtkMetaImageReader*reader = vtkMetaImageReader::New();
-  if(kv_opts_input->m_SpeedImageFileName!="")
+  if( kv_opts_input->m_SpeedImageFileName.empty() )
   {
       reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
       reader->SetDataScalarTypeToDouble();
@@ -328,8 +328,16 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
-    if(kv_opts_input->m_SpeedImageFileName!="")
-        multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+    if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
+        cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
+        if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
+            cout << " ... failed, could not read. " << endl;
+        } else {
+            multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+            cout << " ... ok. " << endl;
+        }
+
+    }
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -471,12 +479,6 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
     Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
 
-    // Ok maybe it is no longer needed ...  testing w/o it !
-//    // Karl: leave this unless you are 100% sure that it's not needed
-//    // this hack causes more consistent GUI state in display (we trick it into refreshing)
-//    kv_data->labelDataArray_new           = SP(vtkImageData)::New();
-//    kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
-
     kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
@@ -592,13 +594,18 @@ void KWidget_2D_left::AddNewLabelMap( )
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
       this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
-      if(kv_opts->m_SpeedImageFileName!="")
+      if( !(kv_opts->m_SpeedImageFileName.empty()) )
       {
           vtkMetaImageReader*reader = vtkMetaImageReader::New();
-          reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str());
-          reader->SetDataScalarTypeToDouble();
-          reader->Update();
-          multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+          if( ! reader->CanReadFile(kv_opts->m_SpeedImageFileName.c_str()) ) {
+              cout << "Failed to read speed image file " << kv_opts->m_SpeedImageFileName << "  ! setting to NULL..." << endl;
+              multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = NULL;
+          } else {
+              reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str());
+              reader->SetDataScalarTypeToDouble();
+              reader->Update();
+              multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+          }
       }
   }
 
