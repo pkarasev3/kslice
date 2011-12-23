@@ -18,3 +18,7 @@ target_link_libraries( test8_ParametricSurface ${KV_LIBS} )
 
 add_executable( test9_DataVolumeToSurface test9_DataVolumeToSurface.cpp)
 target_link_libraries( test9_DataVolumeToSurface ${KV_LIBS} )
+
+add_executable(compiler_compatibility_test  compiler_compatibility_test.cpp)
+target_link_libraries(compiler_compatibility_test ${KV_LIBS})
+
