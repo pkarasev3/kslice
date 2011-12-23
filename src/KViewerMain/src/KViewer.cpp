@@ -465,7 +465,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       kv_data->labelDataArray=kwidget_2d_left->multiLabelMaps[label_idx]->labelDataArray;
       unsigned short *ptrLabel=static_cast<unsigned short*>(kv_data->labelDataArray->GetScalarPointer());
       unsigned short *ptrImage=static_cast<unsigned short*>(kv_data->imageVolumeRaw->GetScalarPointer());
-      std::vector<unsigned int> coord;
+      std::vector<unsigned int> coord(3);
       for (int i=xmin; i<=xmax; i++)  {
         for (int j=ymin; j<=ymax; j++) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
@@ -476,24 +476,29 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
             // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            int zmin = z - 1*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
-            int zmax = z + 1*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
+            // ARGH this definitely needs to be a command line option... 'draw-spread'
+            int ds   = kv_opts->m_DrawSpreadOffViewPlane;
+            int zmin = z - ds*floor(   sqrt(kv_opts->paintBrushRad - distance) );
+            int zmax = z + ds*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
             zmin     = (zmin >= 0 ) ? zmin : 0;
             zmax     = (zmax < kv_opts->numSlices-1 ) ? zmax : kv_opts->numSlices-1;
             for( int kk = zmin; kk <= zmax; kk++) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
               if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {    
-                coord.push_back(i);
-                coord.push_back(j);
-                coord.push_back(kk);
+                  coord[0]=(i);
+                  coord[1]=(j);
+                  coord[2]=(kk);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
-                coord.clear();
 
                 //if(kk==k) //User integration only in current slice or not?
-                    kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
-                                    ptrLabel[elemNum] = 1000;
+                         // PK opinion: drawing period really should be in "this" slice only ...
+                         // off-view-slice updates make sense for automated part. But it doesn't make sense to
+                         // manually draw edits if we're editing things we can't see! Rather, we go to a slice where automated
+                         // part is making mistakes and edit it there.
+                kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
+                ptrLabel[elemNum] = Label_Fill_Value;  // careful this might vary! Also this is where "erase" enters!
               }
             }
           }
