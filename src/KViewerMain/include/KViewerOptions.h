@@ -49,6 +49,7 @@ public:
   bool  time_triggered_seg_update;
   int   minIntensity;
   int   maxIntensity;
+  int   m_DrawSpreadOffViewPlane;
 
   double drawLabelMaxVal; // value of "inside" labelmap
   int    segmentor_iters; // # of curve evolution update iterations
