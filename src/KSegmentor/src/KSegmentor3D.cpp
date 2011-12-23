@@ -46,7 +46,7 @@ namespace vrcl
 
     void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
     {
-        double Umax            = 10.0;  // It is bizarre that having this at 10.0 works,
+        double Umax            = 1.0;   // It is bizarre that having this at 10.0 works,
                                         // technically it shouldn't because we're using inside the  tanh() function
                                         // comparing it with \phi() which is between -3 and +3 . If we can't get
                                         // values between -3 and +3 the smoothness breaks down.

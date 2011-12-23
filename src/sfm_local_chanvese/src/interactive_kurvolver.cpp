@@ -263,7 +263,7 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
   double I;
   ll_init(Lz);
   n=0;
-  double gamma        = 1.0 / iter;
+  double gamma        = 10.0 / iter;
   double diff[3]={0,0,0};
   double distance=0;
   while(Lz->curr != NULL){
