@@ -46,9 +46,22 @@ namespace vrcl
 
     void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
     {
-        double user_input      = -10.0 * ( value > 0.5 ) + 10.0 * ( value <= 0.5 );
-        //Changed accumulation! (+=) instead of (+)
-            this->ptrU_t_Image[element]=user_input;
+        double Umax            = 10.0;  // It is bizarre that having this at 10.0 works,
+                                        // technically it shouldn't because we're using inside the  tanh() function
+                                        // comparing it with \phi() which is between -3 and +3 . If we can't get
+                                        // values between -3 and +3 the smoothness breaks down.
+        double user_input      = -Umax * ( value > 0.5 ) + Umax * ( value <= 0.5 );
+
+        //Changed accumulation! (+=) instead of (=)
+        //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
+                                                   // at least, smoothness needs to be enforced somewhere else ...
+        this->ptrU_t_Image[element] = user_input;
+                // Consider the following, if this were (+=). If we 'draw' 5 times and erase 2 times, but erasing
+                // happens last, this point would look erased to the user initially but then suddenly it has a large U
+                // because of some earlier draws.
+                //
+                // Something more reasonable is perhaps a moving average with saturated summation ...
+                // but just (+=) is a confusing 'brownian motion' effect...
     }
 
     void KSegmentor3D::integrateUserInputInUserInputImage()
