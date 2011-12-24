@@ -94,11 +94,13 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->U_Integral_image->SetExtent(image->GetExtent());
     segPointer->U_Integral_image->SetScalarTypeToDouble();
     segPointer->U_Integral_image->SetSpacing(image->GetSpacing());
+    segPointer->U_Integral_image->AllocateScalars();
     segPointer->ptrIntegral_Image = static_cast<double*>(segPointer->U_Integral_image->GetScalarPointer());
 
     segPointer->U_t_image->SetExtent(image->GetExtent());
     segPointer->U_t_image->SetScalarTypeToDouble();
     segPointer->U_t_image->SetSpacing(image->GetSpacing());
+    segPointer->U_t_image->AllocateScalars();
     segPointer->ptrU_t_Image = static_cast<double*>(segPointer->U_t_image->GetScalarPointer());
 
     segPointer->m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();

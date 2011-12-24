@@ -31,10 +31,7 @@ namespace vrcl
         KSegmentor3D* seg3DPointer = new KSegmentor3D;
         seg3DPointer->m_EnergyName = GetSupportedEnergyNames()[0];
         seg3DPointer->InitializeVariables(seg3DPointer,image,label, contInit);
-        seg3DPointer->ptrCurrImage = static_cast<unsigned short*>(
-            seg3DPointer->imageVol->GetScalarPointer());
-        seg3DPointer->ptrCurrLabel = static_cast<unsigned short*>(
-            seg3DPointer->labelVol->GetScalarPointer());
+
         if(contInit)
         {
            std::cout<<"Initializing user input using label data"<<std::endl;
@@ -67,6 +64,9 @@ namespace vrcl
 
     void KSegmentor3D::integrateUserInputInUserInputImage()
     {
+        ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+        ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
+
         int pos=0;
         int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
         for (int element=0;element<Nelements;element++)
@@ -121,6 +121,8 @@ namespace vrcl
         //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
         this->imgRange=imgRange;
+        ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
+        ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
 
         long elemNum=0;
         for (int k=0; k<=dimx-1; k++) {
@@ -137,6 +139,10 @@ namespace vrcl
     {
         this->integrateUserInputInUserInputImage();
         this->UpdateMask();
+
+        ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
+        ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+        ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
         if(this->m_UpdateVector.size()!=0)
             ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
