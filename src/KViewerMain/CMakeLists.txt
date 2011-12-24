@@ -15,11 +15,11 @@ file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )
 
 #TODO: BAD, VTKtoITK is a reusable chunk, are we sure this is where it goes?
 # e.g. sounds more like a util perhaps
-file( GLOB VTKITKConnection ../VTKtoITKConnection/src/*.cxx ../VTKtoITKConnection/src/*.txx ../VTKtoITKConnection/include/*.h)
-
-if(${BUILD_ITK_DEPENDENT_STUFF}) # only build if we have ITK
-  set(KVIEWER_SRCS  ${KVIEWER_SRCS}  ${VTKITKConnection})
-endif(${BUILD_ITK_DEPENDENT_STUFF})
+# Anyway this seems broken/deprecated, revisit with VTK 5.8+ and ITK later than 3.2
+#file( GLOB VTKITKConnection ../VTKtoITKConnection/src/*.cxx ../VTKtoITKConnection/src/*.txx ../VTKtoITKConnection/include/*.h)
+#if(${BUILD_ITK_DEPENDENT_STUFF}) # only build if we have ITK
+#  set(KVIEWER_SRCS  ${KVIEWER_SRCS}  ${VTKITKConnection})
+#endif(${BUILD_ITK_DEPENDENT_STUFF})
 
 message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
 add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
