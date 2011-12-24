@@ -129,7 +129,7 @@ void interactive_rbchanvese_ext(double *img, double *phi, double* U_integral, do
   if( display > 0 )
     cout << "done sfls iters: " << iter << endl;
 
-  //en_lrbac_destroy();
+  en_lrbac_destroy();
 }
 
 
