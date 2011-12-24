@@ -11,3 +11,10 @@ set(KV_LIBS KViewer QVTK  ${QT_LIBRARIES}  vtkRendering
     vtkGraphics  vtkIO  vtkCommon  ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 add_executable( ComputeAndPrintStatistics ComputeAndPrintStatistics.cpp)
 target_link_libraries( ComputeAndPrintStatistics ${KV_LIBS})
+
+
+if(${BUILD_ITK_DEPENDENT_STUFF})
+    include(${ITK_USE_FILE})
+    add_executable( ResampleVolumesToBeIsotropic ResampleVolumesToBeIsotropic.cpp)
+    target_link_libraries( ResampleVolumesToBeIsotropic ${KV_LIBS}  ITKIO ITKCommon ITKBasicFilters)
+endif(${BUILD_ITK_DEPENDENT_STUFF})

@@ -97,7 +97,7 @@ set( KSlice_include  ${CMAKE_CURRENT_SOURCE_DIR}/util/getopt
                      ${CMAKE_CURRENT_SOURCE_DIR}/Gao3DRSS/include
                      ${CMAKE_CURRENT_SOURCE_DIR}/sfm_local_chanvese/include
                      ${CMAKE_CURRENT_SOURCE_DIR}/MeshCurvolver-2.0/include
-                     ${CMAKE_CURRENT_SOURCE_DIR}/VTKtoITKConnection/include
+                    # ${CMAKE_CURRENT_SOURCE_DIR}/VTKtoITKConnection/include
    )
 
 
@@ -116,9 +116,9 @@ add_subdirectory(KSegmentor)
 set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)
 if(${BUILD_ITK_DEPENDENT_STUFF})
   message(STATUS "   found ITK, building with it! " )
-  add_subdirectory(Gao3DRSS)
-  add_subdirectory(SampleApplications/MHADecompressor)
   add_subdirectory(SampleApplications/Make3DModel)
+  #add_subdirectory(Gao3DRSS)
+  #add_subdirectory(SampleApplications/MHADecompressor)
 else(${BUILD_ITK_DEPENDENT_STUFF})
   message(STATUS "   no ITK for you " )
 endif(${BUILD_ITK_DEPENDENT_STUFF})

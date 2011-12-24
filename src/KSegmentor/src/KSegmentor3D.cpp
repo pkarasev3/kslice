@@ -29,6 +29,7 @@ namespace vrcl
     KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
     {
         KSegmentor3D* seg3DPointer = new KSegmentor3D;
+        seg3DPointer->m_EnergyName = GetSupportedEnergyNames()[0];
         seg3DPointer->InitializeVariables(seg3DPointer,image,label, contInit);
         seg3DPointer->ptrCurrImage = static_cast<unsigned short*>(
             seg3DPointer->imageVol->GetScalarPointer());
@@ -151,10 +152,16 @@ namespace vrcl
                                   Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                   iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         }
-        else
+        else if( 0 == m_EnergyName.compare("ChanVese") )
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                      iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+        else if( 0 == m_EnergyName.compare("LocalCV") )
+            interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                     iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+        else
+            cout << "Error, unsupported energy name! " << m_EnergyName << endl;
 
         //get number and coordinates of point (row, col) on the zero level set
         //prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);

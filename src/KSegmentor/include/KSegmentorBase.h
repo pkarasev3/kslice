@@ -42,9 +42,19 @@ void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
                                                int erode_sz=3, int dilate_sz=5);
+
+
+
 class KSegmentorBase
 {
-
+    public:
+        static std::vector<std::string> GetSupportedEnergyNames()
+        {
+            std::vector<std::string> e_names;
+            e_names.push_back("LocalCV");
+            e_names.push_back("ChanVese");
+            return e_names;
+        }
     public:
         virtual ~KSegmentorBase()=0;
         void setNumIterations(int itersToRun);
@@ -126,6 +136,15 @@ class KSegmentorBase
             this->m_DistWeight=dw;
         }
 
+        void SetEnergyChanVese( )
+        {
+            this->m_EnergyName = GetSupportedEnergyNames()[0];
+        }
+        void SetEnergyLocalCV( )
+        {
+            this->m_EnergyName = GetSupportedEnergyNames()[1];
+        }
+
 
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
@@ -154,6 +173,8 @@ class KSegmentorBase
         vtkImageData *labelVol; //full label volume (at the current time)
         double* m_PlaneNormalVector, *m_PlaneCenter;
         float m_DistWeight;
+
+        std::string m_EnergyName;
 
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
