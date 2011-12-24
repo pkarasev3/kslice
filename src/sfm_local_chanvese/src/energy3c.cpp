@@ -321,14 +321,21 @@ void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
     gball = en_lrbac_gball(rad);
 
     //allocate memory for lookups
-    Ain  = (double*)malloc(NUMEL*sizeof(double)); if(Ain==NULL) return;
-    Sin  = (double*)malloc(NUMEL*sizeof(double)); if(Sin==NULL) return;
-    Aout = (double*)malloc(NUMEL*sizeof(double)); if(Aout==NULL) return;
-    Sout = (double*)malloc(NUMEL*sizeof(double)); if(Sout==NULL) return;
+    if( NULL == Ain )
+        Ain  = (double*)malloc(NUMEL*sizeof(double)); if(Ain==NULL) return;
+    if( NULL == Sin )
+        Sin  = (double*)malloc(NUMEL*sizeof(double)); if(Sin==NULL) return;
+    if( NULL == Aout )
+        Aout = (double*)malloc(NUMEL*sizeof(double)); if(Aout==NULL) return;
+    if( NULL == Sout )
+        Sout = (double*)malloc(NUMEL*sizeof(double)); if(Sout==NULL) return;
 
-    //poision "uninitialized" points
+    //poison "uninitialized" points
     for(i=0;i<NUMEL;i++){
-        Ain[i] = -1; Aout[i] = -1;
+        Ain[i] = -1;
+        Aout[i] = -1;
+        Sin[i] = -1;
+        Sout[i] = -1;
     }
 }
 
@@ -427,16 +434,16 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
 }
 
 void en_lrbac_destroy(){
-    if(gball!=NULL)
-        free(gball);
-    if(Ain!=NULL)
-        free(Ain);
-    if(Aout!=NULL)
-        free(Aout);
-    if(Sin!=NULL)
-        free(Sin);
-    if(Sout!=NULL)
-        free(Sout);
+    if(gball!=NULL) {
+        free(gball); gball = NULL; }
+    if(Ain!=NULL) {
+        free(Ain); Ain = NULL; }
+    if(Aout!=NULL) {
+        free(Aout); Aout = NULL; }
+    if(Sin!=NULL) {
+        free(Sin); Sin = NULL; }
+    if(Sout!=NULL) {
+        free(Sout); Sout = NULL; }
 }
 
 double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
