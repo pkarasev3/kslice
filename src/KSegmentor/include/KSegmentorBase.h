@@ -51,8 +51,8 @@ class KSegmentorBase
         static std::vector<std::string> GetSupportedEnergyNames()
         {
             std::vector<std::string> e_names;
-            e_names.push_back("LocalCV");
             e_names.push_back("ChanVese");
+            e_names.push_back("LocalCV");
             return e_names;
         }
     public:
