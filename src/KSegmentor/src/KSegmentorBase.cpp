@@ -169,6 +169,8 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     this->m_CoordinatesVector.clear();
     unsigned int element=0;
     std::vector<unsigned int> coord;
+    ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
+    ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
 
     for (int i=0; i<=this->dimx-1; i++) {
         for (int j=0; j<=this->dimy-1; j++)  {
