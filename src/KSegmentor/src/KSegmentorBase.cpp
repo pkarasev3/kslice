@@ -118,10 +118,16 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->dimy = (int)segPointer->mdims[1];
     segPointer->dimx = (int)segPointer->mdims[0];
 
-    segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-    segPointer->label      = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-    segPointer->mask     = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-    segPointer->img       = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+    try {
+      segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+      segPointer->label      = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+      segPointer->mask       = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+      segPointer->img        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+    } catch ( const std::bad_alloc& e) {
+      std::cout << "Failed to allocate KSegmentorBase pointers! ";
+      std::cout << "Perhaps it is a big data-set on 32-bit OS? " << std::endl;
+      exit(-1);
+    }
 
     segPointer->dims[2] = segPointer->dimz;
     segPointer->dims[1] = segPointer->dimy;
