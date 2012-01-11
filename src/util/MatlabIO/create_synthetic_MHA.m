@@ -25,12 +25,15 @@ header = { 'ObjectType = Image',...
 tic();
 img      = phantom(dim_size);
 img3D    = zeros( dim_size, dim_size, dim_size );
-img3D( :,:, dim_size/2+3   ) = img;
-img3D( :,:, dim_size/2+2   ) = img; 
-img3D( :,:, dim_size/2-2 )   = img; 
-img3D( :,:, dim_size/2-3 )   = img; 
+img3D( :,:, dim_size/2-32:dim_size/2+32  ) = repmat(img,[1 1 (2*32+1)]);
 
-for k = 1:3
+theta = -64;
+for k = (dim_size/2-32:dim_size/2+32)
+  theta = theta+2;
+  img3D( :,:, k  ) = imrotate( img3D( :,:, k ), theta,'crop');
+end
+
+for k = 1:2
   img3D                        = convn( img3D, ones(3,3,3)/27, 'same' );
   img3D                        = (img3D / max(img3D(:))); 
 end
