@@ -100,8 +100,8 @@ namespace vrcl
              << dimx << "," << dimy << "," << dimz << endl;
 
         this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-        this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
-        this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
+        this->rad = std::min(10.0,this->rad); // force non-huge radius if the spacing is retarded
+        this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
 
         this->initializeData();
         //this->initializeUserInputImageWithContour(false);
