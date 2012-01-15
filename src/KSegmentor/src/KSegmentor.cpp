@@ -105,8 +105,8 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
         // "10" pixels is 3mm in this context.
         this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-        this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
-        this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
+        this->rad = std::min(10.0,this->rad); // force non-huge radius if the spacing is retarded
+        this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
         cout << "segmentor using ROI size: " << rad << endl;
 
         this->img        = new double[ mdims[0]*mdims[1] ];
@@ -323,8 +323,8 @@ void KSegmentor::UpdateArraysAfterTransform()
     this->U_Integral_image->GetSpacing( m_Spacing_mm );
 
     this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-    this->rad = std::min(18.0,this->rad); // force non-huge radius if the spacing is retarded
-    this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
+    this->rad = std::min(10.0,this->rad); // force non-huge radius if the spacing is retarded
+    this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
 }
 
 

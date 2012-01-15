@@ -84,8 +84,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
     segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(18.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    segPointer->rad = std::min(10.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+    segPointer->rad = std::max(2.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
