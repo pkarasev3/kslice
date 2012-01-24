@@ -2,7 +2,7 @@
 #define GUI_H
 
 #include <QtGui/QWidget>
-//#include "ui_gui.h"
+#include "ui_gui.h"
 
 namespace Ui
 {
