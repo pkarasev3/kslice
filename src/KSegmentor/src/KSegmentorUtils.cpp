@@ -118,6 +118,8 @@ SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
   return img_clean;
 }
 
+
+
 void getVolumeAsString( const vector<double>& imageSpacing,
                                  vtkImageData* label_map,
                                  string & volumeString, bool numberOnly,
