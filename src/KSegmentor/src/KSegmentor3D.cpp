@@ -69,11 +69,48 @@ namespace vrcl
 
         int pos=0;
         int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-        for (int element=0;element<Nelements;element++)
+//        for (int element=0;element<Nelements;element++)
+//        {
+//            pos=this->m_UpdateVector[element];
+
+//            this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
+//            this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
+//        }
+        double dt = 0.5;
+        double tt = 0.0;
+        while( tt < 1.0 )
         {
-            pos=this->m_UpdateVector[element];
-            this->ptrIntegral_Image[pos]+=this->ptrU_t_Image[pos];
-            this->ptrU_t_Image[pos]=this->ptrU_t_Image[pos]*0.5;
+            tt += dt;
+            for (int element=0;element<Nelements;element++)
+            {
+                pos=this->m_UpdateVector[element];
+                int y  = m_CoordinatesVector[element][0];
+                int x  = m_CoordinatesVector[element][1];
+                int z  = m_CoordinatesVector[element][2];
+
+                double laplac_finite_diff = 0.0;
+                for( int x_ = x-1; x_ <= x+1; x_++ ) {
+                    for( int y_ = y-1; y_ <= y+1; y_++ ) {
+                        for( int z_ = z-1; z_ <= z+1; z_++ )
+                        {
+                            if( (x_>=0) && (x_<dimx)
+                             && (y_>=0) && (y_<dimy)
+                             && (z_>=0) && (z_<dimz) ) {
+                                int idx = (z_)*dimx*dimy +(x_)*dimx+(y_);
+                                double hval = exp( -(   (x_- x)*(x_- x)
+                                                      + (y_- y)*(y_- y)
+                                                      + (z_- z)*(z_- z) )/4.0 );
+                                double deltaU           = dt * hval * this->ptrU_t_Image[pos];
+                                ptrIntegral_Image[idx] += deltaU;
+//                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
+//                                    laplac_finite_diff += ptrIntegral_Image[idx]
+//                                }
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 
@@ -162,8 +199,11 @@ namespace vrcl
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                      iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
-            double cv_cost = this->evalChanVeseCost();
-            cout << "chan vese cost = " << cv_cost << endl;
+            bool bDisplayChanVeseCost = false;
+            if( bDisplayChanVeseCost ) {
+                double cv_cost = this->evalChanVeseCost();
+                cout << "chan vese cost = " << cv_cost << endl;
+            }
         }
         else if( 0 == m_EnergyName.compare("LocalCV") )
             interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,

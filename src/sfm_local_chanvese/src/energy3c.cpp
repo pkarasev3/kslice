@@ -851,34 +851,69 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
     return F;
 }
 
+namespace {
+    static std::vector<double>  FVec(128);
+    static std::vector<double>  KappaVec(128);
+    bool CheckLevelSetSizes( int queryLength )
+    {
+        bool bDidResize = false;
+        int  initLength = FVec.size();
+        if( queryLength > initLength )
+        {
+            FVec.resize(queryLength * 2 + 128);
+            KappaVec.resize(queryLength * 2 + 128);
+            bDidResize = true;
+        }
+        return bDidResize;
+    }
+}
+
 double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,I,Fmax;
+    CheckLevelSetSizes( Lz->length );
+
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));
-    if(F == NULL) return NULL;
+    // F = (double*)malloc(Lz->length*sizeof(double));
+    // if(F == NULL) return NULL;
+    //kappa = (double*)malloc(Lz->length*sizeof(double));
+    //if(kappa == NULL) return NULL;
 
-    kappa = (double*)malloc(Lz->length*sizeof(double));
-    if(kappa == NULL) return NULL;
+    F          = &(FVec[0]);
+    kappa      = &(KappaVec[0]);
+    assert( F     != NULL );
+    assert( kappa != NULL );
 
-    ll_init(Lz);n=0;Fmax=0.0001; //begining of list;
+    ll_init(Lz);
+    n=0;
+    Fmax=0.0001; //begining of list;
     while(Lz->curr != NULL){     //loop through list
         idx = Lz->curr->idx;
         I = img[idx];
         a = (I-uin)*(I-uin)-(I-uout)*(I-uout);
-        if(fabs(a)>Fmax) Fmax = fabs(a);
-        F[n] = a;
-        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+        if(fabs(a)>Fmax) {
+            Fmax = fabs(a);
+        }
+        FVec[n]     = a;
+        KappaVec[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
         ll_step(Lz); n++;       //next point
     }
-    if(scale[0] == 0) scale[0] = Fmax;
+    if(scale[0] == 0) {
+        scale[0] = Fmax;
+    }
 
     for(int j=0;j<Lz->length;j++){
-        F[j] = F[j]/scale[0]+lam*kappa[j];
+        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j];
     }
-    free(kappa);
+
+// to ensure they match!
+//    double k1  = kappa[(Lz->length / 2)];
+//    double k2  = KappaVec[(Lz->length / 2)];
+//    double f1  = F[(Lz->length / 2)];
+//    double f2  = FVec[(Lz->length / 2)];
+
     return F;
 }
 
