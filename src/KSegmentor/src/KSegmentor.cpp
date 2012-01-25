@@ -81,7 +81,7 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
         this->useContInit=contInit;
         this->display=0;
         this->dthresh=500;
-        this->iter=200;
+        this->iter=50;
         this->lambda=defaultKappaParam; // this could/should be user togglable!
 
         Lz=NULL;
