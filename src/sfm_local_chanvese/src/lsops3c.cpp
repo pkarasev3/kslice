@@ -328,7 +328,13 @@ void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
     }
     i++; //increment index into F
   }
-  if(F!= NULL) free(F); // free F (no longer needed);
+
+  // Aha ! Careful here ... commenting this out for chan vese
+  // but it might break compatibility elsewhere
+  bool bUseCrazyReallocs = false;
+  if( bUseCrazyReallocs ) {
+    if(F!= NULL) { free(F); } // free F (no longer needed) NOOOO;
+  }
 
   // #3) update Ln1,Ln2,Lp1,Lp2
   //                                    ==========
