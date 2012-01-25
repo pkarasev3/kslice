@@ -19,7 +19,10 @@ struct LL;
 namespace vrcl
 {
 
-//Should these methods be in here??
+//Should these methods be in here??   (Note by PK:  they should be "not in the GUI app" ... maybe in a separate utils folder?
+// they get implemented in "KegmentorUtils.cpp"
+
+
 
 /** write string on top of image data in-place*/
 void waterMark(const std::string& text, cv::Mat & img);
@@ -63,6 +66,9 @@ class KSegmentorBase
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
         virtual void Update()=0;
+
+        /** Compute Chan-Vese (mean difference) Energy */
+        virtual double evalChanVeseCost( ) const;
 
         /** external interface to update at a voxel */
 

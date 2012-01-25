@@ -141,6 +141,51 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
 }
 
+namespace {
+
+const double epsH = sqrt(2.0);   // epsilon   = sqrt(2);
+
+inline double Heavi( double z )
+{
+
+//    Heavi     = @(z)  1 * (z >= epsilon) + (abs(z) < epsilon).*(1+z/epsilon+1/pi * sin(pi*z/epsilon))/2.0;
+    return ( 1.0*(z>=epsH) + (abs(z)<epsH)*(1+z/epsH+(1/CV_PI)*sin(CV_PI*z/epsH) )/2.0  );
+}
+inline double Delta( double z )
+{
+//    delta     = @(z)  1 * (z == 0) + (abs(z) < epsilon).*(1 + cos(pi*z/epsilon))/(epsilon*2.0);
+    return ( 1.0*(z==0) + (abs(z)<epsH) * (1 + cos(CV_PI * z /epsH) )/(2 * epsH) );
+}
+
+}
+
+double KSegmentorBase::evalChanVeseCost( ) const
+{
+    double E      = 0.0;
+    int Nelements = dimx * dimy * dimz;
+    double integral_zero_plus_H = 0; // $ \int \Heavi{ }       $
+    double integral_one_minus_H = 0; // $ \int (1-\Heavi{ })   $
+    double integral_I_zpH       = 0; // $ \int I*\Heavi{ }     $
+    double integral_I_omH       = 0; // $ \int I*(1-\Heavi{ }) $
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+    {
+        integral_zero_plus_H += Heavi(phi[voxel_idx]) ;
+        integral_one_minus_H += 1.0 - Heavi(phi[voxel_idx]) ;
+        integral_I_zpH       += (img[voxel_idx]) * Heavi(phi[voxel_idx]) ;
+        integral_I_omH       += (img[voxel_idx]) * (1.0 - Heavi(phi[voxel_idx]));
+    }
+    double mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
+    double mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
+
+    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+    {
+        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
+    }
+
+    return (E/2.0);
+}
+
 
 void KSegmentorBase::UpdateMask()
 {

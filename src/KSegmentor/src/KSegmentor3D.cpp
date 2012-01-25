@@ -158,10 +158,13 @@ namespace vrcl
                                   Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                   iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         }
-        else if( 0 == m_EnergyName.compare("ChanVese") )
+        else if( 0 == m_EnergyName.compare("ChanVese") ) {
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                      iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+            double cv_cost = this->evalChanVeseCost();
+            cout << "chan vese cost = " << cv_cost << endl;
+        }
         else if( 0 == m_EnergyName.compare("LocalCV") )
             interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
@@ -169,33 +172,8 @@ namespace vrcl
         else
             cout << "Error, unsupported energy name! " << m_EnergyName << endl;
 
-        //get number and coordinates of point (row, col) on the zero level set
-        //prep_C_output(Lz,dims,phi, &iList, &jList, lengthZLS);
 
-        //threshold phi to find segmentation label,
-        // assign it to appropriate range of label!
-        // shift and scale from [-3,3] to [0,1] x max_label
-/*
-        long elemNum=0;
-        double mult=labelRange[1] / 4.0;
-        for (int k=0; k<dimz-1; k++) {
-                    for (int j=0; j<dimy-1; j++)  {
-                        for (int i=0; i<dimx-1; i++) {
-                            double phi_val = phi[elemNum];
-
-                            double phi_out = (-phi_val + 3.0) / 6.0;
-                            double outputVal= (unsigned short) ( ( (phi_out > 0.95) +
-                                                                    (phi_out > 0.8) +
-                                                                    (phi_out > 0.65) +
-                                                                    (phi_out > 0.5) )
-                                                                  * mult );
-                            ptrCurrLabel[elemNum] =outputVal;
-                            elemNum++;
-                        }
-                    }
-                }
-        */
-        long elemNum=0;
+       long elemNum=0;
        double mult=labelRange[1] / 4.0;
         elemNum=0;
         int x,y,z,idx;
@@ -227,23 +205,7 @@ namespace vrcl
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
 
-        /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
-        labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
-        labelWriter->SetFileName( "0-Integral.mhd");
-        labelWriter->Write();
 
-        labelWriter->SetInput(this->U_Integral_image );
-        labelWriter->SetFileName( "0-IntegralImage.mhd");
-        labelWriter->Write();
-
-        labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrU_t_Image,this->U_Integral_image->GetDimensions(), spc) );
-        labelWriter->SetFileName( "0-U_t.mhd");
-        labelWriter->Write();
-
-
-        labelWriter->SetInput(this->U_t_image);
-        labelWriter->SetFileName( "0-U_t-image.mhd");
-        labelWriter->Write();*/
 
 
         m_UpdateVector.clear();
@@ -275,3 +237,20 @@ namespace vrcl
     }
 
 }
+/*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+labelWriter->SetFileName( "0-Integral.mhd");
+labelWriter->Write();
+
+labelWriter->SetInput(this->U_Integral_image );
+labelWriter->SetFileName( "0-IntegralImage.mhd");
+labelWriter->Write();
+
+labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrU_t_Image,this->U_Integral_image->GetDimensions(), spc) );
+labelWriter->SetFileName( "0-U_t.mhd");
+labelWriter->Write();
+
+
+labelWriter->SetInput(this->U_t_image);
+labelWriter->SetFileName( "0-U_t-image.mhd");
+labelWriter->Write();*/
