@@ -236,7 +236,7 @@ void KViewer::LoadLabelMap(){
 }
 
 void KViewer::About() {
-  QMessageBox::about(this, "KSlice Version 0.6", "Created by Peter Karasev, Ivan Koleskov and Karol Chudy from the Tannenbaum Lab");
+  QMessageBox::about(this, "KSlice3D Version 1.0", "Created by Peter Karasev, Karl Fritscher, Ivan Kolesov and Karol Chudy from the Tannenbaum Lab");
 }
 
 int KViewer::round(double a) {
@@ -273,6 +273,7 @@ void KViewer::SliderCB( int sliceNum )
 
 void KViewer::MoveSlider( int shiftNumberOfSlices )
 {
+
   int currentSlice  = this->kwidget_2d_left->currentSliceIndex;
   int newSliceIndex = currentSlice + shiftNumberOfSlices;
   if( newSliceIndex < this->kv_opts->numSlices   &&  newSliceIndex >= 0 ) {
@@ -285,6 +286,7 @@ void KViewer::MoveSlider( int shiftNumberOfSlices )
   this->qVTK1->update();
   this->qVTK2->update();
   this->qVTK1->setFocus( );
+
 }
 
 void KViewer::AddNewLabelMap( )

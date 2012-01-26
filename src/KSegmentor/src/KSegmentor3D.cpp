@@ -76,11 +76,9 @@ namespace vrcl
 //            this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
 //            this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
 //        }
-        double dt = 0.5;
-        double tt = 0.0;
-        while( tt < 1.0 )
-        {
-            tt += dt;
+        // something here seems crazy ....
+
+        double Umax = 2.0;
             for (int element=0;element<Nelements;element++)
             {
                 pos=this->m_UpdateVector[element];
@@ -88,7 +86,6 @@ namespace vrcl
                 int x  = m_CoordinatesVector[element][1];
                 int z  = m_CoordinatesVector[element][2];
 
-                double laplac_finite_diff = 0.0;
                 for( int x_ = x-1; x_ <= x+1; x_++ ) {
                     for( int y_ = y-1; y_ <= y+1; y_++ ) {
                         for( int z_ = z-1; z_ <= z+1; z_++ )
@@ -100,8 +97,10 @@ namespace vrcl
                                 double hval = exp( -(   (x_- x)*(x_- x)
                                                       + (y_- y)*(y_- y)
                                                       + (z_- z)*(z_- z) )/4.0 );
-                                double deltaU           = dt * hval * this->ptrU_t_Image[pos];
-                                ptrIntegral_Image[idx] += deltaU;
+                                double deltaU           = hval * this->ptrU_t_Image[pos];
+                                ptrIntegral_Image[idx] += 1e-1*deltaU;
+                                ptrIntegral_Image[pos] += deltaU;
+                                ptrIntegral_Image[pos] = ptrIntegral_Image[pos] - (1e-1) * ( abs(ptrIntegral_Image[pos]) > Umax ) * ptrIntegral_Image[pos];
 //                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
 //                                    laplac_finite_diff += ptrIntegral_Image[idx]
 //                                }
@@ -109,9 +108,8 @@ namespace vrcl
                         }
                     }
                 }
-
             }
-        }
+//       }
     }
 
 

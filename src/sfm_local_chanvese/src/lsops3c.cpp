@@ -266,6 +266,8 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
 void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in,LL* Lchanged){
+    /** this function is mostly the same as ls_iteration, except it also assigned Lchanged, and doesn't free F
+      */
   int x,y,z,i,idx;
   int u,d,r,l,f,b;
   double p, phi_old;
@@ -283,6 +285,7 @@ void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
   for(i=0;i<Lz->length;i++){
     if(fabs(F[i])>Fmax) Fmax = fabs(F[i]);
   }
+  Fmax = std::max( 1.0, Fmax ); // don't amplify small forces though ...
 
   for(i=0;i<Lz->length;i++){
     F[i] = F[i] / Fmax * dCFL;
