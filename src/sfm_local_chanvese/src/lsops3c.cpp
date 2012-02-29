@@ -1,6 +1,8 @@
 #include "lsops3c.h"
 #include <math.h>
 #include <iostream>
+#include <fstream>
+#include <opencv2/core/core.hpp>
 
 namespace
 {
@@ -72,7 +74,6 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
     }
     i++; //increment index into F
   }
-  if(F!= NULL) free(F); // free F (no longer needed);
 
   // #3) update Ln1,Ln2,Lp1,Lp2
   //                                    ==========
@@ -332,12 +333,7 @@ void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
     i++; //increment index into F
   }
 
-  // Aha ! Careful here ... commenting this out for chan vese
-  // but it might break compatibility elsewhere
-  bool bUseCrazyReallocs = false;
-  if( bUseCrazyReallocs ) {
-    if(F!= NULL) { free(F); } // free F (no longer needed) NOOOO;
-  }
+
 
   // #3) update Ln1,Ln2,Lp1,Lp2
   //                                    ==========
@@ -556,8 +552,13 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz,
   int  flag=0;
 
   //find 'interface' and mark as 0, create Lz
+//  int dimx =dims[0];
+//  int dimx =dims[1];
+//  int dimx =dims[2];
   for(x=0;x<DIMX;x++) for(y=0;y<DIMY;y++) for(z=0;z<DIMZ;z++){
     idx = (int)(z*DIMXY+x*DIMY+y);
+
+    assert( idx < dims[3] );
 
     //mark the inside and outside of label and phi
     if(mask[idx]<1e-3){ label[idx] =  3; phi[idx]= 3; }

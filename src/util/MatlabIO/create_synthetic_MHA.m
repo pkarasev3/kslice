@@ -30,7 +30,7 @@ img3D( :,:, dim_size/2-32:dim_size/2+32  ) = repmat(img,[1 1 (2*32+1)]);
 theta = -64;
 for k = (dim_size/2-32:dim_size/2+32)
   theta = theta+2;
-  img3D( :,:, k  ) = imrotate( img3D( :,:, k ), theta,'crop');
+  img3D( :,:, k  ) = imrotate( img3D( :,:, k ), theta,'crop') +rand( size(img3D(:,:,k)))*0.01;
 end
 
 for k = 1:2
@@ -44,4 +44,4 @@ fileloc  = [currpath '/synth_data_phantom3D.mha']
 
 [img hdr] = WriteMHA(fileloc, img3D, header ); 
 
-
+save synth_data_phantom3D.mat img3D header fileloc

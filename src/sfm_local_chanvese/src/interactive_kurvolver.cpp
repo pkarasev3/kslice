@@ -191,7 +191,7 @@ void interactive_chanvese_ext(double *img, double *phi, double* U_integral, doub
     }
 }
 
-
+/*
 void interactive_customspeed(double* speedimg, double *img, double *phi, double* U_integral, double *label, long *dims,
                              LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                              int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight)
@@ -224,6 +224,7 @@ void interactive_customspeed(double* speedimg, double *img, double *phi, double*
     std::cout<<clock()<<std::endl;
 
 }
+*/
 
 
 void apply_control_function(LL *Lz,double *phi, double* F,
@@ -277,11 +278,11 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     diff[1]=y-poP[1];
     diff[2]=z-poP[2];
 
-    for (int i=0;i<3;i++)
-    {
-        distance+=diff[i]*normal[i];
-    }
-    double mult= exp(-distweight*abs(distance));
+//    for (int i=0;i<3;i++)
+//    {
+//        distance+=diff[i]*normal[i];
+//    }
+//    double mult= exp(-distweight*abs(distance));
 
     idx          = Lz->curr->idx;
     I            = img[idx];
@@ -292,7 +293,7 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
     double f     = gamma * abs(U) * (F[n] - err);
 
-    F[n]         = (F[n] - f)*mult;
+    F[n]         = (F[n] - f);//*mult;
     ll_step(Lz);
     n++;       //next point
   }
