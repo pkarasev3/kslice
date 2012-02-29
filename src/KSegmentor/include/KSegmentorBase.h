@@ -51,6 +51,25 @@ vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
 class KSegmentorBase
 {
     public:
+
+        struct LLset
+        {
+            LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+            LL *Lin2out, *Lout2in,*Lchanged;
+
+            void init()
+            {
+                Lz=NULL;
+                Ln1= NULL;
+                Ln2= NULL;
+                Lp1=NULL ;
+                Lp2=NULL ;
+                Lchanged=NULL;
+                Lin2out=NULL ;
+                Lout2in=NULL ;
+            }
+        };
+
         static std::vector<std::string> GetSupportedEnergyNames()
         {
             std::vector<std::string> e_names;
@@ -62,12 +81,13 @@ class KSegmentorBase
         virtual ~KSegmentorBase()=0;
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
-        void intializeLevelSet();
+        void intializeLevelSet3D();
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
-        virtual void Update()=0;
+        virtual void Update2D()=0;
+        virtual void Update3D()=0;
 
-        /** Compute Chan-Vese (mean difference) Energy */
+        /** Compute Chan-Vese (mean difference) Energy LL2D.*/
         virtual double evalChanVeseCost( ) const;
 
         /** external interface to update at a voxel */
@@ -170,6 +190,8 @@ class KSegmentorBase
 
         virtual void UpdateArraysAfterTransform()=0;
 
+        void CreateLLs(LLset& ll);
+
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
@@ -235,9 +257,11 @@ public:
         int    countdown;
         long    dims[5];
         long dimz,dimy,dimx;
-        LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        LL *Lin2out, *Lout2in,*Lchanged;
+        //LL *Lin2out, *Lout2in,*Lchanged;
+
+         LLset LL2D,LL3D;
 };
 
 

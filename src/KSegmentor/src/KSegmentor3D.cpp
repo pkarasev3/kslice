@@ -37,8 +37,15 @@ namespace vrcl
            std::cout<<"Initializing user input using label data"<<std::endl;
             seg3DPointer->initializeUserInputImageWithContour();
         }
+
+
+
         seg3DPointer->initializeData();
-        seg3DPointer->intializeLevelSet();
+        seg3DPointer->CreateLLs(seg3DPointer->LL3D);
+
+        LL* Lztmp = seg3DPointer->LL3D.Lz;
+
+        seg3DPointer->intializeLevelSet3D();
         return seg3DPointer;
     }
 
@@ -69,47 +76,47 @@ namespace vrcl
 
         int pos=0;
         int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-//        for (int element=0;element<Nelements;element++)
-//        {
-//            pos=this->m_UpdateVector[element];
+        for (int element=0;element<Nelements;element++)
+        {
+            pos=this->m_UpdateVector[element];
 
-//            this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
-//            this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
-//        }
+            this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
+            this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
+        }
         // something here seems crazy ....
 
-        double Umax = 2.0;
-            for (int element=0;element<Nelements;element++)
-            {
-                pos=this->m_UpdateVector[element];
-                int y  = m_CoordinatesVector[element][0];
-                int x  = m_CoordinatesVector[element][1];
-                int z  = m_CoordinatesVector[element][2];
+//        double Umax = 2.0;
+//            for (int element=0;element<Nelements;element++)
+//            {
+//                pos=this->m_UpdateVector[element];
+//                int y  = m_CoordinatesVector[element][0];
+//                int x  = m_CoordinatesVector[element][1];
+//                int z  = m_CoordinatesVector[element][2];
 
-                for( int x_ = x-1; x_ <= x+1; x_++ ) {
-                    for( int y_ = y-1; y_ <= y+1; y_++ ) {
-                        for( int z_ = z-1; z_ <= z+1; z_++ )
-                        {
-                            if( (x_>=0) && (x_<dimx)
-                             && (y_>=0) && (y_<dimy)
-                             && (z_>=0) && (z_<dimz) ) {
-                                int idx = (z_)*dimx*dimy +(x_)*dimx+(y_);
-                                double hval = exp( -(   (x_- x)*(x_- x)
-                                                      + (y_- y)*(y_- y)
-                                                      + (z_- z)*(z_- z) )/4.0 );
-                                double deltaU           = hval * this->ptrU_t_Image[pos];
-                                ptrIntegral_Image[idx] += 1e-1*deltaU;
-                                ptrIntegral_Image[pos] += deltaU;
-                                ptrIntegral_Image[pos] = ptrIntegral_Image[pos] - (1e-1) * ( abs(ptrIntegral_Image[pos]) > Umax ) * ptrIntegral_Image[pos];
-//                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
-//                                    laplac_finite_diff += ptrIntegral_Image[idx]
-//                                }
-                            }
-                        }
-                    }
-                }
-            }
-//       }
+//                for( int x_ = x-1; x_ <= x+1; x_++ ) {
+//                    for( int y_ = y-1; y_ <= y+1; y_++ ) {
+//                        for( int z_ = z-1; z_ <= z+1; z_++ )
+//                        {
+//                            if( (x_>=0) && (x_<dimx)
+//                             && (y_>=0) && (y_<dimy)
+//                             && (z_>=0) && (z_<dimz) ) {
+//                                int idx = (z_)*dimx*dimy +(x_)*dimx+(y_);
+//                                double hval = exp( -(   (x_- x)*(x_- x)
+//                                                      + (y_- y)*(y_- y)
+//                                                      + (z_- z)*(z_- z) )/4.0 );
+//                                double deltaU           = hval * this->ptrU_t_Image[pos];
+//                                ptrIntegral_Image[idx] += 1e-1*deltaU;
+//                                ptrIntegral_Image[pos] += deltaU;
+//                                ptrIntegral_Image[pos] = ptrIntegral_Image[pos] - (1e-1) * ( abs(ptrIntegral_Image[pos]) > Umax ) * ptrIntegral_Image[pos];
+////                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
+////                                    laplac_finite_diff += ptrIntegral_Image[idx]
+////                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+////       }
     }
 
 
@@ -139,9 +146,10 @@ namespace vrcl
         this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
 
         this->initializeData();
-        //this->initializeUserInputImageWithContour(false);
-        this->intializeLevelSet();
 
+        this->CreateLLs(LL3D);
+
+        this->intializeLevelSet3D();
     }
 
 
@@ -170,10 +178,96 @@ namespace vrcl
         }
     }
 
-    void KSegmentor3D::Update()
+
+
+    void KSegmentor3D::Update2D()
+    {
+        this->integrateUserInputInUserInputImage();
+        this->CreateLLs(LL2D);
+
+        ptrCurrImage        = static_cast<unsigned short*>(imageVol->GetScalarPointer());
+        ptrCurrLabel        = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+        ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+
+        double* imgSlice          = new double[  mdims[0]*mdims[1] ];
+        double* maskSlice       = new double[ mdims[0]*mdims[1] ];
+        double* U_I_slice        = new double[ mdims[0]*mdims[1] ];
+        double* phiSlice          = new double[ mdims[0]*mdims[1] ];
+        double* labelSlice       = new double[ mdims[0]*mdims[1] ];
+
+        unsigned int element3D;
+        long elemNum=0;
+        for (int j=0; j<=mdims[1]-1; j++)  {
+            for (int i=0; i<=mdims[0]-1; i++) {
+              // indexing definition:  ptr[k*mdims[1]*mdims[0] +j*mdims[0]+i];
+                element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
+                imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
+                maskSlice[elemNum]       = (double) ( 0 < ptrCurrLabel[element3D] );
+
+              U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
+              elemNum++;
+            }
+        }
+
+        std::vector<long> dimsSlice(5);
+        dimsSlice[0] = mdims[0];
+        dimsSlice[1] = mdims[1];
+        dimsSlice[2] = 1;
+        dimsSlice[3] = dimsSlice[0]*dimsSlice[1];
+        dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
+
+
+        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
+
+        interactive_chanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
+                             LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
+                             iter,rad,lambda,display);
+
+
+        //threshold phi to find segmentation label, assign it to appropriate range of label!
+        elemNum=0;
+        for (int j=0; j<=mdims[1]-1; j++)  {
+            for (int i=0; i<=mdims[0]-1; i++) {
+                double phi_val = phiSlice[elemNum];
+                double phi_out = (-phi_val + 3.0) / 6.0; // shift and scale from [-3,3] to [0,1]
+
+                element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
+                ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95) + (phi_out > 0.8) + (phi_out > 0.65) + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
+
+                elemNum++;
+            }
+        }
+
+        delete imgSlice;
+        delete labelSlice;
+        delete maskSlice;
+        delete phiSlice;
+        delete U_I_slice;
+
+
+        m_UpdateVector.clear();
+        m_CoordinatesVector.clear();
+
+
+    }
+
+
+    void KSegmentor3D::Update3D()
     {
         this->integrateUserInputInUserInputImage();
         this->UpdateMask();
+
+        LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+        LL *Lin2out, *Lout2in,*Lchanged;
+
+        Lz=LL3D.Lz;
+        Ln1=LL3D.Ln1;
+        Ln2=LL3D.Ln2;
+        Lp1=LL3D.Lp1;
+        Lp2=LL3D.Lp2;
+        Lin2out=LL3D.Lin2out;
+        Lout2in=LL3D.Lout2in;
+        Lchanged=LL3D.Lchanged;
 
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
@@ -184,9 +278,9 @@ namespace vrcl
 
         if (m_CustomSpeedImgPointer!=NULL)
         {
-            interactive_customspeed(this->m_CustomSpeedImgPointer,img,phi,ptrIntegral_Image,label,dims,
+           /* interactive_customspeed(this->m_CustomSpeedImgPointer,img,phi,ptrIntegral_Image,label,dims,
                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                    iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+                                    iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);*/
         }
         else if( m_bUseEdgeBased ) {
             interactive_edgebased_ext(img,phi,ptrIntegral_Image,label,dims,
@@ -197,7 +291,7 @@ namespace vrcl
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
                                      iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
-            bool bDisplayChanVeseCost = false;
+            bool bDisplayChanVeseCost = true;
             if( bDisplayChanVeseCost ) {
                 double cv_cost = this->evalChanVeseCost();
                 cout << "chan vese cost = " << cv_cost << endl;
@@ -264,14 +358,46 @@ namespace vrcl
             delete [] this->iList;
             delete [] this->jList;
 
-            ll_destroy(Lz);
-            ll_destroy(Ln1);
-            ll_destroy(Ln2);
-            ll_destroy(Lp1);
-            ll_destroy(Lp2);
-            ll_destroy(Lin2out);
-            ll_destroy(Lout2in);
-             ll_destroy(Lchanged);
+
+        LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+        LL *Lin2out, *Lout2in,*Lchanged;
+
+
+        Lz=LL3D.Lz;
+        Ln1=LL3D.Ln1;
+        Ln2=LL3D.Ln2;
+        Lp1=LL3D.Lp1;
+        Lp2=LL3D.Lp2;
+        Lin2out=LL3D.Lin2out;
+        Lout2in=LL3D.Lout2in;
+        Lchanged=LL3D.Lchanged;
+
+        ll_destroy(Lz);
+        ll_destroy(Ln1);
+        ll_destroy(Ln2);
+        ll_destroy(Lp1);
+        ll_destroy(Lp2);
+        ll_destroy(Lin2out);
+        ll_destroy(Lout2in);
+         ll_destroy(Lchanged);
+
+         Lz=LL2D.Lz;
+         Ln1=LL2D.Ln1;
+         Ln2=LL2D.Ln2;
+         Lp1=LL2D.Lp1;
+         Lp2=LL2D.Lp2;
+         Lin2out=LL2D.Lin2out;
+         Lout2in=LL2D.Lout2in;
+         Lchanged=LL2D.Lchanged;
+
+         ll_destroy(Lz);
+         ll_destroy(Ln1);
+         ll_destroy(Ln2);
+         ll_destroy(Lp1);
+         ll_destroy(Lp2);
+         ll_destroy(Lin2out);
+         ll_destroy(Lout2in);
+          ll_destroy(Lchanged);
     }
 
 }

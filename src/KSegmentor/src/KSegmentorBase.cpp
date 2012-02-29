@@ -64,18 +64,14 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
 
-    segPointer->Lz=NULL;
-    segPointer->Ln1= NULL;
-    segPointer->Ln2= NULL;
-    segPointer->Lp1=NULL ;
-    segPointer->Lp2=NULL ;
+    segPointer->LL3D.init();
+    segPointer->LL2D.init();
     segPointer->Sz=NULL ;
     segPointer->Sn1=NULL ;
     segPointer->Sn2=NULL ;
     segPointer->Sp1=NULL ;
     segPointer->Sp2=NULL ;
-    segPointer->Lin2out=NULL ;
-    segPointer->Lout2in=NULL ;
+
     segPointer->img=NULL;
     segPointer->mask=NULL;
 
@@ -313,31 +309,37 @@ void KSegmentorBase::setCurrLabelArray(vtkImageData *label){
     this->labelVol=label;
 }
 
-void KSegmentorBase::intializeLevelSet(){
 
-    if (Lz!=NULL){
+void KSegmentorBase::CreateLLs(LLset& ll)
+{
+    if (ll.Lz!=NULL){
         //destroy linked lists
-        ll_destroy(Lz);
-        ll_destroy(Ln1);
-        ll_destroy(Ln2);
-        ll_destroy(Lp1);
-        ll_destroy(Lp2);
-        ll_destroy(Lin2out);
-        ll_destroy(Lout2in);
+        ll_destroy(ll.Lz);
+        ll_destroy(ll.Ln1);
+        ll_destroy(ll.Ln2);
+        ll_destroy(ll.Lp1);
+        ll_destroy(ll.Lp2);
+        ll_destroy(ll.Lin2out);
+        ll_destroy(ll.Lout2in);
+        ll_destroy(ll.Lchanged);
     }
 
     //create linked lists
-    Lz  = ll_create();
-    Ln1 = ll_create();
-    Ln2 = ll_create();
-    Lp1 = ll_create();
-    Lp2 = ll_create();
-    Lin2out = ll_create();
-    Lout2in = ll_create();
-    Lchanged =ll_create();
+    ll.Lz  = ll_create();
+    ll.Ln1 = ll_create();
+    ll.Ln2 = ll_create();
+    ll.Lp1 = ll_create();
+    ll.Lp2 = ll_create();
+    ll.Lin2out = ll_create();
+    ll.Lout2in = ll_create();
+    ll.Lchanged =ll_create();
+}
+
+void KSegmentorBase::intializeLevelSet3D(){
 
     //initialize lists, phi, and labels
-    ls_mask2phi3c_ext(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+    ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
+                                    LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
