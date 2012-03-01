@@ -112,7 +112,7 @@ class KSegmentorBase
             this->currSlice=sliceIndex;
         }
 
-        void saveCurrentSliceToPNG( const std::string& fileName);
+        void saveCurrentSliceToPNG( double* data,  const std::string& fileName);
 
         static double defaultKappaParam;
 
@@ -171,9 +171,10 @@ class KSegmentorBase
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
 
+        vtkSmartPointer<vtkImageData> U_Integral_image;
 
     protected:
-        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,U_Integral_image;
+        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,;
 
         vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
@@ -194,7 +195,7 @@ class KSegmentorBase
 
 
         /** write to png file. rescale to 255, make sure it has .png ending */
-        void saveMatToPNG( const cv::Mat& source, const std::string& fileName );
+        void saveMatToPNG( double* data, const std::string& fileName );
 
         /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
@@ -207,8 +208,8 @@ class KSegmentorBase
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
-        double *ptrIntegral_Image; //ptr to current image slice
-        double *ptrU_t_Image; //ptr to current label slice
+        double *ptrIntegral_Image;
+        double *ptrU_t_Image;
 
 
 /** Might (??) own anything else below */

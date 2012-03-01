@@ -341,7 +341,11 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
     case 's': // run "KSegmentor"
-      kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode);
+      kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,true);
+      //this->UpdateVolumeStatus();
+      break;
+    case 'S': // run "KSegmentor"
+      kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,false);
       //this->UpdateVolumeStatus();
       break;
     case '0':
@@ -500,7 +504,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                          // manually draw edits if we're editing things we can't see! Rather, we go to a slice where automated
                          // part is making mistakes and edit it there.
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
-                ptrLabel[elemNum] = Label_Fill_Value;  // careful this might vary! Also this is where "erase" enters!
+                ptrLabel[elemNum] = Label_Fill_Value;
               }
             }
           }

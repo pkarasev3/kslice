@@ -123,7 +123,7 @@ Multiple Label Maps
   /** for every labelmap, copy & paste from index A to index B */ 
   void CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll = false );
 
-  void RunSegmentor( int slice_index = -1, bool bAllLabels = false );
+  void RunSegmentor( int slice_index = -1, bool bAllLabels = false, bool use2D=true );
  
   /** called internally when a display update is needed,
       such as when a new labelmap is created */

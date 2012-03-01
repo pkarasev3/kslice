@@ -491,39 +491,39 @@ void en_lrbac_destroy()
 //        free(Sout); Sout = NULL; }
 }
 
-double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
-{
-    int x,y,z,idx;
-    double *F, *kappa;
-    double a;
-    // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
-    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
-    int n=0;
-    ll_init(Lz);
-    double Fmax = 0.001; //0.00001; //begining of list;
+//double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
+//{
+//    int x,y,z,idx;
+//    double *F, *kappa;
+//    double a;
+//    // allocate space for F
+//    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
+//    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
+//    int n=0;
+//    ll_init(Lz);
+//    double Fmax = 0.001; //0.00001; //begining of list;
 
 
-    while(Lz->curr != NULL)
-    {          //loop through list
-        x = Lz->curr->x;
-        y = Lz->curr->y;
-        z = Lz->curr->z;
-        idx = Lz->curr->idx;
-        a = speedimg[idx];
-        if(fabs(a)> Fmax)   Fmax = fabs(a);
-        F[n] = -a;
-        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-        ll_step(Lz); n++;       //next point
-    }
-    if(scale[0]==0)
-        scale[0] = Fmax;
-        for(int j=0;j<Lz->length;j++){
-            F[j] = F[j]/scale[0]+lam*kappa[j];
-        }
-    free(kappa);
-    return F;
-}
+//    while(Lz->curr != NULL)
+//    {          //loop through list
+//        x = Lz->curr->x;
+//        y = Lz->curr->y;
+//        z = Lz->curr->z;
+//        idx = Lz->curr->idx;
+//        a = speedimg[idx];
+//        if(fabs(a)> Fmax)   Fmax = fabs(a);
+//        F[n] = -a;
+//        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+//        ll_step(Lz); n++;       //next point
+//    }
+//    if(scale[0]==0)
+//        scale[0] = Fmax;
+//        for(int j=0;j<Lz->length;j++){
+//            F[j] = F[j]/scale[0]+lam*kappa[j];
+//        }
+//    free(kappa);
+//    return F;
+//}
 
 
 double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
@@ -928,7 +928,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
     while(Lz->curr != NULL){     //loop through list
         idx = Lz->curr->idx;
         I = img[idx];
-        a = (I-uin)*(I-uin)-(I-uout)*(I-uout);
+        a = (I-uin)*(I-uin)-(I-uout)*(I-uout); // maybe scale by max of image so a has consistent range
         if(fabs(a)>Fmax) {
             Fmax = fabs(a);
         }
@@ -940,15 +940,9 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
         scale[0] = Fmax;
     //}
 
-    for(int j=0;j<Lz->length;j++){
+    for(int j=0;j<Lz->length;j++){  // this scaling is weird, what if lambda times kappa is much bigger than  1
         FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j];
     }
-
-// to ensure they match!
-//    double k1  = kappa[(Lz->length / 2)];
-//    double k2  = KappaVec[(Lz->length / 2)];
-//    double f1  = F[(Lz->length / 2)];
-//    double f2  = FVec[(Lz->length / 2)];
 
     return F;
 }

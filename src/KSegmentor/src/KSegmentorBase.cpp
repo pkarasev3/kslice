@@ -193,7 +193,7 @@ void KSegmentorBase::UpdateMask()
     }
 }
 
-void KSegmentorBase::saveMatToPNG( const cv::Mat& sliceImg, const std::string& fileName )
+void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
 {
     std::stringstream  ss;
     ss << fileName;
@@ -203,12 +203,14 @@ void KSegmentorBase::saveMatToPNG( const cv::Mat& sliceImg, const std::string& f
     }
     string png_name = ss.str();
     cout << " reference png file: " << png_name << endl;
-    cv::Mat source;
-    cv::flip( -1.0 * sliceImg, source, 0 /* flipVert */ );
+    cv::Mat source(mdims[1],mdims[0],CV_64F);
+    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
+    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
     double dmin, dmax;
     cv::minMaxLoc( source, &dmin, &dmax );
     cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
     cv::imwrite(png_name, saveImg );
+    cout<<"wrote to " << png_name << endl;
 }
 
 void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){

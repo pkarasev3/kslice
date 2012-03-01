@@ -467,7 +467,7 @@ void KWidget_2D_left::CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll )
 
 }
 
-void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
+void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
 {
   if( slice_index < 0 ) {
     slice_index = currentSliceIndex;
@@ -485,7 +485,10 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
 
-    kseg->Update2D();//2D();
+    if (use2D)
+        kseg->Update2D();
+    else
+        kseg->Update3D();
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
@@ -493,7 +496,10 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
       Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
       kseg->setNumIterations( kv_opts->segmentor_iters );
       kseg->setCurrIndex( slice_index );
-      kseg->Update2D();
+      if (use2D)
+          kseg->Update2D();
+      else
+          kseg->Update3D();
     }
   }
   UpdateMultiLabelMapDisplay();
