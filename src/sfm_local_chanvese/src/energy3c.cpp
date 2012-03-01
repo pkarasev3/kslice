@@ -314,21 +314,63 @@ void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(uout>0) uout = sumout/aout;
 }
 
+namespace {
+    static std::vector<double>  FVec(128);
+    static std::vector<double>  KappaVec(128);
+    static std::vector<double>  AiVec(128);
+    static std::vector<double>  AoVec(128);
+    static std::vector<double>  SiVec(128);
+    static std::vector<double>  SoVec(128);
+
+    bool CheckLevelSetSizes( int queryLength )
+    {
+        bool bDidResize = false;
+        int  initLength = FVec.size();
+        if( queryLength > initLength )
+        {
+            FVec.resize(queryLength * 2 + 128);
+            KappaVec.resize(queryLength * 2 + 128);
+            bDidResize = true;
+        }
+        return bDidResize;
+    }
+    bool CheckBinSizes( int queryLength )
+    {
+        bool bDidResize = false;
+        int  initLength = AiVec.size();
+        if( queryLength > initLength )
+        {
+            AiVec.resize(queryLength);
+            AoVec.resize(queryLength);
+            SiVec.resize(queryLength);
+            SoVec.resize(queryLength);
+            bDidResize = true;
+        }
+        return bDidResize;
+    }
+}
+
 void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
     int i,j,k,n,x,y,z,idx,ridx,bidx;
 
     //create ball
     gball = en_lrbac_gball(rad);
 
+    int numel = NUMEL;
+    CheckBinSizes(numel);
+    Ain  = &(AiVec[0]);
+    Aout = &(AoVec[0]);
+    Sin  = &(SiVec[0]);
+    Sout = &(SoVec[0]);
     //allocate memory for lookups
-    if( NULL == Ain )
-        Ain  = (double*)malloc(NUMEL*sizeof(double)); if(Ain==NULL) return;
-    if( NULL == Sin )
-        Sin  = (double*)malloc(NUMEL*sizeof(double)); if(Sin==NULL) return;
-    if( NULL == Aout )
-        Aout = (double*)malloc(NUMEL*sizeof(double)); if(Aout==NULL) return;
-    if( NULL == Sout )
-        Sout = (double*)malloc(NUMEL*sizeof(double)); if(Sout==NULL) return;
+//    if( NULL == Ain )
+//        Ain  = (double*)malloc(numel*sizeof(double)); if(Ain==NULL) return;
+//    if( NULL == Sin )
+//        Sin  = (double*)malloc(numel*sizeof(double)); if(Sin==NULL) return;
+//    if( NULL == Aout )
+//        Aout = (double*)malloc(numel*sizeof(double)); if(Aout==NULL) return;
+//    if( NULL == Sout )
+//        Sout = (double*)malloc(numel*sizeof(double)); if(Sout==NULL) return;
 
     //poison "uninitialized" points
     for(i=0;i<NUMEL;i++){
@@ -433,17 +475,20 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
     if(uout>0) uout = sumout/aout;
 }
 
-void en_lrbac_destroy(){
+void en_lrbac_destroy()
+{
+
     if(gball!=NULL) {
         free(gball); gball = NULL; }
-    if(Ain!=NULL) {
-        free(Ain); Ain = NULL; }
-    if(Aout!=NULL) {
-        free(Aout); Aout = NULL; }
-    if(Sin!=NULL) {
-        free(Sin); Sin = NULL; }
-    if(Sout!=NULL) {
-        free(Sout); Sout = NULL; }
+  // Don't delete them, we're caching !
+//    if(Ain!=NULL) {
+//        free(Ain); Ain = NULL; }
+//    if(Aout!=NULL) {
+//        free(Aout); Aout = NULL; }
+//    if(Sin!=NULL) {
+//        free(Sin); Sin = NULL; }
+//    if(Sout!=NULL) {
+//        free(Sout); Sout = NULL; }
 }
 
 double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
@@ -456,7 +501,7 @@ double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,doub
     kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
     int n=0;
     ll_init(Lz);
-    double Fmax = 0.00001; //begining of list;
+    double Fmax = 0.001; //0.00001; //begining of list;
 
 
     while(Lz->curr != NULL)
@@ -578,19 +623,25 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
     return F;
 }
 
+
+
 double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
                          double *scale, double lam, double rad )
 {
     int x,y,z,idx;
     double *F, *kappa;
     double a,u,v,I;
-    // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
-    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
+
+    CheckLevelSetSizes( Lz->length );
+    F          = &(FVec[0]);
+    kappa      = &(KappaVec[0]);
+    assert( F     != NULL );
+    assert( kappa != NULL );
+
 
     ll_init(Lz);
     int        n= 0;
-    double Fmax = 0.00001; //begining of list;
+    double Fmax = 0.001; //begining of list;
     while(Lz->curr != NULL)
     {          //loop through list
         x = Lz->curr->x;
@@ -610,12 +661,12 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
         kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
         ll_step(Lz); n++;       //next point
     }
-    if(scale[0]==0)
-        scale[0] = Fmax;
+   // if(scale[0]==0)
+    scale[0] = Fmax;
     for(int j=0;j<Lz->length;j++){
         F[j] = F[j]/scale[0]+lam*kappa[j];
     }
-    free(kappa);
+
     return F;
 }
 
@@ -851,34 +902,54 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
     return F;
 }
 
+
+
 double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,I,Fmax;
+    CheckLevelSetSizes( Lz->length );
+
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));
-    if(F == NULL) return NULL;
+    // F = (double*)malloc(Lz->length*sizeof(double));
+    // if(F == NULL) return NULL;
+    //kappa = (double*)malloc(Lz->length*sizeof(double));
+    //if(kappa == NULL) return NULL;
 
-    kappa = (double*)malloc(Lz->length*sizeof(double));
-    if(kappa == NULL) return NULL;
+    F          = &(FVec[0]);
+    kappa      = &(KappaVec[0]);
+    assert( F     != NULL );
+    assert( kappa != NULL );
 
-    ll_init(Lz);n=0;Fmax=0.0001; //begining of list;
+    ll_init(Lz);
+    n=0;
+    Fmax=0.0001; //begining of list;
     while(Lz->curr != NULL){     //loop through list
         idx = Lz->curr->idx;
         I = img[idx];
         a = (I-uin)*(I-uin)-(I-uout)*(I-uout);
-        if(fabs(a)>Fmax) Fmax = fabs(a);
-        F[n] = a;
-        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+        if(fabs(a)>Fmax) {
+            Fmax = fabs(a);
+        }
+        FVec[n]     = a;
+        KappaVec[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
         ll_step(Lz); n++;       //next point
     }
-    if(scale[0] == 0) scale[0] = Fmax;
+    //if(scale[0] == 0) {
+        scale[0] = Fmax;
+    //}
 
     for(int j=0;j<Lz->length;j++){
-        F[j] = F[j]/scale[0]+lam*kappa[j];
+        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j];
     }
-    free(kappa);
+
+// to ensure they match!
+//    double k1  = kappa[(Lz->length / 2)];
+//    double k2  = KappaVec[(Lz->length / 2)];
+//    double f1  = F[(Lz->length / 2)];
+//    double f2  = FVec[(Lz->length / 2)];
+
     return F;
 }
 

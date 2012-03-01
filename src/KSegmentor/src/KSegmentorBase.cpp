@@ -64,18 +64,14 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
 
-    segPointer->Lz=NULL;
-    segPointer->Ln1= NULL;
-    segPointer->Ln2= NULL;
-    segPointer->Lp1=NULL ;
-    segPointer->Lp2=NULL ;
+    segPointer->LL3D.init();
+    segPointer->LL2D.init();
     segPointer->Sz=NULL ;
     segPointer->Sn1=NULL ;
     segPointer->Sn2=NULL ;
     segPointer->Sp1=NULL ;
     segPointer->Sp2=NULL ;
-    segPointer->Lin2out=NULL ;
-    segPointer->Lout2in=NULL ;
+
     segPointer->img=NULL;
     segPointer->mask=NULL;
 
@@ -139,6 +135,51 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
 
+}
+
+namespace {
+
+const double epsH = sqrt(2.0);   // epsilon   = sqrt(2);
+
+inline double Heavi( double z )
+{
+
+//    Heavi     = @(z)  1 * (z >= epsilon) + (abs(z) < epsilon).*(1+z/epsilon+1/pi * sin(pi*z/epsilon))/2.0;
+    return ( 1.0*(z>=epsH) + (abs(z)<epsH)*(1+z/epsH+(1/CV_PI)*sin(CV_PI*z/epsH) )/2.0  );
+}
+inline double Delta( double z )
+{
+//    delta     = @(z)  1 * (z == 0) + (abs(z) < epsilon).*(1 + cos(pi*z/epsilon))/(epsilon*2.0);
+    return ( 1.0*(z==0) + (abs(z)<epsH) * (1 + cos(CV_PI * z /epsH) )/(2 * epsH) );
+}
+
+}
+
+double KSegmentorBase::evalChanVeseCost( ) const
+{
+    double E      = 0.0;
+    int Nelements = dimx * dimy * dimz;
+    double integral_zero_plus_H = 0; // $ \int \Heavi{ }       $
+    double integral_one_minus_H = 0; // $ \int (1-\Heavi{ })   $
+    double integral_I_zpH       = 0; // $ \int I*\Heavi{ }     $
+    double integral_I_omH       = 0; // $ \int I*(1-\Heavi{ }) $
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+    {
+        integral_zero_plus_H += Heavi(phi[voxel_idx]) ;
+        integral_one_minus_H += 1.0 - Heavi(phi[voxel_idx]) ;
+        integral_I_zpH       += (img[voxel_idx]) * Heavi(phi[voxel_idx]) ;
+        integral_I_omH       += (img[voxel_idx]) * (1.0 - Heavi(phi[voxel_idx]));
+    }
+    double mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
+    double mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
+
+    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+    {
+        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
+    }
+
+    return (E/2.0);
 }
 
 
@@ -268,31 +309,37 @@ void KSegmentorBase::setCurrLabelArray(vtkImageData *label){
     this->labelVol=label;
 }
 
-void KSegmentorBase::intializeLevelSet(){
 
-    if (Lz!=NULL){
+void KSegmentorBase::CreateLLs(LLset& ll)
+{
+    if (ll.Lz!=NULL){
         //destroy linked lists
-        ll_destroy(Lz);
-        ll_destroy(Ln1);
-        ll_destroy(Ln2);
-        ll_destroy(Lp1);
-        ll_destroy(Lp2);
-        ll_destroy(Lin2out);
-        ll_destroy(Lout2in);
+        ll_destroy(ll.Lz);
+        ll_destroy(ll.Ln1);
+        ll_destroy(ll.Ln2);
+        ll_destroy(ll.Lp1);
+        ll_destroy(ll.Lp2);
+        ll_destroy(ll.Lin2out);
+        ll_destroy(ll.Lout2in);
+        ll_destroy(ll.Lchanged);
     }
 
     //create linked lists
-    Lz  = ll_create();
-    Ln1 = ll_create();
-    Ln2 = ll_create();
-    Lp1 = ll_create();
-    Lp2 = ll_create();
-    Lin2out = ll_create();
-    Lout2in = ll_create();
-    Lchanged =ll_create();
+    ll.Lz  = ll_create();
+    ll.Ln1 = ll_create();
+    ll.Ln2 = ll_create();
+    ll.Lp1 = ll_create();
+    ll.Lp2 = ll_create();
+    ll.Lin2out = ll_create();
+    ll.Lout2in = ll_create();
+    ll.Lchanged =ll_create();
+}
+
+void KSegmentorBase::intializeLevelSet3D(){
 
     //initialize lists, phi, and labels
-    ls_mask2phi3c_ext(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+    ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
+                                    LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)

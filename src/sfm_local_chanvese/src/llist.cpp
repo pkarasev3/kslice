@@ -15,7 +15,7 @@ PT *pt_create(long x, long y, long z, long idx){
 
 LL *ll_create(){
   LL *newll = (LL*)malloc(sizeof(LL));
-  if(newll == NULL) return NULL;
+  if(newll == NULL) throw "failed!";
   newll->head = NULL;
   newll->curr = NULL;
   newll->length = 0;
