@@ -141,15 +141,6 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
 
         cout << "I think the # of rows is: " << mdims[0] << ", # of cols is: " << mdims[1] << endl;
 
-// NOT USING THESE ANYMORE (?)  replace with raw double* pointers
-//        U_integral = std::vector< cv::Mat >( num_slices );
-//        U_t        = std::vector< cv::Mat >( num_slices );
-//        for( int k = 0; k < num_slices; k++ )
-//        { /** per-slice user updates  */
-//          U_integral[k] = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
-//          U_t[k]        = cv::Mat::zeros( mdims[1], mdims[0], CV_64F );
-//        }
-
         this->iList=NULL;
         this->jList=NULL;
 
@@ -181,6 +172,9 @@ KSegmentor::KSegmentor(vtkImageData *image, vtkImageData *label, int sliceIndex,
              << dims[0] << "," << dims[1] << "," << dims[2] << endl;
 
         this->seg = new  unsigned short[dims[0]*dims[1]*dims[2]];
+
+
+
         initializeData();
         intializeLevelSet();
 }
@@ -316,8 +310,8 @@ void KSegmentor::UpdateArraysAfterTransform()
 
     this->img        = new double[ mdims[0]*mdims[1] ];
     this->mask       = new double[ mdims[0]*mdims[1] ];
-    this->phi        = new double[mdims[0]*mdims[1]*mdims[2]];
-    this->label      = new double[mdims[0]*mdims[1]*mdims[2]];
+    this->phi        = new double[mdims[0]*mdims[1]];
+    this->label      = new double[mdims[0]*mdims[1]];
     this->U_I_slice  = new double[ mdims[0]*mdims[1] ];
 
     this->U_Integral_image->GetSpacing( m_Spacing_mm );

@@ -8,7 +8,7 @@ execute_process(COMMAND "sh" ${CMAKE_CURRENT_SOURCE_DIR}/build.sh
              ${EXECUTABLE_OUTPUT_PATH}  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}  )
 
 #TODO: seems like too many libraries, why are there link errors without them
-set( VTK_LIBS    vtkCommon vtksys QVTK vtkQtChart vtkViews vtkWidgets
+set( VTK_LIBS    vtkCommon vtksys QVTK  vtkViews vtkWidgets
 vtkInfovis vtkRendering vtkGraphics vtkImaging vtkIO vtkFiltering
 vtkDICOMParser vtksqlite   vtkexoIIc  vtkNetCDF  vtkmetaio  vtkftgl # vtkfreetype
 vtkHybrid  vtkalglib vtkexpat vtkverdict vtkParallel VPIC Cosmo )

@@ -29,7 +29,8 @@ class KSegmentor3D : public KSegmentorBase
         static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit);
         virtual ~KSegmentor3D();
         void initializeData();
-        void Update();
+        virtual void Update3D();
+        virtual void Update2D();
 
         /** external interface to update at a voxel */
         void accumulateUserInputInUserInputImages( double value,const unsigned int element);

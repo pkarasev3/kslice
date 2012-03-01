@@ -20,9 +20,9 @@ void interactive_chanvese_ext(double *img, double *phi, double* U_integral, doub
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                           int iter, double lambda, int display, double* normvec, double* pointonplane,float distweight=0);
 
-void interactive_customspeed(double* speedimg, double *img, double *phi, double* U_integral, double *label, long *dims,
+/*void interactive_customspeed(double* speedimg, double *img, double *phi, double* U_integral, double *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
-                          int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight=0);
+                          int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight=0);*/
 
 void interactive_edgebased(double *img, double *phi, double* U_integral, double *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,

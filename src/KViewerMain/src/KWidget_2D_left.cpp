@@ -480,25 +480,20 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels)
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
 
     // Do we need this ? Aren't we acting in-place ?
-    kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
+    //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
 
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
-    //kseg->initializeData();
-    //kseg->intializeLevelSet();
-    kseg->Update();
+
+    kseg->Update2D();//2D();
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
     { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
       Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
-      //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
       kseg->setNumIterations( kv_opts->segmentor_iters );
       kseg->setCurrIndex( slice_index );
-      //Initialization moved to Update method in kseg.
-      //kseg->initializeData();
-      //kseg->intializeLevelSet();
-      kseg->Update();
+      kseg->Update2D();
     }
   }
   UpdateMultiLabelMapDisplay();
@@ -523,9 +518,6 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
         multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
         multiLabelMaps[k]->labelDataArray->Modified();
     }
-    //if(updateTransform)
-
-              //this->m_TransformedZ=!this->m_TransformedZ;*/
     // update the QVTK display
     qVTK_widget_left->update( );
 }
