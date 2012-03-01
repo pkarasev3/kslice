@@ -29,7 +29,7 @@ namespace vrcl
     KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
     {
         KSegmentor3D* seg3DPointer = new KSegmentor3D;
-        seg3DPointer->m_EnergyName = GetSupportedEnergyNames()[0];
+        seg3DPointer->m_EnergyName = GetSupportedEnergyNames()[1];
         seg3DPointer->InitializeVariables(seg3DPointer,image,label, contInit);
 
         if(contInit)
@@ -219,7 +219,7 @@ namespace vrcl
 
         ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
-        interactive_chanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
+        interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                              LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                              iter,rad,lambda,display);
 
@@ -237,6 +237,10 @@ namespace vrcl
                 elemNum++;
             }
         }
+
+        std::stringstream ss;
+        ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
+        saveMatToPNG( U_I_slice, ss.str() );
 
         delete imgSlice;
         delete labelSlice;
