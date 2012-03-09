@@ -11,7 +11,7 @@
 #include "KViewerOptions.h"
 #include "KDataWarehouse.h"
 #include "vtkInteractorStyleImage.h"
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
 #include "KInteractiveLabelMap.h"
 #include "vtkTransform.h"
 
