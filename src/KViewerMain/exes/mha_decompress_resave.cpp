@@ -18,7 +18,7 @@
 #include <vtkMath.h>
 #include <cmath>
 #include <vector>
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "vtkMetaImageWriter.h"

@@ -12,7 +12,7 @@
 #include <set>
 
 
-#include "KSegmentor.h"
+//#include "KSegmentorBase.h"
 #include "KViewerOptions.h"
 
 using cv::Ptr;

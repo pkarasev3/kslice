@@ -11,7 +11,6 @@
 #include "Logger.h"
 #include "QVTKWidget.h"
 #include "KSandbox.h"
-#include "KSegmentor.h"
 #include "KSegmentor3D.h"
 #include "KDataWarehouse.h"
 #include "vtkImageContinuousDilate3D.h"
