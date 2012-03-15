@@ -238,10 +238,12 @@ namespace vrcl
             }
         }
 
-        std::stringstream ss;
-        ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-        saveMatToPNG( U_I_slice, ss.str() );
-
+        bool bSavePNG = false;
+        if( bSavePNG ) {
+            std::stringstream ss;
+            ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
+            saveMatToPNG( U_I_slice, ss.str() );
+        }
         delete imgSlice;
         delete labelSlice;
         delete maskSlice;
@@ -258,7 +260,9 @@ namespace vrcl
 
     void KSegmentor3D::Update3D()
     {
+        cout << "integrating mask 3D " << endl;
         this->integrateUserInputInUserInputImage();
+        cout << "updating mask 3D " << endl;
         this->UpdateMask();
 
         LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
@@ -271,7 +275,10 @@ namespace vrcl
         Lp2=LL3D.Lp2;
         Lin2out=LL3D.Lin2out;
         Lout2in=LL3D.Lout2in;
-        Lchanged=LL3D.Lchanged;
+        Lchanged=LL3D.Lchanged;  // NOT GETTING FREED/STORED RIGHT!
+
+        cout << "m_UpdateVector Size: " << m_UpdateVector.size()
+             <<  ", Lchanged size: " << Lchanged->length << endl;
 
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
@@ -289,12 +296,14 @@ namespace vrcl
         else if( m_bUseEdgeBased ) {
             interactive_edgebased_ext(img,phi,ptrIntegral_Image,label,dims,
                                   Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                  iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+                                  iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],
+                                 this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
         }
         else if( 0 == m_EnergyName.compare("ChanVese") ) {
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                     iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+                                     iter,lambda,display,this->m_PlaneNormalVector,
+                                     this->m_PlaneCenter,this->m_DistWeight);
             bool bDisplayChanVeseCost = true;
             if( bDisplayChanVeseCost ) {
                 double cv_cost = this->evalChanVeseCost();
