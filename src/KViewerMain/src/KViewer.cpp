@@ -335,18 +335,19 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        this->UpdateVolumeStatus();
       break;
     case 'b': // update 3D
+       cout << "b key pressed: update 3D" << endl;
        UpdateVolumeStatus();
       break;
     case 'v': // Paste!
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
     case 's': // run "KSegmentor"
+      cout << "s key pressed: this-slice 2D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,true);
-      //this->UpdateVolumeStatus();
       break;
     case 'S': // run "KSegmentor"
+      cout << "S key pressed: 3D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,false);
-      //this->UpdateVolumeStatus();
       break;
     case '0':
        //kv_opts->seg_time_interval+=0.05;
@@ -370,9 +371,11 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         }
       break;
     case 'm':
+        cout << "m key pressed: toggling time-triggered updates " << endl;
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
         break;
     case 'e':
+        cout << "e key pressed: X-rotate 90 degrees " << endl;
         if(this->m_RotX)
          kwidget_2d_left->InitializeTransform('x');
         else
@@ -380,6 +383,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         this->m_RotX=!this->m_RotX;
         break;
     case 't':
+        cout << "t key pressed: Y-rotate 90 degrees " << endl;
         if(this->m_RotY)
          kwidget_2d_left->InitializeTransform('y');
         else
@@ -387,25 +391,17 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         this->m_RotY=!this->m_RotY;
         break;
     case 'z':
+        cout << "z key pressed: Z-rotate 90 degrees " << endl;
         if(this->m_RotZ)
          kwidget_2d_left->InitializeTransform('z');
         else
           kwidget_2d_left->InitializeTransform('z',-90);
         this->m_RotZ=!this->m_RotZ;
         break;
-    case 'i': //For TESTING purposes
-         //this->SliceSelect(0);
-        for(int sl=slice_idx;sl<slice_idx+10;sl++)
-        {
-            kwidget_2d_left->RunSegmentor(sl,kv_opts->multilabel_sgmnt_mode);
-            this->queueCopyFromCurrentSlice( sl );
-            kwidget_2d_left->CopyLabelsFromTo( sl, sl+1, kv_opts->multilabel_paste_mode );
-            this->SliceSelect(sl+1);
-        }
-        this->UpdateVolumeStatus();
-        break;
     case 'u':
+         cout << "u key pressed: updating volume status and 3D view " << endl;
          this->UpdateVolumeStatus();
+         break;
     default:
       break;
     }

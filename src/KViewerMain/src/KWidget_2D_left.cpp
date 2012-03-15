@@ -477,12 +477,10 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     int label_idx = activeLabelMapIndex;
     Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
-
-    // Do we need this ? Aren't we acting in-place ?
-    //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
-
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
+
+    cout << "use2D ? " << use2D << endl;
 
     if (use2D)
         kseg->Update2D();
