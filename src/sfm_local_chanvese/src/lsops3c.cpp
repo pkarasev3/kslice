@@ -267,7 +267,8 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
 void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in,LL* Lchanged){
-    /** this function is mostly the same as ls_iteration, except it also assigned Lchanged, and doesn't free F
+    /** this function is mostly the same as ls_iteration, except it
+        also assigned Lchanged, and doesn't free F
       */
   int x,y,z,i,idx;
   int u,d,r,l,f,b;
@@ -545,7 +546,9 @@ double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, double *
   return pmin;
 }
 
-void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2){
+void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
+                   LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2)
+{
   int x,y,z,idx;
   int i,j,k;
   int u,d,r,l,f,b;
@@ -908,7 +911,10 @@ void ls_mask2phi3c_ext(double* mask, double* phi, double* label, long* dims, LL 
 }
 
 
-void ls_mask2phi3c_update(std::vector< unsigned int > updateVector, std::vector< std::vector<unsigned int> > coordVector,  double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL* Lchanged){
+void ls_mask2phi3c_update(std::vector< unsigned int > updateVector,
+                          std::vector< std::vector<unsigned int> > coordVector,
+                          double* mask, double* phi, double* label, long* dims,
+                          LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL* Lchanged){
   int x,y,z,idx;
   int  flag=0;
   //only update in locations that have been changed
