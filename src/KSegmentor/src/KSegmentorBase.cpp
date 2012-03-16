@@ -183,13 +183,24 @@ double KSegmentorBase::evalChanVeseCost( ) const
 }
 
 
-void KSegmentorBase::UpdateMask()
+void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 {
-    int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-    for (int element=0;element<Nelements;element++)
+    if( bForceUpdateAll )
     {
-        unsigned int el=this->m_UpdateVector[element];
-        this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+        int Nelements = this->dimx * this->dimy * this->dimz;
+        for (int element=0;element<Nelements;element++)
+        {
+            this->mask[element]=(double) ( 0 < ptrCurrLabel[element] );
+        }
+    }
+    else
+    {
+        int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+        for (int element=0;element<Nelements;element++)
+        {
+            unsigned int el=this->m_UpdateVector[element];
+            this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+        }
     }
 }
 

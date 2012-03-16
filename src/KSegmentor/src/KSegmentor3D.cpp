@@ -179,7 +179,8 @@ namespace vrcl
         dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
 
 
-        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
+        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
+                      LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
         interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                              LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
@@ -194,7 +195,9 @@ namespace vrcl
                 double phi_out = (-phi_val + 3.0) / 6.0; // shift and scale from [-3,3] to [0,1]
 
                 element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
-                ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95) + (phi_out > 0.8) + (phi_out > 0.65) + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
+                ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95)
+                                                              + (phi_out > 0.8) + (phi_out > 0.65)
+                                                              + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
 
                 elemNum++;
             }
@@ -232,10 +235,17 @@ namespace vrcl
             imageSmoother->Update();
             this->U_Integral_image->DeepCopy(imageSmoother->GetOutput());
         }
+
+
         cout << "integrating mask 3D " << endl;
         this->integrateUserInputInUserInputImage();
+
+        // The bug is as follows: the level-set evolution modifies Lchanged indices,
+        // but afterwards they are not appearing in the list of modified coordinates!
+        // Thus, the next time around the mask doesn't get to update them!
+
         cout << "updating mask 3D " << endl;
-        this->UpdateMask();
+        this->UpdateMask(true);
 
         LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
         LL *Lin2out, *Lout2in,*Lchanged;
@@ -247,7 +257,10 @@ namespace vrcl
         Lp2=LL3D.Lp2;
         Lin2out=LL3D.Lin2out;
         Lout2in=LL3D.Lout2in;
-        Lchanged=LL3D.Lchanged;  // NOT GETTING FREED/STORED RIGHT!
+
+        LL3D.Lchanged = ll_create();
+        Lchanged=LL3D.Lchanged;  // NOT GETTING FREED/STORED RIGHT!?
+
 
         cout << "m_UpdateVector Size: " << m_UpdateVector.size()
              <<  ", Lchanged size: " << Lchanged->length << endl;
@@ -256,8 +269,13 @@ namespace vrcl
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
         ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
-        if(this->m_UpdateVector.size()!=0)
-            ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+//        if(this->m_UpdateVector.size()!=0)
+//            ls_mask2phi3c_update(this->m_UpdateVector,
+//                                 this->m_CoordinatesVector,mask,phi,label,dims,
+//                                 Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+
+        ls_mask2phi3c(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
+
 
         if (m_CustomSpeedImgPointer!=NULL)
         {
@@ -298,8 +316,8 @@ namespace vrcl
         double phi_val = 0;
         double phi_out = 0;
         double outputVal=0;
-        ll_init(Lchanged);
 
+        ll_init(Lchanged);
         while(Lchanged->curr != NULL)
         {          //loop through list
           x = Lchanged->curr->x;
@@ -314,16 +332,16 @@ namespace vrcl
                                            (phi_out > 0.5) )
                                             *mult);
           ptrCurrLabel[idx] =outputVal;
-         ll_step(Lchanged);
+          ll_remcurr_free(Lchanged);
+          //ll_step(Lchanged);
+          //cout <<  ", Lchanged size: " << Lchanged->length << endl;
         }
 
-        ll_remcurr_free(Lchanged);
+        ll_destroy(Lchanged);
+
 
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
-
-
-
 
         m_UpdateVector.clear();
         m_CoordinatesVector.clear();
