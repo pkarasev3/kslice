@@ -32,13 +32,13 @@ vector<double> get_good_color_0to7( int idx )
   switch( idx )
   {
   case 0:
-    rgb = {255, 163, 255}; // amethyst
+    rgb = {0,117,220}; // blue
     break;
   case 1:
     rgb = {255,0,16}; // red
     break;
   case 2:
-    rgb = {0,117,220}; // blue
+    rgb = {255, 163, 255}; // amethyst
     break;
   case 3:
     rgb = {0,153,143}; // turquoise

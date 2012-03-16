@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
+#include "vtkImageGaussianSmooth.h"
 
 
 #include <ctime>
@@ -61,12 +62,7 @@ namespace vrcl
         //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
                                                    // at least, smoothness needs to be enforced somewhere else ...
         this->ptrU_t_Image[element] = user_input;
-                // Consider the following, if this were (+=). If we 'draw' 5 times and erase 2 times, but erasing
-                // happens last, this point would look erased to the user initially but then suddenly it has a large U
-                // because of some earlier draws.
-                //
-                // Something more reasonable is perhaps a moving average with saturated summation ...
-                // but just (+=) is a confusing 'brownian motion' effect...
+
     }
 
     void KSegmentor3D::integrateUserInputInUserInputImage()
@@ -83,40 +79,6 @@ namespace vrcl
             this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
             this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
         }
-        // something here seems crazy ....
-
-//        double Umax = 2.0;
-//            for (int element=0;element<Nelements;element++)
-//            {
-//                pos=this->m_UpdateVector[element];
-//                int y  = m_CoordinatesVector[element][0];
-//                int x  = m_CoordinatesVector[element][1];
-//                int z  = m_CoordinatesVector[element][2];
-
-//                for( int x_ = x-1; x_ <= x+1; x_++ ) {
-//                    for( int y_ = y-1; y_ <= y+1; y_++ ) {
-//                        for( int z_ = z-1; z_ <= z+1; z_++ )
-//                        {
-//                            if( (x_>=0) && (x_<dimx)
-//                             && (y_>=0) && (y_<dimy)
-//                             && (z_>=0) && (z_<dimz) ) {
-//                                int idx = (z_)*dimx*dimy +(x_)*dimx+(y_);
-//                                double hval = exp( -(   (x_- x)*(x_- x)
-//                                                      + (y_- y)*(y_- y)
-//                                                      + (z_- z)*(z_- z) )/4.0 );
-//                                double deltaU           = hval * this->ptrU_t_Image[pos];
-//                                ptrIntegral_Image[idx] += 1e-1*deltaU;
-//                                ptrIntegral_Image[pos] += deltaU;
-//                                ptrIntegral_Image[pos] = ptrIntegral_Image[pos] - (1e-1) * ( abs(ptrIntegral_Image[pos]) > Umax ) * ptrIntegral_Image[pos];
-////                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
-////                                    laplac_finite_diff += ptrIntegral_Image[idx]
-////                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-////       }
     }
 
 
@@ -260,6 +222,16 @@ namespace vrcl
 
     void KSegmentor3D::Update3D()
     {
+        bool bSmoothU = false;
+        if( bSmoothU ) {
+            cout << "smoothing integral image 3D " << endl;
+            vtkSmartPointer<vtkImageGaussianSmooth> imageSmoother = vtkSmartPointer<vtkImageGaussianSmooth>::New();
+            imageSmoother->SetDimensionality(3);
+            imageSmoother->SetStandardDeviations(1.0,1.0,1.0);
+            imageSmoother->SetInput(this->U_Integral_image);
+            imageSmoother->Update();
+            this->U_Integral_image->DeepCopy(imageSmoother->GetOutput());
+        }
         cout << "integrating mask 3D " << endl;
         this->integrateUserInputInUserInputImage();
         cout << "updating mask 3D " << endl;
@@ -302,9 +274,9 @@ namespace vrcl
         else if( 0 == m_EnergyName.compare("ChanVese") ) {
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                     iter,lambda,display,this->m_PlaneNormalVector,
+                                     iter,lambda*0.5,display,this->m_PlaneNormalVector,
                                      this->m_PlaneCenter,this->m_DistWeight);
-            bool bDisplayChanVeseCost = true;
+            bool bDisplayChanVeseCost = false;
             if( bDisplayChanVeseCost ) {
                 double cv_cost = this->evalChanVeseCost();
                 cout << "chan vese cost = " << cv_cost << endl;
