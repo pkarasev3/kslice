@@ -482,10 +482,14 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
 
     cout << "use2D ? " << use2D << endl;
 
-    if (use2D)
+    if (use2D) {
+        kseg->SetEnergyLocalCV( );
         kseg->Update2D();
-    else
+    }
+    else {
+        kseg->SetEnergyChanVese( );
         kseg->Update3D();
+    }
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )

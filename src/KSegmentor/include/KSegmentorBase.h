@@ -245,12 +245,12 @@ public:
 
 
         //Level Set Variables Stay persistent
+// TODO: delete these, no longer used
+//        /** time-integrated user inputs */
+//        std::vector< cv::Mat >  U_integral;
 
-        /** time-integrated user inputs */
-        std::vector< cv::Mat >  U_integral;
-
-        /** instantaneous user input (stuff that was drawn between running 's') */
-        std::vector< cv::Mat >  U_t;
+//        /** instantaneous user input (stuff that was drawn between running 's') */
+//        std::vector< cv::Mat >  U_t;
 
         double *B, *phi, *C, *label;
         double *F;

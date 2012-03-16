@@ -345,8 +345,9 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       cout << "s key pressed: this-slice 2D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,true);
       break;
-    case 'S': // run "KSegmentor"
-      cout << "S key pressed: 3D segmentation " << endl;
+    case 'a': // run "KSegmentor" // This can't be "S", because "shift" tends to generate the same 8bit code
+                                  // and we need capital letters for toggling the contrast levels
+      cout << "a key pressed: 3D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,false);
       break;
     case '0':

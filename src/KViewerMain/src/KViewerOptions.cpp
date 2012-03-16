@@ -91,7 +91,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   // set default values if they weren't passed as command line args
   paintBrushRad       = 7; // size of brush (radius)
   paintBrushThreshold = 0.05; // only draw if within X times image range of click point
-  modelOpacity3D      = 1;
+  modelOpacity3D      = 0.5;
   labelOpacity2D      = 0.7;
   labelInterpolate    = true;
   writeCompressed     = true;
@@ -108,7 +108,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   //LabelArrayFilenames.push_back("");
   drawLabelMaxVal     = getDefaultDrawLabelMaxVal();
 
-  ops >> Option('q', "modelOpacity3D",      modelOpacity3D);
+  // Using these is deprecated. Do they even work? Move to boost program options parser if they are desired.
   ops >> Option('X', "labelInterpolate",    labelInterpolate);
   ops >> Option('n', "minIntensity",        minIntensity);
   ops >> Option('x', "maxIntensity",        maxIntensity);
@@ -120,8 +120,9 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   commands.add_options()
       ("Labels,L",po::value< std::vector<std::string> >(&LabelArrayFilenames)->multitoken(),
        "which labels to pre-load, e.g. --Labels=a.mha b.mha c.mha")
+      ("Opacity3D,q",po::value<float>(&modelOpacity3D)->default_value(0.4),"model opacity 3D")
       ("Image,I",po::value<std::string>(&ImageArrayFilename)->default_value(""),"image volume file")
-      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(100),"# of curve evolution update iterations")
+      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(30),"# of curve evolution update iterations")
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
       ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")

@@ -98,6 +98,7 @@ void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<doubl
   vtkSmartPointer<vtkProperty> propSetter=vtkSmartPointer<vtkProperty>::New();
   propSetter = kwidget_3d_right->multiLabelMaps3D[labnum].first->GetProperty();
   propSetter->SetRepresentationToWireframe();
+  //propSetter->SetRepresentationToSurface();
   propSetter->SetOpacity(kwidget_3d_right->kv_opts->modelOpacity3D);
   propSetter->SetAmbient(1);
   propSetter->SetAmbientColor(color[0],color[1],color[2]);
@@ -218,7 +219,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
     
     SetupRenderWindow( kwidget_3d_right );
     SetupSubVolumeExtractor( kwidget_3d_right );
-    std::vector<double> firstcolor={240/255.0, 163/255.0, 255/255.0};
+    std::vector<double> firstcolor = get_good_color_0to7(0); // Keep it in agreement with the 2D!
     SetupLabelActor3D( kwidget_3d_right,firstcolor );
 
     kwidget_3d_right->m_PlaneWidgetZ =vtkImagePlaneWidget::New();
