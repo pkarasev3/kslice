@@ -104,8 +104,8 @@ namespace vrcl
              << dimx << "," << dimy << "," << dimz << endl;
 
         this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-        this->rad = std::min(10.0,this->rad); // force non-huge radius if the spacing is retarded
-        this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
+        this->rad = std::min(7.0,this->rad); // force non-huge radius if the spacing is retarded
+        this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
 
         this->initializeData();
 
@@ -184,7 +184,7 @@ namespace vrcl
 
         interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                              LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
-                             iter,rad,lambda,display);
+                             iter,rad,lambda*0.5,display);
 
 
         //threshold phi to find segmentation label, assign it to appropriate range of label!
@@ -284,7 +284,7 @@ namespace vrcl
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
         ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-
+        double u_in, u_out;
         // Crap, the linked lists will accumulate zillions of repeating entries ...
         // Must flush them and keep unique entries, or something (?)
 //        if(this->m_UpdateVector.size()!=0)
@@ -305,7 +305,7 @@ namespace vrcl
                                      this->m_PlaneCenter,this->m_DistWeight);
             bool bDisplayChanVeseCost = false;
             if( bDisplayChanVeseCost ) {
-                double cv_cost = this->evalChanVeseCost();
+                double cv_cost = this->evalChanVeseCost(u_in,u_out);
                 cout << "chan vese cost = " << cv_cost << endl;
             }
         }
@@ -317,6 +317,10 @@ namespace vrcl
         else
             cout << "Error, unsupported energy name! " << m_EnergyName << endl;
 
+
+       this->evalChanVeseCost(u_in,u_out);
+       double cutoff_thresh = (u_in - u_out)*this->m_DistWeight;
+       cout << "uin, uout, cutoff=" << u_in << ", " << u_out << ", " << cutoff_thresh << endl;
 
        long elemNum=0;
        double mult=labelRange[1] / 4.0;
@@ -352,6 +356,10 @@ namespace vrcl
 //                      }
                   //    idx = (z)*mdims[1]*mdims[0] +(y)*mdims[0]+(x);
                       phi_val = phi[idx];
+                      if( (u_out < u_in) && ( img[idx] < (u_out+cutoff_thresh) ) )
+                      { // force it to be out
+                          phi_val = 3.0;
+                      }
                       phi_out = (-phi_val + 3.0) / 6.0;
                       outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
                                                        (phi_out > 0.8) +

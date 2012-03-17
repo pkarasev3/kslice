@@ -88,7 +88,7 @@ class KSegmentorBase
         virtual void Update3D()=0;
 
         /** Compute Chan-Vese (mean difference) Energy LL2D.*/
-        virtual double evalChanVeseCost( ) const;
+        virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
 
