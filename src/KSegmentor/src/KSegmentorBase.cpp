@@ -39,7 +39,7 @@ void test_OpenMP()
 }
 
 /** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.5;
+double KSegmentorBase::defaultKappaParam = 0.35;
 
 
 void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit)
@@ -80,8 +80,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
     segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(10.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(2.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -155,7 +155,7 @@ inline double Delta( double z )
 
 }
 
-double KSegmentorBase::evalChanVeseCost( ) const
+double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
 {
     double E      = 0.0;
     int Nelements = dimx * dimy * dimz;
@@ -170,14 +170,14 @@ double KSegmentorBase::evalChanVeseCost( ) const
         integral_I_zpH       += (img[voxel_idx]) * Heavi(phi[voxel_idx]) ;
         integral_I_omH       += (img[voxel_idx]) * (1.0 - Heavi(phi[voxel_idx]));
     }
-    double mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
-    double mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
+    mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
+    mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
 
-    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
-    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
-    {
-        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
-    }
+//    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
+//    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+//    {
+//        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
+//    }
 
     return (E/2.0);
 }

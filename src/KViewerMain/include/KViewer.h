@@ -189,7 +189,7 @@ protected:
     */
   void UpdateImageInformation(vtkImageData* image);
 
-  bool m_RotX,m_RotY,m_RotZ;
+  bool m_RotX,m_RotY,m_RotZ,m_FlipZ;
 
 };
 

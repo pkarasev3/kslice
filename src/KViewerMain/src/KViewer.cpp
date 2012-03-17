@@ -393,7 +393,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
           kwidget_2d_left->InitializeTransform('y',-90);
         this->m_RotY=!this->m_RotY;
         break;
-    case 'z':
+    case 'z':    
         cout << "z key pressed: Z-rotate 90 degrees " << endl;
         if(this->m_RotZ)
          kwidget_2d_left->InitializeTransform('z');
