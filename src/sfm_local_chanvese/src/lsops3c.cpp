@@ -911,8 +911,8 @@ void ls_mask2phi3c_ext(double* mask, double* phi, double* label, long* dims, LL 
 }
 
 
-void ls_mask2phi3c_update(std::vector< unsigned int > updateVector,
-                          std::vector< std::vector<unsigned int> > coordVector,
+void ls_mask2phi3c_update(const std::vector< unsigned int >& updateVector,
+                          const std::vector< std::vector<unsigned int> >& coordVector,
                           double* mask, double* phi, double* label, long* dims,
                           LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL* Lchanged){
   int x,y,z,idx;

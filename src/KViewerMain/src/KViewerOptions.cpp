@@ -122,7 +122,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
        "which labels to pre-load, e.g. --Labels=a.mha b.mha c.mha")
       ("Opacity3D,q",po::value<float>(&modelOpacity3D)->default_value(0.4),"model opacity 3D")
       ("Image,I",po::value<std::string>(&ImageArrayFilename)->default_value(""),"image volume file")
-      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(30),"# of curve evolution update iterations")
+      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(40),"# of curve evolution update iterations")
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
       ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")

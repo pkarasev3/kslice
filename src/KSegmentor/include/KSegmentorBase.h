@@ -98,7 +98,7 @@ class KSegmentorBase
             m_UpdateVector.push_back(element);
         }
 
-        void AddPointToCoordinatesVector(std::vector<unsigned int> coord){
+        void AddPointToCoordinatesVector(const std::vector<unsigned int>& coord){
             m_CoordinatesVector.push_back(coord);
         }
 
