@@ -312,7 +312,8 @@ namespace vrcl
         else if( 0 == m_EnergyName.compare("LocalCV") )
             interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                      Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                     iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+                                     iter,rad,lambda,display,this->m_PlaneNormalVector,
+                                       this->m_PlaneCenter,this->m_DistWeight);
         else
             cout << "Error, unsupported energy name! " << m_EnergyName << endl;
 

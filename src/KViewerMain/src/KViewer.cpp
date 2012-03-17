@@ -358,6 +358,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
+        cout << "0 key, updated distWeight: " << kv_opts->distWeight << endl;
       break;
     case '9':
        //kv_opts->seg_time_interval-=0.05;
@@ -370,6 +371,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
+        cout << "9 key, updated distWeight: " << kv_opts->distWeight << endl;
       break;
     case 'm':
         cout << "m key pressed: toggling time-triggered updates " << endl;
