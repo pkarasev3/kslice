@@ -353,25 +353,26 @@ void KSegmentorBase::intializeLevelSet3D(){
     //initialize lists, phi, and labels
     ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
                                     LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
+    cout << "initialized levelset 3D. len(lz) = " << LL3D.Lz->length
+         << ", len(Lchanged) = " << LL3D.Lchanged << endl;
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-    std::vector <unsigned int> coord;
+    std::vector <unsigned int> coord(3);
     unsigned int element=0;
     for (int i=0;i<=this->dimx-1; i++)  {
         for (int j=0; j<=this->dimy-1; j++) {
-            double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+            double val = this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
             this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
-            if(val>0)
+            if(fabs(val)>0)
             {
                 element=kTo*dimx*dimy +j*dimx+i;
                 this->AddPointToUpdateVector(element);
-                coord.push_back(i);
-                coord.push_back(j);
-                coord.push_back(kTo);
+                coord[0] = (i);
+                coord[1] = (j);
+                coord[2] = (kTo);
                 this->AddPointToCoordinatesVector(coord);
-                coord.clear();
             }
         }
     }

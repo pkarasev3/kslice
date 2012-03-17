@@ -930,7 +930,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
     while(Lz->curr != NULL){     //loop through list
         idx = Lz->curr->idx;
         I = img[idx];
-        a = (I-uin)*(I-uin)-(I-uout)*(I-uout); // maybe scale by max of image so a has consistent range
+        a = ((I-uin)*(I-uin))-((I-uout)*(I-uout)); // maybe scale by max of image so a has consistent range
         if(fabs(a)>Fmax) {
             Fmax = fabs(a);
         }
@@ -945,7 +945,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
         scale[0] = Fmax;
 
     for(int j=0;j<Lz->length;j++){
-        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j] / kappaMax;
+        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j] ;
     }
 
     return F;
