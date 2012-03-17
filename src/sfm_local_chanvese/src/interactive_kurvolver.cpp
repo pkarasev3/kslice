@@ -278,11 +278,11 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     diff[1]=y-poP[1];
     diff[2]=z-poP[2];
 
-//    for (int i=0;i<3;i++)
-//    {
-//        distance+=diff[i]*normal[i];
-//    }
-//    double mult= exp(-distweight*abs(distance));
+    for (int i=0;i<3;i++)
+    {
+        distance+=diff[i]*normal[i];
+    }
+    double mult= exp(-distweight*abs(distance));
 
     idx          = Lz->curr->idx;
     I            = img[idx];
@@ -293,7 +293,7 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
     double f     = gamma * abs(U) * (F[n] - err);
 
-    F[n]         = (F[n] - f);//*mult;
+    F[n]         = (F[n] - f)*mult;
     ll_step(Lz);
     n++;       //next point
   }
