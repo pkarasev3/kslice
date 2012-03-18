@@ -350,6 +350,16 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       cout << "a key pressed: 3D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,false);
       break;
+    case '7':
+        kv_opts->segmentor_iters -= 5;
+        kv_opts->segmentor_iters  = std::max( kv_opts->segmentor_iters, 0 );
+        cout << "7 key pressed, segmentor iterations = " << kv_opts->segmentor_iters << endl;
+        break;
+    case '8':
+        kv_opts->segmentor_iters += 5;
+        kv_opts->segmentor_iters  = std::min( kv_opts->segmentor_iters, 200 );
+        cout << "8 key pressed, segmentor iterations = " << kv_opts->segmentor_iters << endl;
+        break;
     case '0':
        //kv_opts->seg_time_interval+=0.05;
         kv_opts->distWeight+=0.05;
