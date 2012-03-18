@@ -393,6 +393,11 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
 
 void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
 {
+    // TODO: **warning** need to either de-rotate the labels when saving,
+    // or also save the rotated image!
+    // If the image is not cube-sized, you can't even validly re-load the labels
+    // because sizes no longer match!
+
   string labelmap_name_base = ss.str(); // base: might have ".mha" at the end
 
   int label_idx = 0;

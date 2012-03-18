@@ -38,10 +38,10 @@ vector<double> get_good_color_0to7( int idx )
     rgb = {255,0,16}; // red
     break;
   case 2:
-    rgb = {255, 163, 255}; // amethyst
+    rgb = {43,206,72}; // green
     break;
   case 3:
-    rgb = {0,153,143}; // turquoise
+    rgb = {224,255,102}; // uranium
     break;
   case 4:
     rgb = {194,0,136}; // mallow
@@ -50,10 +50,10 @@ vector<double> get_good_color_0to7( int idx )
     rgb = {255,80,5}; // zinnia
     break;
   case 6:
-    rgb = {43,206,72}; // green
+    rgb = {220, 163, 255}; // amethyst
     break;
   case 7:
-    rgb = {224,255,102}; // uranium
+    rgb = {0,153,143}; // turquoise
     break;
   default:
     rgb = {200,200,200};
