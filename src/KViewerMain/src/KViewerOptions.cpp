@@ -126,6 +126,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
       ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")
+      ("imgThreshWeight,W",po::value<float>(&m_ThreshWeight)->default_value(0.0),"image threshold weight (truncate label after segmentation)")
       ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("resampleToCubicVoxels,r",po::value<bool>(&m_bResampleImageAtStartupToCubicVoxels)->default_value(0),"(NOT IMPLEMENTED!!!) True or False (0,1), resample image at startup to cubic voxels?")
       ("useEdgeBased,e",po::value<bool>(&m_bUseEdgeBased)->default_value(0),"Use Edge Based Cost !?")

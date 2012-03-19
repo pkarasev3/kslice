@@ -362,7 +362,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         break;
     case '0':
        //kv_opts->seg_time_interval+=0.05;
-        kv_opts->distWeight+=0.05;
+        kv_opts->distWeight+=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
         for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
         {
@@ -372,10 +372,10 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
       break;
     case '9':
        //kv_opts->seg_time_interval-=0.05;
-        if((kv_opts->distWeight-0.05)<0)
+        if((kv_opts->distWeight-0.02)<0)
             kv_opts->distWeight=0;
         else
-            kv_opts->distWeight-=0.05;
+            kv_opts->distWeight-=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
         for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
         {
@@ -383,6 +383,24 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         }
         cout << "9 key, updated distWeight: " << kv_opts->distWeight << endl;
       break;
+    case '5':
+        kv_opts->m_ThreshWeight-=0.01;
+        kv_opts->m_ThreshWeight = std::max(0.0f,kv_opts->m_ThreshWeight);
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
+        }
+        cout << "5 key, updated threshWeight: " << kv_opts->m_ThreshWeight << endl;
+        break;
+    case '6':
+        kv_opts->m_ThreshWeight+=0.01;
+        kv_opts->m_ThreshWeight = std::min(0.95f,kv_opts->m_ThreshWeight);
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
+        }
+        cout << "6 key, updated threshWeight: " << kv_opts->m_ThreshWeight << endl;
+        break;
     case 'm':
         cout << "m key pressed: toggling time-triggered updates " << endl;
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;

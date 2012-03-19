@@ -28,8 +28,9 @@ public:
   int     paintBrushRad;
   double  paintBrushThreshold; 
   int     loadImageTrigger;
-  float     seg_time_interval;
-  float    distWeight;
+  float     seg_time_interval; // time between auto-run segmentation
+  float    distWeight;         // slow down speed away from view/edit plane
+  float    m_ThreshWeight;       // post-truncate segmentation based on image values
   double m_Center[3];
   float m_CurrentAngle;
   double* m_PlaneNormalVector;

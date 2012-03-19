@@ -57,9 +57,9 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->display=0;
 
     //Should we keep these abolute values in here
-    segPointer->dthresh=500;
     segPointer->iter=500;
     segPointer->m_DistWeight=0;
+    segPointer->m_ThreshWeight=0;
     segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
