@@ -234,7 +234,7 @@ void apply_control_function(LL *Lz,double *phi, double* F,
   double I,dpx,dpy,dpz;
   ll_init(Lz);
   n=0;
-  double gamma        = 1.0 / iter;
+  double gamma        = 1.0 / 50.0; //1.0 / iter;
 
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x;
@@ -243,7 +243,7 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     idx          = Lz->curr->idx;
     I            = img[idx];
     double U     = U_integral[idx];
-    double err   = ( 3.0 * tanh(U / 1.5) - phi[idx] );
+    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
 
     //kappa not used!?
     //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
@@ -258,13 +258,14 @@ void apply_control_function(LL *Lz,double *phi, double* F,
 }
 
 void apply_control_function_ext(LL *Lz,double *phi, double* F,
-                            double* U_integral, double *img, int iter, long* dims, double* normal,double* poP,float distweight )
+                                double* U_integral, double *img, int iter, long* dims,
+                                double* normal,double* poP,float distweight )
 { // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
   double I;
   ll_init(Lz);
   n=0;
-  double gamma        = 10.0 / iter;
+  double gamma        = 10.0 / 50.0; //10.0 / iter;
   double diff[3]={0,0,0};
   double distance=0;
   while(Lz->curr != NULL){
@@ -282,12 +283,14 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     {
         distance+=diff[i]*normal[i];
     }
+    // weight the update by distance from view-plane
+    // to prevent updates far from where user is looking/editing
     double mult= exp(-distweight*abs(distance));
 
     idx          = Lz->curr->idx;
     I            = img[idx];
     double U     = U_integral[idx];
-    double err   = ( 3.0 * tanh(U / 1.5) - phi[idx] );
+    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
 
     //kappa not used!?
     //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);

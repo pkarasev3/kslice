@@ -162,6 +162,11 @@ class KSegmentorBase
             this->m_DistWeight=dw;
         }
 
+        void SetThreshWeight(float dw)
+        {
+            this->m_ThreshWeight=dw;
+        }
+
         void SetEnergyChanVese( )
         {
             this->m_EnergyName = GetSupportedEnergyNames()[0];
@@ -201,7 +206,7 @@ class KSegmentorBase
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
         double* m_PlaneNormalVector, *m_PlaneCenter;
-        float m_DistWeight;
+        float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;
 
@@ -231,7 +236,6 @@ public:
         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
         double rad;          //radius of ball used in local-global energies
-        double dthresh;
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];

@@ -319,7 +319,7 @@ namespace vrcl
 
 
        this->evalChanVeseCost(u_in,u_out);
-       double cutoff_thresh = (u_in - u_out)*this->m_DistWeight;
+       double cutoff_thresh = (u_in - u_out)*this->m_ThreshWeight;
        cout << "uin, uout, cutoff=" << u_in << ", " << u_out << ", " << cutoff_thresh << endl;
 
        long elemNum=0;
@@ -356,9 +356,13 @@ namespace vrcl
 //                      }
                   //    idx = (z)*mdims[1]*mdims[0] +(y)*mdims[0]+(x);
                       phi_val = phi[idx];
-                      if( (u_out < u_in) && ( img[idx] < (u_out+cutoff_thresh) ) )
+                      if( (u_out < u_in) && ( img[idx] < (u_out+2*cutoff_thresh) ) )
                       { // force it to be out
                           phi_val = 3.0;
+                      }
+                      else if( (u_out < u_in) && ( img[idx] < (u_out+cutoff_thresh) ) )
+                      { // force it to be out
+                          phi_val = std::min( phi_val, 0.0 );
                       }
                       phi_out = (-phi_val + 3.0) / 6.0;
                       outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
