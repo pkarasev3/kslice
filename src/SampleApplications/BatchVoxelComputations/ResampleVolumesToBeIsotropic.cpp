@@ -225,8 +225,8 @@ int main( int argc, char * argv[] )
   intensityWindowing->SetWindowMinimum( atoi( argv[3] ) );
   intensityWindowing->SetWindowMaximum( atoi( argv[4] ) );
 
-  intensityWindowing->SetOutputMinimum(   0.0 );
-  intensityWindowing->SetOutputMaximum( 255.0 ); // floats but in the range of chars.
+  intensityWindowing->SetOutputMinimum(  0 );
+  intensityWindowing->SetOutputMaximum(  atoi( argv[4] ) ); // floats but in the range of uchars.
 
   intensityWindowing->SetInput( reader->GetOutput() );
 
@@ -307,8 +307,9 @@ int main( int argc, char * argv[] )
 // Software Guide : BeginCodeSnippet
   const double isoSpacing = vcl_sqrt( inputSpacing[2] * inputSpacing[0] );
 
-  smootherX->SetSigma( isoSpacing * 0.5);
-  smootherY->SetSigma( isoSpacing * 0.5);
+  std::cout << "isoSpacing: " <<  isoSpacing << std::endl;
+  smootherX->SetSigma( isoSpacing * 0.25);
+  smootherY->SetSigma( isoSpacing * 0.25);
 // Software Guide : EndCodeSnippet
 
 

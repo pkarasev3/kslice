@@ -908,7 +908,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
 {
     int x,y,z,idx,n;
     double *F, *kappa;
-    double a,I,Fmax;
+    double a,I;
     CheckLevelSetSizes( Lz->length );
 
     // allocate space for F
@@ -922,26 +922,30 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
     assert( F     != NULL );
     assert( kappa != NULL );
 
+    double kappaMax = 1e-9;
+    double Fmax     = 1e-9;
     ll_init(Lz);
     n=0;
     Fmax=0.0001; //begining of list;
     while(Lz->curr != NULL){     //loop through list
         idx = Lz->curr->idx;
         I = img[idx];
-        a = (I-uin)*(I-uin)-(I-uout)*(I-uout); // maybe scale by max of image so a has consistent range
+        a = ((I-uin)*(I-uin))-((I-uout)*(I-uout)); // maybe scale by max of image so a has consistent range
         if(fabs(a)>Fmax) {
             Fmax = fabs(a);
         }
         FVec[n]     = a;
         KappaVec[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-        ll_step(Lz); n++;       //next point
+        if( fabs(KappaVec[n]) > kappaMax ) {
+            kappaMax = fabs(KappaVec[n]);
+        }
+        ll_step(Lz);
+        n++;       //next point
     }
-    //if(scale[0] == 0) {
         scale[0] = Fmax;
-    //}
 
-    for(int j=0;j<Lz->length;j++){  // this scaling is weird, what if lambda times kappa is much bigger than  1
-        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j];
+    for(int j=0;j<Lz->length;j++){
+        FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j] ;
     }
 
     return F;

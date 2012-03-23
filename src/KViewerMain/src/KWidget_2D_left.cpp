@@ -11,7 +11,6 @@
 #include "Logger.h"
 #include "QVTKWidget.h"
 #include "KSandbox.h"
-#include "KSegmentor.h"
 #include "KSegmentor3D.h"
 #include "KDataWarehouse.h"
 #include "vtkImageContinuousDilate3D.h"
@@ -314,13 +313,14 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
 
   //else
    // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
-  vtkMetaImageReader*reader = vtkMetaImageReader::New();
-  if( kv_opts_input->m_SpeedImageFileName.empty() )
+  //not used at the moment
+  /*vtkMetaImageReader*reader = vtkMetaImageReader::New();
+  if( !kv_opts_input->m_SpeedImageFileName.empty() )
   {
       reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
       reader->SetDataScalarTypeToDouble();
       reader->Update();
-  }
+  }*/
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
   {
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
@@ -328,7 +328,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
-    if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
+    //Currently not used
+    /*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
         cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
         if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
             cout << " ... failed, could not read. " << endl;
@@ -337,7 +338,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
             cout << " ... ok. " << endl;
         }
 
-    }
+    }*/
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -388,12 +389,17 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
     multiLabelMaps[k]->labelReslicer->SetResliceTransform(m_SliderTrans);
     multiLabelMaps[k]->ksegmentor->setCurrIndex( currentSliceIndex );
   }
-  std::cout<<"origin: "<<currSliceOrigin<<std::endl;
+  //std::cout<<"origin: "<<currSliceOrigin<<std::endl;
 
 }
 
 void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
 {
+    // TODO: **warning** need to either de-rotate the labels when saving,
+    // or also save the rotated image!
+    // If the image is not cube-sized, you can't even validly re-load the labels
+    // because sizes no longer match!
+
   string labelmap_name_base = ss.str(); // base: might have ".mha" at the end
 
   int label_idx = 0;
@@ -478,17 +484,19 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     int label_idx = activeLabelMapIndex;
     Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
-
-    // Do we need this ? Aren't we acting in-place ?
-    //kseg->setCurrLabelArray(multiLabelMaps[label_idx]->labelDataArray);
-
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
 
-    if (use2D)
+    cout << "use2D ? " << use2D << endl;
+
+    if (use2D) {
+        kseg->SetEnergyLocalCV( );
         kseg->Update2D();
-    else
+    }
+    else {
+        kseg->SetEnergyChanVese( );
         kseg->Update3D();
+    }
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
@@ -523,6 +531,7 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
         }
         multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
         multiLabelMaps[k]->labelDataArray->Modified();
+        multiLabelMaps[k]->labelDataArray->Update();
     }
     // update the QVTK display
     qVTK_widget_left->update( );

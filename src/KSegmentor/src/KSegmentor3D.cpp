@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
+#include "vtkImageGaussianSmooth.h"
 
 
 #include <ctime>
@@ -61,12 +62,7 @@ namespace vrcl
         //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
                                                    // at least, smoothness needs to be enforced somewhere else ...
         this->ptrU_t_Image[element] = user_input;
-                // Consider the following, if this were (+=). If we 'draw' 5 times and erase 2 times, but erasing
-                // happens last, this point would look erased to the user initially but then suddenly it has a large U
-                // because of some earlier draws.
-                //
-                // Something more reasonable is perhaps a moving average with saturated summation ...
-                // but just (+=) is a confusing 'brownian motion' effect...
+
     }
 
     void KSegmentor3D::integrateUserInputInUserInputImage()
@@ -83,40 +79,6 @@ namespace vrcl
             this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
             this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
         }
-        // something here seems crazy ....
-
-//        double Umax = 2.0;
-//            for (int element=0;element<Nelements;element++)
-//            {
-//                pos=this->m_UpdateVector[element];
-//                int y  = m_CoordinatesVector[element][0];
-//                int x  = m_CoordinatesVector[element][1];
-//                int z  = m_CoordinatesVector[element][2];
-
-//                for( int x_ = x-1; x_ <= x+1; x_++ ) {
-//                    for( int y_ = y-1; y_ <= y+1; y_++ ) {
-//                        for( int z_ = z-1; z_ <= z+1; z_++ )
-//                        {
-//                            if( (x_>=0) && (x_<dimx)
-//                             && (y_>=0) && (y_<dimy)
-//                             && (z_>=0) && (z_<dimz) ) {
-//                                int idx = (z_)*dimx*dimy +(x_)*dimx+(y_);
-//                                double hval = exp( -(   (x_- x)*(x_- x)
-//                                                      + (y_- y)*(y_- y)
-//                                                      + (z_- z)*(z_- z) )/4.0 );
-//                                double deltaU           = hval * this->ptrU_t_Image[pos];
-//                                ptrIntegral_Image[idx] += 1e-1*deltaU;
-//                                ptrIntegral_Image[pos] += deltaU;
-//                                ptrIntegral_Image[pos] = ptrIntegral_Image[pos] - (1e-1) * ( abs(ptrIntegral_Image[pos]) > Umax ) * ptrIntegral_Image[pos];
-////                                if( abs( abs(z_-z)+abs(x_-x)+abs(y_-y) - 1) < 1e-3 ) {
-////                                    laplac_finite_diff += ptrIntegral_Image[idx]
-////                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-////       }
     }
 
 
@@ -142,8 +104,8 @@ namespace vrcl
              << dimx << "," << dimy << "," << dimz << endl;
 
         this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-        this->rad = std::min(10.0,this->rad); // force non-huge radius if the spacing is retarded
-        this->rad = std::max(2.0, this->rad); // force non-tiny radius if the spacing is retarded
+        this->rad = std::min(7.0,this->rad); // force non-huge radius if the spacing is retarded
+        this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
 
         this->initializeData();
 
@@ -217,11 +179,12 @@ namespace vrcl
         dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
 
 
-        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
+        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
+                      LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
         interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                              LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
-                             iter,rad,lambda,display);
+                             iter,rad,lambda*0.5,display);
 
 
         //threshold phi to find segmentation label, assign it to appropriate range of label!
@@ -232,16 +195,22 @@ namespace vrcl
                 double phi_out = (-phi_val + 3.0) / 6.0; // shift and scale from [-3,3] to [0,1]
 
                 element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
-                ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95) + (phi_out > 0.8) + (phi_out > 0.65) + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
+                ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95)
+                                                              + (phi_out > 0.8) + (phi_out > 0.65)
+                                                              + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
 
                 elemNum++;
             }
         }
 
-        std::stringstream ss;
-        ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-        saveMatToPNG( U_I_slice, ss.str() );
+        cout <<  ", Lz size: "       << LL2D.Lz->length << endl;
 
+        bool bSavePNG = false;
+        if( bSavePNG ) {
+            std::stringstream ss;
+            ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
+            saveMatToPNG( U_I_slice, ss.str() );
+        }
         delete imgSlice;
         delete labelSlice;
         delete maskSlice;
@@ -258,91 +227,154 @@ namespace vrcl
 
     void KSegmentor3D::Update3D()
     {
+        bool bSmoothU = false;
+        if( bSmoothU ) {
+            cout << "smoothing integral image 3D " << endl;
+            vtkSmartPointer<vtkImageGaussianSmooth> imageSmoother = vtkSmartPointer<vtkImageGaussianSmooth>::New();
+            imageSmoother->SetDimensionality(3);
+            imageSmoother->SetStandardDeviations(1.0,1.0,1.0);
+            imageSmoother->SetInput(this->U_Integral_image);
+            imageSmoother->Update();
+            this->U_Integral_image->DeepCopy(imageSmoother->GetOutput());
+        }
+
+
+        cout << "integrating mask 3D " << endl;
         this->integrateUserInputInUserInputImage();
-        this->UpdateMask();
 
-        LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-        LL *Lin2out, *Lout2in,*Lchanged;
+        // The bug is as follows: the level-set evolution modifies Lchanged indices,
+        // but afterwards they are not appearing in the list of modified coordinates!
+        // Thus, the next time around the mask doesn't get to update them!
 
-        Lz=LL3D.Lz;
-        Ln1=LL3D.Ln1;
-        Ln2=LL3D.Ln2;
-        Lp1=LL3D.Lp1;
-        Lp2=LL3D.Lp2;
-        Lin2out=LL3D.Lin2out;
-        Lout2in=LL3D.Lout2in;
-        Lchanged=LL3D.Lchanged;
+        cout << "updating mask 3D " << endl;
+        this->UpdateMask(true);
+
+        this->CreateLLs(LL3D); // TODO: fix the caching so that only uniques are kept
+
+
+        ll_init(LL3D.Lchanged);
+        std::set<unsigned int> idx_used;
+
+//        int Nelements=this->m_UpdateVector.size();
+//        for (int element=0;element<Nelements;element++)
+//        {
+//            unsigned int idx=this->m_UpdateVector[element];
+//            int found       = std::count( idx_used.begin(), idx_used.end(), idx );
+//            if( 0 < found ) {
+//                ll_pushnew(Lchanged,m_CoordinatesVector[element][0],m_CoordinatesVector[element][1],
+//                                                           m_CoordinatesVector[element][2],idx);
+//                idx_used.insert(idx);
+//            }
+//        }
+        cout << "m_UpdateVector Size BEGIN: " << m_UpdateVector.size()
+             <<  ", Lchanged size BEGIN: " << LL3D.Lchanged->length
+             <<  ", Lz size BEGIN: "       << LL3D.Lz->length << endl;
 
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
         ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+        double u_in, u_out;
+        // Crap, the linked lists will accumulate zillions of repeating entries ...
+        // Must flush them and keep unique entries, or something (?)
+       //if(this->m_UpdateVector.size()!=0)
+           ls_mask2phi3c_update(this->m_UpdateVector,
+                                 this->m_CoordinatesVector,mask,phi,label,dims,
+                                 LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
 
-        if(this->m_UpdateVector.size()!=0)
-            ls_mask2phi3c_update(this->m_UpdateVector,this->m_CoordinatesVector,mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+        ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
+        ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
+        cout << "m_UpdateVector Size: " << m_UpdateVector.size()
+             <<" m_CoordinatesVector Size: "<<this->m_CoordinatesVector.size()
+                <<  ", Lchanged size: " << LL3D.Lchanged->length
+             <<  ", Lz size: "       << LL3D.Lz->length << endl;
 
-        if (m_CustomSpeedImgPointer!=NULL)
-        {
-           /* interactive_customspeed(this->m_CustomSpeedImgPointer,img,phi,ptrIntegral_Image,label,dims,
-                                    Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                    iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);*/
-        }
-        else if( m_bUseEdgeBased ) {
-            interactive_edgebased_ext(img,phi,ptrIntegral_Image,label,dims,
-                                  Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                  iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
-        }
-        else if( 0 == m_EnergyName.compare("ChanVese") ) {
+        if( 0 == m_EnergyName.compare("ChanVese") ) {
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
-                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                     iter,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
-            bool bDisplayChanVeseCost = true;
+                                     LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                                     iter,0.5*lambda,display,this->m_PlaneNormalVector,
+                                     this->m_PlaneCenter,this->m_DistWeight);
+            bool bDisplayChanVeseCost = false;
             if( bDisplayChanVeseCost ) {
-                double cv_cost = this->evalChanVeseCost();
+                double cv_cost = this->evalChanVeseCost(u_in,u_out);
                 cout << "chan vese cost = " << cv_cost << endl;
             }
         }
         else if( 0 == m_EnergyName.compare("LocalCV") )
             interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,
-                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
-                                     iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+                                     LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                                     iter,rad,lambda,display,this->m_PlaneNormalVector,
+                                       this->m_PlaneCenter,this->m_DistWeight);
         else
             cout << "Error, unsupported energy name! " << m_EnergyName << endl;
 
 
+       this->evalChanVeseCost(u_in,u_out);
+       double cutoff_thresh = (u_in - u_out)*this->m_ThreshWeight;
+       cout << "uin, uout, cutoff=" << u_in << ", " << u_out << ", " << cutoff_thresh << endl;
+
        long elemNum=0;
        double mult=labelRange[1] / 4.0;
         elemNum=0;
-        int x,y,z,idx;
+        int x,y,z,x0,y0,z0,idx;
 
         double phi_val = 0;
         double phi_out = 0;
         double outputVal=0;
-        ll_init(Lchanged);
 
-        while(Lchanged->curr != NULL)
-        {          //loop through list
-          x = Lchanged->curr->x;
-          y = Lchanged->curr->y;
-          z = Lchanged->curr->z;
-          idx = (z)*dimx*dimy +(x)*dimx+(y);
-          phi_val = phi[idx];
-          phi_out = (-phi_val + 3.0) / 6.0;
-          outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
-                                           (phi_out > 0.8) +
-                                           (phi_out > 0.65) +
-                                           (phi_out > 0.5) )
-                                            *mult);
-          ptrCurrLabel[idx] =outputVal;
-         ll_step(Lchanged);
+        // Caution: Lchanged can contain duplicate entries !!!
+        ll_init(LL3D.Lchanged);
+       // while(Lchanged->curr != NULL)
+        double changeInLabel = 0;
+        int Nelements = this->dimx * this->dimy * this->dimz;
+        for (int idx=0;idx<Nelements;idx++)
+        {
+
+         // traverse through all modified Lz *and their neighbors!*
+         // neighbors are where phi_out is something between 0 and 1
+//          x0 = Lchanged->curr->x;
+//          y0 = Lchanged->curr->y;
+//          z0 = Lchanged->curr->z;
+//          for (int dx = -2; dx < 2; dx ++ ) {
+//              x = x0 + dx;
+//              for (int dy = -2; dy < 2; dy ++ ) {
+//                  y = y0 + dy;
+//                  for (int dz = -2; dz < 2; dz ++ ) {
+//                      z = z0 + dz;
+//                      if( 0 < ( (x<0)+(y<0)+(z<0)+(x>=mdims[0])+(y>=mdims[1])+(z>=mdims[2]) ) )
+//                      { // the neighbor is out of bounds !
+//                          continue;
+//                      }
+                  //    idx = (z)*mdims[1]*mdims[0] +(y)*mdims[0]+(x);
+                      phi_val = phi[idx];
+                      if( (u_out < u_in) && ( img[idx] < (u_out+2*cutoff_thresh) ) )
+                      { // force it to be out
+                          phi_val = 3.0;
+                      }
+                      else if( (u_out < u_in) && ( img[idx] < (u_out+cutoff_thresh) ) )
+                      { // force it to be out
+                          phi_val = std::min( phi_val, 0.0 );
+                      }
+                      phi_out = (-phi_val + 3.0) / 6.0;
+                      outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
+                                                       (phi_out > 0.8) +
+                                                       (phi_out > 0.65) +
+                                                       (phi_out > 0.5) )
+                                                        *mult);
+                      changeInLabel += fabs( (outputVal - ptrCurrLabel[idx]) > 1e-3 );
+                      ptrCurrLabel[idx] =outputVal;
+                      mask[idx]         =(double) ( 0 < ptrCurrLabel[idx] ); // d'oh, *update the mask!*
+
+//                  }
+//              }
+//          }
+//          ll_step(Lchanged);
         }
-
-        ll_remcurr_free(Lchanged);
+        cout << "m_UpdateVector Size: " << m_UpdateVector.size()
+             <<  ", Lchanged size: " << LL3D.Lchanged->length
+             <<  ", |change| in label: " << changeInLabel << endl;
 
         double spc[3];
         this->U_Integral_image->GetSpacing(spc);
-
-
-
 
         m_UpdateVector.clear();
         m_CoordinatesVector.clear();
@@ -405,6 +437,27 @@ namespace vrcl
     }
 
 }
+
+
+
+
+
+//////////////////////////////////////////////////////////// Gulag
+
+#if 0
+if (m_CustomSpeedImgPointer!=NULL)
+{
+   /* interactive_customspeed(this->m_CustomSpeedImgPointer,img,phi,ptrIntegral_Image,label,dims,
+                            Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                            iter,rad,lambda,display,this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);*/
+}
+else if( m_bUseEdgeBased ) {
+    interactive_edgebased_ext(img,phi,ptrIntegral_Image,label,dims,
+                          Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                          iter,rad,0.5*lambda,display,m_SatRange[0],m_SatRange[1],
+                         this->m_PlaneNormalVector,this->m_PlaneCenter,this->m_DistWeight);
+}
+
 /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
 labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
 labelWriter->SetFileName( "0-Integral.mhd");
@@ -422,3 +475,6 @@ labelWriter->Write();
 labelWriter->SetInput(this->U_t_image);
 labelWriter->SetFileName( "0-U_t-image.mhd");
 labelWriter->Write();*/
+
+
+#endif

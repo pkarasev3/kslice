@@ -20,9 +20,9 @@ const char keyPasteLabelSlice   ='v';
 const char keyUpShiftSatRange   ='l'; // shift both min and max up
 const char keyDownShiftSatRange ='k'; // shift both min and max down
 const char keyUpMaxSatRange     ='j'; // shift *only max* up
-const char keyDownMaxSatRange     ='J'; // shift *only max* down
+const char keyDownMaxSatRange   ='J'; // shift *only max* down
 const char keyDownMinSatRange   ='h'; // shift *only min* down
-const char keyUpMinSatRange   ='H'; // shift *only min* up
+const char keyUpMinSatRange     ='H'; // shift *only min* up
 
 const char keyUpLabelOpacity    ='p';
 const char keyDownLabelOpacity  ='o';
@@ -35,7 +35,7 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
 
   if(event == vtkCommand::LeftButtonPressEvent )
   {
-    cout<<"Left button has been pressed"<<endl;
+    //cout<<"Left button has been pressed"<<endl;
     buttonDown = !buttonDown; // paint brush down: start draw/erase
     if(!buttonDown)
     {
@@ -135,7 +135,8 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       break;
     }
     if( bUpdatedSatLut ) {
-      cout << "updated satLUT range: " << satLUT_shared->GetTableRange()[0] << ", " << satLUT_shared->GetTableRange()[1] << endl;
+      cout << "updated satLUT range: " << satLUT_shared->GetTableRange()[0]
+           << ", " << satLUT_shared->GetTableRange()[1] << endl;
     }
   }
 

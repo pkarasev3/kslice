@@ -40,7 +40,6 @@
 #include "KDataWarehouse.h"
 
 //TESTING
-#include "vtkMetaImageWriter.h"
 #include "vtkRegularPolygonSource.h"
 
 
@@ -67,7 +66,7 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   t2=t1;
   this-> InitializeCircleCursor();
 
-  m_RotX=true;
+  m_RotX=false;
   m_RotY=false;
   m_RotZ=false;
   if(kwidget_2d_left->multiLabelMaps.size()>1)
@@ -214,6 +213,7 @@ void KViewer::SaveSegmentation( ) {
 }
 
 void KViewer::SaveAsSegmentation() {
+  this->ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
   kwidget_2d_left->SaveAsCurrentLabelMap( this->saveAsLineEdit->text().toStdString() );
 }
 
@@ -226,8 +226,8 @@ void KViewer::LoadImage() {
 void KViewer::LoadLabelMap(){
   QString path;
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
-  string name = kv_opts->LabelArrayFilenames[0].c_str() ;
   this->kv_opts->LoadLabel(path.toStdString());
+  string name = kv_opts->LabelArrayFilenames[0].c_str() ;
   this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
   this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
   this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
@@ -273,7 +273,6 @@ void KViewer::SliderCB( int sliceNum )
 
 void KViewer::MoveSlider( int shiftNumberOfSlices )
 {
-
   int currentSlice  = this->kwidget_2d_left->currentSliceIndex;
   int newSliceIndex = currentSlice + shiftNumberOfSlices;
   if( newSliceIndex < this->kv_opts->numSlices   &&  newSliceIndex >= 0 ) {
@@ -281,12 +280,11 @@ void KViewer::MoveSlider( int shiftNumberOfSlices )
     this->SliceSelect( newSliceIndex );
     this->Get3DWidget()->MoveSliceTo(newSliceIndex);
     this->Slider->setValue( newSliceIndex );
-  }
-  this->qVTK2->setFocus( );
-  this->qVTK1->update();
-  this->qVTK2->update();
-  this->qVTK1->setFocus( );
-
+   }
+this->qVTK2->setFocus( );
+this->qVTK1->update();
+this->qVTK2->update();
+this->qVTK1->setFocus( );
 }
 
 void KViewer::AddNewLabelMap( )
@@ -305,6 +303,8 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
 {
 
   int cache_idx1 = kwidget_2d_left->cacheSliceIndex;
+  int id=  kwidget_2d_left->activeLabelMapIndex;
+
   if ( cache_idx1 >= 0 ) // if a copy-from is stored
   {
     char keyPressed = ' ';
@@ -325,6 +325,8 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     int slice_idx                 = kwidget_2d_left->currentSliceIndex;
     int label_idx                 = kwidget_2d_left->activeLabelMapIndex;
 
+
+
     switch ( keyPressed ) {
     case '1':
       kwidget_2d_left->SelectActiveLabelMap( label_idx - 1 );
@@ -335,81 +337,151 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        this->UpdateVolumeStatus();
       break;
     case 'b': // update 3D
+       cout << "b key pressed: update 3D" << endl;
        UpdateVolumeStatus();
       break;
     case 'v': // Paste!
       kwidget_2d_left->CopyLabelsFromTo( cache_idx1, slice_idx, kv_opts->multilabel_paste_mode );
       break;
     case 's': // run "KSegmentor"
+      cout << "s key pressed: this-slice 2D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,true);
-      //this->UpdateVolumeStatus();
       break;
-    case 'S': // run "KSegmentor"
+    case 'a': // run "KSegmentor" // This can't be "S", because "shift" tends to generate the same 8bit code
+                                  // and we need capital letters for toggling the contrast levels
+      cout << "a key pressed: 3D segmentation " << endl;
       kwidget_2d_left->RunSegmentor(slice_idx,kv_opts->multilabel_sgmnt_mode,false);
-      //this->UpdateVolumeStatus();
       break;
+    case '7':
+        kv_opts->segmentor_iters -= 5;
+        kv_opts->segmentor_iters  = std::max( kv_opts->segmentor_iters, 0 );
+        cout << "7 key pressed, segmentor iterations = " << kv_opts->segmentor_iters << endl;
+        break;
+    case '8':
+        kv_opts->segmentor_iters += 5;
+        kv_opts->segmentor_iters  = std::min( kv_opts->segmentor_iters, 200 );
+        cout << "8 key pressed, segmentor iterations = " << kv_opts->segmentor_iters << endl;
+        break;
     case '0':
        //kv_opts->seg_time_interval+=0.05;
-        kv_opts->distWeight+=0.05;
+        kv_opts->distWeight+=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
         for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
+        cout << "0 key, updated distWeight: " << kv_opts->distWeight << endl;
       break;
     case '9':
        //kv_opts->seg_time_interval-=0.05;
-        if((kv_opts->distWeight-0.05)<0)
+        if((kv_opts->distWeight-0.02)<0)
             kv_opts->distWeight=0;
         else
-            kv_opts->distWeight-=0.05;
+            kv_opts->distWeight-=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
         for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
+        cout << "9 key, updated distWeight: " << kv_opts->distWeight << endl;
       break;
+    case '5':
+        kv_opts->m_ThreshWeight-=0.01;
+        kv_opts->m_ThreshWeight = std::max(0.0f,kv_opts->m_ThreshWeight);
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
+        }
+        cout << "5 key, updated threshWeight: " << kv_opts->m_ThreshWeight << endl;
+        break;
+    case '6':
+        kv_opts->m_ThreshWeight+=0.01;
+        kv_opts->m_ThreshWeight = std::min(0.95f,kv_opts->m_ThreshWeight);
+        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        {
+            this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
+        }
+        cout << "6 key, updated threshWeight: " << kv_opts->m_ThreshWeight << endl;
+        break;
     case 'm':
+        cout << "m key pressed: toggling time-triggered updates " << endl;
         kv_opts->time_triggered_seg_update=!kv_opts->time_triggered_seg_update;
         break;
     case 'e':
+        cout << "e key pressed: X-rotate 90 degrees " << endl;
+        ResetRotation(1,0,0);
         if(this->m_RotX)
          kwidget_2d_left->InitializeTransform('x');
         else
           kwidget_2d_left->InitializeTransform('x',-90);
         this->m_RotX=!this->m_RotX;
+
         break;
+
     case 't':
+        cout << "t key pressed: Y-rotate 90 degrees " << endl;
+        ResetRotation(0,1,0);
         if(this->m_RotY)
          kwidget_2d_left->InitializeTransform('y');
         else
           kwidget_2d_left->InitializeTransform('y',-90);
         this->m_RotY=!this->m_RotY;
         break;
-    case 'z':
-        if(this->m_RotZ)
-         kwidget_2d_left->InitializeTransform('z');
-        else
-          kwidget_2d_left->InitializeTransform('z',-90);
-        this->m_RotZ=!this->m_RotZ;
-        break;
-    case 'i': //For TESTING purposes
-         //this->SliceSelect(0);
-        for(int sl=slice_idx;sl<slice_idx+10;sl++)
-        {
-            kwidget_2d_left->RunSegmentor(sl,kv_opts->multilabel_sgmnt_mode);
-            this->queueCopyFromCurrentSlice( sl );
-            kwidget_2d_left->CopyLabelsFromTo( sl, sl+1, kv_opts->multilabel_paste_mode );
-            this->SliceSelect(sl+1);
-        }
-        this->UpdateVolumeStatus();
-        break;
+    case 'z':    
+        cout << "z key pressed: Z-rotate 90 degrees " << endl;
+        ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
+
     case 'u':
+         cout << "u key pressed: updating volume status and 3D view " << endl;
          this->UpdateVolumeStatus();
+         break;
     default:
       break;
+    } 
+
+    if(keyPressed=='e' ||keyPressed=='t')
+    {
+        kwidget_2d_left->UpdateTransform();
+        this->UpdateImageInformation(kv_data->imageVolumeRaw);
+        id=  kwidget_2d_left->activeLabelMapIndex;
+        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        {
+            kwidget_2d_left->SelectActiveLabelMap( k);
+            this->UpdateVolumeStatus();
+        }
+       //necessary for correct update of label display
+        double currSliceOrigin=kv_opts->sliderMin +kv_opts->sliceZSpace*this->kwidget_2d_left->currentSliceIndex;
+        kwidget_2d_left->m_SliderTrans->Identity();
+        kwidget_2d_left->m_SliderTrans->Translate(0,0,currSliceOrigin);
+        for( int k = 0; k < (int) kwidget_2d_left->multiLabelMaps.size(); k++ )
+          kwidget_2d_left->multiLabelMaps[k]->labelReslicer->SetResliceTransform(kwidget_2d_left->m_SliderTrans);
     }
-    if(keyPressed=='e' ||keyPressed=='t'||keyPressed=='z')
+  }
+
+}
+void KViewer::ResetRotation(bool rotX,bool rotY, bool rotZ)
+{
+    bool doUpdate=false;
+    if(this->m_RotX && !rotX)
+    {
+     kwidget_2d_left->InitializeTransform('x');
+     doUpdate=true;
+     this->m_RotX=!this->m_RotX;
+    }
+    if(this->m_RotY&& !rotY)
+    {
+     kwidget_2d_left->InitializeTransform('y');
+     this->m_RotY=!this->m_RotY;
+     doUpdate=true;
+    }
+    if(this->m_RotZ&& !rotZ)
+    {
+     kwidget_2d_left->InitializeTransform('z');
+     doUpdate=true;
+     this->m_RotZ=!this->m_RotZ;
+    }
+    //Update transform
+    if(doUpdate)
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
@@ -421,7 +493,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         }
         kwidget_2d_left->SelectActiveLabelMap(id);
     }
-  }
+
 }
 
 void KViewer::mousePaintEvent(vtkObject* obj) {
@@ -481,8 +553,6 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
-            // Need to revisit this... user (Grant) didn't like PK attempt at Z-fill
-            // ARGH this definitely needs to be a command line option... 'draw-spread'
             int ds   = kv_opts->m_DrawSpreadOffViewPlane;
             int zmin = z - ds*floor(   sqrt(kv_opts->paintBrushRad - distance) );
             int zmax = z + ds*1*floor( sqrt(kv_opts->paintBrushRad - distance) );
@@ -523,7 +593,6 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       qVTK1->update();
       qVTK2->update();
     }
-
   }
 }
 
@@ -656,6 +725,7 @@ void KViewer::setupQVTKandData( )
           qVTK2->update();
       }
   }
+  //this->UpdateVolumeStatus();
   qVTK1->setUpdatesEnabled(true);
   qVTK2->setUpdatesEnabled(true);
   qVTK1->update();

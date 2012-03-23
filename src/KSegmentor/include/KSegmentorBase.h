@@ -88,7 +88,7 @@ class KSegmentorBase
         virtual void Update3D()=0;
 
         /** Compute Chan-Vese (mean difference) Energy LL2D.*/
-        virtual double evalChanVeseCost( ) const;
+        virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
 
@@ -98,7 +98,7 @@ class KSegmentorBase
             m_UpdateVector.push_back(element);
         }
 
-        void AddPointToCoordinatesVector(std::vector<unsigned int> coord){
+        void AddPointToCoordinatesVector(const std::vector<unsigned int>& coord){
             m_CoordinatesVector.push_back(coord);
         }
 
@@ -162,6 +162,11 @@ class KSegmentorBase
             this->m_DistWeight=dw;
         }
 
+        void SetThreshWeight(float dw)
+        {
+            this->m_ThreshWeight=dw;
+        }
+
         void SetEnergyChanVese( )
         {
             this->m_EnergyName = GetSupportedEnergyNames()[0];
@@ -183,7 +188,7 @@ class KSegmentorBase
 
         void InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit);
         void InitializeMaskAndImage();
-        void UpdateMask();
+        void UpdateMask(bool bForceUpdateAll = false);
 
         virtual void initializeData()=0;
 
@@ -201,7 +206,7 @@ class KSegmentorBase
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
         double* m_PlaneNormalVector, *m_PlaneCenter;
-        float m_DistWeight;
+        float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;
 
@@ -231,7 +236,6 @@ public:
         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
         double rad;          //radius of ball used in local-global energies
-        double dthresh;
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];
@@ -245,12 +249,12 @@ public:
 
 
         //Level Set Variables Stay persistent
+// TODO: delete these, no longer used
+//        /** time-integrated user inputs */
+//        std::vector< cv::Mat >  U_integral;
 
-        /** time-integrated user inputs */
-        std::vector< cv::Mat >  U_integral;
-
-        /** instantaneous user input (stuff that was drawn between running 's') */
-        std::vector< cv::Mat >  U_t;
+//        /** instantaneous user input (stuff that was drawn between running 's') */
+//        std::vector< cv::Mat >  U_t;
 
         double *B, *phi, *C, *label;
         double *F;

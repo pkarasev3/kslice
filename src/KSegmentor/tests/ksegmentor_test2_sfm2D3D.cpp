@@ -13,10 +13,11 @@
 #include "boost/program_options.hpp"
 #include "boost/lexical_cast.hpp"
 #include "vtkMetaImageReader.h"
+#include "vtkMetaImageWriter.h"
 #include "boost/foreach.hpp"
 #include "vtkSmartPointer.h"
 #include "vtkImageData.h"
-#include "KSegmentor.h"
+//#include "KSegmentorBase.h"
 #include "llist.h"
 #include "sfm_local_chanvese_mex.h"
 

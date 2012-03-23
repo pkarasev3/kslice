@@ -110,14 +110,7 @@ void KInteractiveLabelMap::UpdateResliceTransform()
     std::cout<<"LAbel-01:"<<this->labelDataArray->GetOrigin()[0]<<" "<<this->labelDataArray->GetOrigin()[1]<<" "<<this->labelDataArray->GetOrigin()[2]<<" "<<std::endl;
      std::cout<<"LAbel-E1:"<<this->labelDataArray->GetExtent()[1]<<" "<<this->labelDataArray->GetExtent()[3]<<" "<<this->labelDataArray->GetExtent()[5]<<" "<<std::endl;
     std::cout<<"LAbel-Sp1:"<<this->labelDataArray->GetSpacing()[0]<<" "<<this->labelDataArray->GetSpacing()[1]<<" "<<this->labelDataArray->GetSpacing()[2]<<" "<<std::endl;
-    /*if(sourceWidget->GetTransformedZ()==true)
-    {
-        labelReslicer->SetResliceTransform(kv_opts->GetTransform()->GetInverse());
-    }
-    else
-    {*/
        labelReslicer->SetResliceTransform(kv_opts->GetTransform());
-    //}
 
     labelReslicer->SetOutputDimensionality(3);
     labelReslicer->AutoCropOutputOn();
