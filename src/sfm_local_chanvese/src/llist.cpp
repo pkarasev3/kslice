@@ -1,4 +1,13 @@
 #include "llist.h"
+#include <exception>
+
+class llexception : public std::exception
+{
+public:
+    const char* what() {
+        return "Failed to free/alloc memory in LL struct!";
+    }
+};
 
 PT *pt_create(long x, long y, long z, long idx){
   PT* newpt = (PT*)malloc(sizeof(PT));
@@ -15,7 +24,7 @@ PT *pt_create(long x, long y, long z, long idx){
 
 LL *ll_create(){
   LL *newll = (LL*)malloc(sizeof(LL));
-  if(newll == NULL) throw "failed!";
+  if(newll == NULL) throw  llexception();
   newll->head = NULL;
   newll->curr = NULL;
   newll->length = 0;

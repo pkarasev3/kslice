@@ -39,7 +39,7 @@ void test_OpenMP()
 }
 
 /** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.5;
+double KSegmentorBase::defaultKappaParam = 0.35;
 
 
 void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit)
@@ -51,15 +51,15 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->numberdims=3;
 
     segPointer->m_bUseEdgeBased = false;
-    //this->mdims[2] = 1;
     segPointer->penaltyAlpha=0;
     segPointer->seed=0;
     segPointer->useContInit=contInit;
     segPointer->display=0;
+
     //Should we keep these abolute values in here
-    segPointer->dthresh=500;
     segPointer->iter=500;
     segPointer->m_DistWeight=0;
+    segPointer->m_ThreshWeight=0;
     segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
@@ -80,8 +80,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
     segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(10.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(2.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -155,7 +155,7 @@ inline double Delta( double z )
 
 }
 
-double KSegmentorBase::evalChanVeseCost( ) const
+double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
 {
     double E      = 0.0;
     int Nelements = dimx * dimy * dimz;
@@ -170,26 +170,37 @@ double KSegmentorBase::evalChanVeseCost( ) const
         integral_I_zpH       += (img[voxel_idx]) * Heavi(phi[voxel_idx]) ;
         integral_I_omH       += (img[voxel_idx]) * (1.0 - Heavi(phi[voxel_idx]));
     }
-    double mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
-    double mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
+    mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
+    mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
 
-    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
-    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
-    {
-        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
-    }
+//    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
+//    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+//    {
+//        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
+//    }
 
     return (E/2.0);
 }
 
 
-void KSegmentorBase::UpdateMask()
+void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 {
-    int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-    for (int element=0;element<Nelements;element++)
+    if( bForceUpdateAll )
     {
-        unsigned int el=this->m_UpdateVector[element];
-        this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+        int Nelements = this->dimx * this->dimy * this->dimz;
+        for (int element=0;element<Nelements;element++)
+        {
+            this->mask[element]=(double) ( 0 < ptrCurrLabel[element] );
+        }
+    }
+    else
+    {
+        int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+        for (int element=0;element<Nelements;element++)
+        {
+            unsigned int el=this->m_UpdateVector[element];
+            this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+        }
     }
 }
 
@@ -342,25 +353,26 @@ void KSegmentorBase::intializeLevelSet3D(){
     //initialize lists, phi, and labels
     ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
                                     LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
+    cout << "initialized levelset 3D. len(lz) = " << LL3D.Lz->length
+         << ", len(Lchanged) = " << LL3D.Lchanged << endl;
 }
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 {
-    std::vector <unsigned int> coord;
+    std::vector <unsigned int> coord(3);
     unsigned int element=0;
     for (int i=0;i<=this->dimx-1; i++)  {
         for (int j=0; j<=this->dimy-1; j++) {
-            double val=0.9*this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
+            double val = this->U_Integral_image->GetScalarComponentAsDouble(i,j,kFrom,0);
             this->U_Integral_image->SetScalarComponentFromDouble(i,j,kTo,0,val);
-            if(val>0)
+            if(fabs(val)>0)
             {
                 element=kTo*dimx*dimy +j*dimx+i;
                 this->AddPointToUpdateVector(element);
-                coord.push_back(i);
-                coord.push_back(j);
-                coord.push_back(kTo);
+                coord[0] = (i);
+                coord[1] = (j);
+                coord[2] = (kTo);
                 this->AddPointToCoordinatesVector(coord);
-                coord.clear();
             }
         }
     }

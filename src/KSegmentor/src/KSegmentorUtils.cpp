@@ -22,7 +22,6 @@
 #include "KSandbox.h"
 
 #include "Logger.h"
-#include "KSegmentor.h"
 #include "algorithm"
 #include "vector"
 #include <opencv2/highgui/highgui.hpp>

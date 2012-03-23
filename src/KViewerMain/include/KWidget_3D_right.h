@@ -104,7 +104,7 @@ public:
       if(m_SliceIndex+increment>=0)
          m_SliceIndex+=increment;
       m_PlaneWidgetZ->SetSlicePosition(m_SliceIndex*kv_opts->sliceZSpace);
-        std::cout<<"slice3d:"<<m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
+        //std::cout<<"slice3d:"<<m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
         m_PlaneWidgetZ->Modified();
       m_PlaneWidgetZ->UpdatePlacement();
   }
@@ -113,7 +113,7 @@ public:
   {
       m_SliceIndex=index;
       m_PlaneWidgetZ->SetSlicePosition(kv_opts->sliderMin +m_SliceIndex*kv_opts->sliceZSpace);
-      std::cout<<"slice3d:"<<kv_opts->sliderMin+m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
+      //std::cout<<"slice3d:"<<kv_opts->sliderMin+m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
       m_PlaneWidgetZ->Modified();
       m_PlaneWidgetZ->UpdatePlacement();
   }

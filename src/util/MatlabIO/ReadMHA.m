@@ -1,11 +1,16 @@
 function [ imageArray, imgHeader ] = ReadMHA(fileLoc )
+%
+%  [ imageArray, imgHeader ] = ReadMHA(fileLoc )
+%
 % Input: file location, must be "full relative path", NOT just in your
 % matlab path (because it uses Bash-Shell to do stuff outside of Matlab)
 % Output: imageArray MxNxK uint16 and imgHeader list-of-strings
 % If something goes wrong reading the file, imageArray will be 1 x P where
 % P is not equal to MxNxK (e.g. you're trying to load a huge file on a
 % 32Bit machine)
-
+%
+% originally by Ivan Kolesov, modifcations by Peter Karasev 
+% 2011-2012
 
     imgHeader = {};
     %%%%%%%%%%%process header info%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -32,16 +32,16 @@ vector<double> get_good_color_0to7( int idx )
   switch( idx )
   {
   case 0:
-    rgb = {255, 163, 255}; // amethyst
+    rgb = {0,117,220}; // blue
     break;
   case 1:
     rgb = {255,0,16}; // red
     break;
   case 2:
-    rgb = {0,117,220}; // blue
+    rgb = {43,206,72}; // green
     break;
   case 3:
-    rgb = {0,153,143}; // turquoise
+    rgb = {224,255,102}; // uranium
     break;
   case 4:
     rgb = {194,0,136}; // mallow
@@ -50,10 +50,10 @@ vector<double> get_good_color_0to7( int idx )
     rgb = {255,80,5}; // zinnia
     break;
   case 6:
-    rgb = {43,206,72}; // green
+    rgb = {220, 163, 255}; // amethyst
     break;
   case 7:
-    rgb = {224,255,102}; // uranium
+    rgb = {0,153,143}; // turquoise
     break;
   default:
     rgb = {200,200,200};
@@ -189,9 +189,9 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
     pB = rgb_primary[2];
   }
   SP(vtkLookupTable) labelLUT = SP(vtkLookupTable)::New();
-  double mid[4]  = {pR,pG,pB,0.5};
-  double far[4]  = {pR,pG,pB,0.05};
-  double near[4] = {pR,pG,pB,0.5};
+  double mid[4]  = {pR,pG,pB,0.4};
+  double far[4]  = {pR,pG,pB,0.5};
+  double near[4] = {pR,pG,pB,0.3};
   double transparent[4] = {0,0,0,0};
   double main[4]         = {pR,pG,pB,0.3};
 

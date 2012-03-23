@@ -23,7 +23,7 @@
 #include <vtkMath.h>
 #include <cmath>
 #include <vector>
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
 #include "KSandbox.h"
 #include <omp.h>
 

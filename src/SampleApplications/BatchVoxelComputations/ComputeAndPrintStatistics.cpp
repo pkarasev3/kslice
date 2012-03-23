@@ -24,7 +24,7 @@
 #include "vtkImageGradientMagnitude.h"
 #include <cmath>
 #include <vector>
-#include "KSegmentor.h"
+#include "KSegmentorBase.h"
 #include "KSandbox.h"
 #include "boost/foreach.hpp"
 #include "boost/program_options.hpp"
