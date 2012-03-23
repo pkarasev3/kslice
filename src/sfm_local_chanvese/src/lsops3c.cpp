@@ -561,7 +561,6 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
   for(x=0;x<DIMX;x++) for(y=0;y<DIMY;y++) for(z=0;z<DIMZ;z++){
     idx = (int)(z*DIMXY+x*DIMY+y);
 
-    assert( idx < dims[3] ); // I think this assert only makes sense when called from a 2D context
 
     //mark the inside and outside of label and phi
     if(mask[idx]<1e-3){ label[idx] =  3; phi[idx]= 3; }

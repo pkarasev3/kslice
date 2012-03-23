@@ -123,7 +123,7 @@ namespace vrcl
         { // empty label; so set the proper range
           labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
         }
-        assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
+        //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
         this->imgRange=imgRange;
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
@@ -203,6 +203,8 @@ namespace vrcl
             }
         }
 
+        cout <<  ", Lz size: "       << LL2D.Lz->length << endl;
+
         bool bSavePNG = false;
         if( bSavePNG ) {
             std::stringstream ss;
@@ -249,23 +251,11 @@ namespace vrcl
 
         this->CreateLLs(LL3D); // TODO: fix the caching so that only uniques are kept
 
-        LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-        LL *Lin2out, *Lout2in,*Lchanged;
+        // The bug is as follows: the level-set evolution modifies Lchanged indices,
+        // but afterwards they are not appearing in the list of modified coordinates!
+        // Thus, the next time around the mask doesn't get to update them!
 
-        Lz=LL3D.Lz;
-        Ln1=LL3D.Ln1;
-        Ln2=LL3D.Ln2;
-        Lp1=LL3D.Lp1;
-        Lp2=LL3D.Lp2;
-        Lin2out=LL3D.Lin2out;
-        Lout2in=LL3D.Lout2in;
-        Lchanged      = LL3D.Lchanged;  // NOT GETTING FREED/STORED RIGHT!?
-
-//        ll_destroy(LL3D.Lchanged);
-//        LL3D.Lchanged = ll_create();
-
-
-        ll_init(Lchanged);
+        ll_init(LL3D.Lchanged);
         std::set<unsigned int> idx_used;
 
 //        int Nelements=this->m_UpdateVector.size();
@@ -279,7 +269,9 @@ namespace vrcl
 //                idx_used.insert(idx);
 //            }
 //        }
-
+        cout << "m_UpdateVector Size BEGIN: " << m_UpdateVector.size()
+             <<  ", Lchanged size BEGIN: " << LL3D.Lchanged->length
+             <<  ", Lz size BEGIN: "       << LL3D.Lz->length << endl;
 
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
         ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
@@ -287,20 +279,21 @@ namespace vrcl
         double u_in, u_out;
         // Crap, the linked lists will accumulate zillions of repeating entries ...
         // Must flush them and keep unique entries, or something (?)
-//        if(this->m_UpdateVector.size()!=0)
-//            ls_mask2phi3c_update(this->m_UpdateVector,
-//                                 this->m_CoordinatesVector,mask,phi,label,dims,
-//                                 Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+       //if(this->m_UpdateVector.size()!=0)
+   //        ls_mask2phi3c_update(this->m_UpdateVector,
+     //                            this->m_CoordinatesVector,mask,phi,label,dims,
+     //                            LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
 
-        ls_mask2phi3c(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2);
-        //ls_mask2phi3c_ext(mask,phi,label,dims,Lz,Ln1,Ln2,Lp1,Lp2,Lchanged);
+        ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
+     //   ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
         cout << "m_UpdateVector Size: " << m_UpdateVector.size()
-             <<  ", Lchanged size: " << Lchanged->length
-             <<  ", Lz size: "       << Lz->length << endl;
+             <<" m_CoordinatesVector Size: "<<this->m_CoordinatesVector.size()
+                <<  ", Lchanged size: " << LL3D.Lchanged->length
+             <<  ", Lz size: "       << LL3D.Lz->length << endl;
 
         if( 0 == m_EnergyName.compare("ChanVese") ) {
             interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
-                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                     LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                      iter,0.5*lambda,display,this->m_PlaneNormalVector,
                                      this->m_PlaneCenter,this->m_DistWeight);
             bool bDisplayChanVeseCost = false;
@@ -311,7 +304,7 @@ namespace vrcl
         }
         else if( 0 == m_EnergyName.compare("LocalCV") )
             interactive_rbchanvese_ext(img,phi,ptrIntegral_Image,label,dims,
-                                     Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged,
+                                     LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                      iter,rad,lambda,display,this->m_PlaneNormalVector,
                                        this->m_PlaneCenter,this->m_DistWeight);
         else
@@ -332,7 +325,7 @@ namespace vrcl
         double outputVal=0;
 
         // Caution: Lchanged can contain duplicate entries !!!
-        ll_init(Lchanged);
+        ll_init(LL3D.Lchanged);
        // while(Lchanged->curr != NULL)
         double changeInLabel = 0;
         int Nelements = this->dimx * this->dimy * this->dimz;
@@ -380,7 +373,7 @@ namespace vrcl
 //          ll_step(Lchanged);
         }
         cout << "m_UpdateVector Size: " << m_UpdateVector.size()
-             <<  ", Lchanged size: " << Lchanged->length
+             <<  ", Lchanged size: " << LL3D.Lchanged->length
              <<  ", |change| in label: " << changeInLabel << endl;
 
         double spc[3];

@@ -130,7 +130,8 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("resampleToCubicVoxels,r",po::value<bool>(&m_bResampleImageAtStartupToCubicVoxels)->default_value(0),"(NOT IMPLEMENTED!!!) True or False (0,1), resample image at startup to cubic voxels?")
       ("useEdgeBased,e",po::value<bool>(&m_bUseEdgeBased)->default_value(0),"Use Edge Based Cost !?")
-      ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
+       //currently not used
+      // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("help","print help");
 

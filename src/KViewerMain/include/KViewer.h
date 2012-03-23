@@ -157,6 +157,8 @@ public slots:
       return kwidget_3d_right;
   }
 
+  void ResetRotation(bool rotX,bool rotY, bool rotZ);
+
 protected:
   vtkSmartPointer<vtkEventQtSlotConnect>  Connections;
   vtkSmartPointer<KvtkImageInteractionCallback> image_callback;
