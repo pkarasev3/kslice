@@ -84,7 +84,7 @@ int KViewerOptions::GetBrushSize(){
 
 void KViewerOptions::setFromArgs(int argc, char **argv){
 
-  PrintLogo();
+  //PrintLogo();
 
   GetOpt_pp ops(argc, argv); // parse the command line string into chunks
 
@@ -110,8 +110,6 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
 
   // Using these is deprecated. Do they even work? Move to boost program options parser if they are desired.
   ops >> Option('X', "labelInterpolate",    labelInterpolate);
-  ops >> Option('n', "minIntensity",        minIntensity);
-  ops >> Option('x', "maxIntensity",        maxIntensity);
   ops >> Option('p', "paintBrushRad",       paintBrushRad);
   ops >> Option('c', "writeCompressed",     writeCompressed);
   ops >> Option('M', "drawLabelMaxVal",     drawLabelMaxVal);
@@ -122,6 +120,8 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
        "which labels to pre-load, e.g. --Labels=a.mha b.mha c.mha")
       ("Opacity3D,q",po::value<float>(&modelOpacity3D)->default_value(0.4),"model opacity 3D")
       ("Image,I",po::value<std::string>(&ImageArrayFilename)->default_value(""),"image volume file")
+      ("Imax,n",po::value<int>(&maxIntensity)->default_value(0),"max image value for display")
+      ("Imin,x",po::value<int>(&minIntensity)->default_value(0),"min image value for display")
       ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(40),"# of curve evolution update iterations")
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
