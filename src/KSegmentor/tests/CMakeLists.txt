@@ -1,5 +1,5 @@
-add_executable(ksegmentor_test1_sfls_opencv ksegmentor_test1_sfls_opencv.cpp)
-target_link_libraries(ksegmentor_test1_sfls_opencv  ${KSEGM_LIBS}  KSegmentor )
+#add_executable(ksegmentor_test1_sfls_opencv ksegmentor_test1_sfls_opencv.cpp)
+#target_link_libraries(ksegmentor_test1_sfls_opencv  ${KSEGM_LIBS}  KSegmentor )
 
 add_executable( ksegmentor_test2_sfm2D3D ksegmentor_test2_sfm2D3D.cpp)
 target_link_libraries( ksegmentor_test2_sfm2D3D  ${Boost_LIBRARIES} ${KSEGM_LIBS}  KSegmentor sfm_local_chanvese vrcl )
