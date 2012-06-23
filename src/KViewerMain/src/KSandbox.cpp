@@ -298,8 +298,12 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   kv_opts->imgHeight            = dataExtent[3]-dataExtent[2]+1;
   kv_opts->imgWidth            = dataExtent[1]-dataExtent[0]+1;
 
-  kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1;
-  kv_opts->maxIntensity        = image2D->GetScalarRange()[1];
+  if( kv_opts->maxIntensity <= 0 )
+  {
+      std::cout << " no min,max display image values provided, using defaults relative to image min,max " << std::endl;
+     kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1; //IKChange
+     kv_opts->maxIntensity        = image2D->GetScalarRange()[1];  //IKChange
+  }
 
   std::vector<double> imgOrigin(3);
   memcpy( &(imgOrigin[0]), image2D->GetOrigin(), 3 * sizeof(double) );

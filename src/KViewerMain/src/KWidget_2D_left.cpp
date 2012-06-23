@@ -51,13 +51,15 @@ void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Pt
     * Needs to be adjusted if all you see is black & white.
     */
 
-  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
-    cout << "no min,max passed; setting default window: min,max of image." << endl;
-    double minMaxImage[2];
-    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
-    kv_opts->minIntensity = minMaxImage[0];
-    kv_opts->maxIntensity = minMaxImage[1];
-  }
+
+//IKChange
+//  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
+//    cout << "no min,max passed; setting default window: min,max of image." << endl;
+//    double minMaxImage[2];
+//    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
+//    kv_opts->minIntensity = minMaxImage[0];
+//    kv_opts->maxIntensity = minMaxImage[1];
+//  }
 
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
