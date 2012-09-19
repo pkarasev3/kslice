@@ -17,6 +17,9 @@ if(${BUILD_ITK_DEPENDENT_STUFF})
     include(${ITK_USE_FILE})
     add_executable( ResampleVolumesToBeIsotropic ResampleVolumesToBeIsotropic.cpp)
     target_link_libraries( ResampleVolumesToBeIsotropic ${KV_LIBS}  ITKIO ITKCommon ITKBasicFilters)
-    add_executable( AntiAliasBinaryImage AntiAliasBinaryImage.cpp)
-    target_link_libraries( AntiAliasBinaryImage ${KV_LIBS}  ITKIO ITKCommon ITKBasicFilters)
+
+# Version of ITK mismatch? Anyway this app doesn't achieve intended goal
+# add_executable( AntiAliasBinaryImage AntiAliasBinaryImage.cpp)
+# target_link_libraries( AntiAliasBinaryImage ${KV_LIBS}  ITKIO ITKCommon ITKBasicFilters)
+
 endif(${BUILD_ITK_DEPENDENT_STUFF})

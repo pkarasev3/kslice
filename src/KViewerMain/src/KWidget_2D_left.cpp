@@ -395,20 +395,18 @@ void KWidget_2D_left::CallbackSliceSlider( int currSlice, double currSliceOrigin
 
 }
 
-void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
-{
-    // TODO: **warning** need to either de-rotate the labels when saving,
-    // or also save the rotated image!
-    // If the image is not cube-sized, you can't even validly re-load the labels
-    // because sizes no longer match!
-
+void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss,
+                                          bool bCurrentOnly, bool bSaveUserInput_U)
+{ // assumption: derotated already, karl fixed this bug I think
   string labelmap_name_base = ss.str(); // base: might have ".mha" at the end
 
   int label_idx = 0;
   for( ; label_idx < (int) multiLabelMaps.size(); label_idx++)
   {
+    if( bCurrentOnly && ( label_idx != activeLabelMapIndex ) )
+      continue;
     IFLOG(VERBOSE, cout << "... attempting to write label map to file ...  " )
-        stringstream label_index_ss;
+    stringstream label_index_ss;
     label_index_ss << "_" << std::setw(4) << std::setfill('0') << label_idx;
     string labelmap_filename = labelmap_name_base + label_index_ss.str() + ".mha";
 
@@ -417,8 +415,15 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss )
     labelWriter->SetFileName( labelmap_filename.c_str() );
     labelWriter->SetCompression( kv_opts->writeCompressed );
     labelWriter->Write();
-    IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelmap_filename << endl )
+    IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelmap_filename << endl );
 
+    if( bSaveUserInput_U ) {
+      vtkImageData* U_of_t = multiLabelMaps[label_idx]->ksegmentor->U_Integral_image;
+      labelWriter->SetInput( U_of_t );
+      labelWriter->SetFileName(  ("U_" + labelmap_filename).c_str() );
+      labelWriter->Write();
+      IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelWriter->GetFileName() << endl );
+    }
         // wtf @ png libs ...
         // multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );
   }
@@ -443,7 +448,7 @@ void KWidget_2D_left::SaveCurrentLabelMap( ) {
   seconds = time(NULL);
   std::stringstream  ss;
   ss << "KViewerSaved_LabelMap_" << seconds ;
-  SaveLabelsInternal( ss );
+  SaveLabelsInternal( ss, true, true );
 }
 
 
