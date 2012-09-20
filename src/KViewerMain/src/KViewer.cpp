@@ -366,7 +366,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
        //kv_opts->seg_time_interval+=0.05;
         kv_opts->distWeight+=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
-        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        for (int i=0;i<(int)kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
@@ -379,7 +379,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         else
             kv_opts->distWeight-=0.02;
         distweight->setText("dist. weight: "+QString::number(kv_opts->distWeight));
-        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        for (int i=0;i<(int)kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
         }
@@ -388,7 +388,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case '5':
         kv_opts->m_ThreshWeight-=0.01;
         kv_opts->m_ThreshWeight = std::max(0.0f,kv_opts->m_ThreshWeight);
-        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        for (int i=0;i<(int)kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
         }
@@ -397,7 +397,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     case '6':
         kv_opts->m_ThreshWeight+=0.01;
         kv_opts->m_ThreshWeight = std::min(0.95f,kv_opts->m_ThreshWeight);
-        for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+        for (int i=0;i<(int)kwidget_2d_left->multiLabelMaps.size();i++)
         {
             this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetThreshWeight(kv_opts->m_ThreshWeight);
         }
@@ -559,6 +559,11 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
             for( int kk = zmin; kk <= zmax; kk++) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
+
+              if( (distance < 1.0 ) /*(TODO) && VerboseRecordMode*/  ) {
+                  kwidget_2d_left->uk_recorder.process_click( elemNum );
+              }
+
               if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {    
                   coord[0]=(i);
                   coord[1]=(j);
@@ -664,7 +669,7 @@ void KViewer::setupQVTKandData( )
   //Add additional labels to 3D view  - not very elegant, but it works...
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=1; (int)labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(int labnum=1; labnum<(int)kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
          this->kv_data->UpdateLabelDataArray(kwidget_2d_left->multiLabelMaps[labnum]->labelDataArray);
          KWidget_3D_right::AddNewLabel(kwidget_3d_right,vrcl::get_good_color_0to7(labnum));

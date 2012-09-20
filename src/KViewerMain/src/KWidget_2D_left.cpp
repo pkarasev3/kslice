@@ -313,6 +313,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
   }
 
+
   //else
    // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
   //not used at the moment
@@ -344,13 +345,18 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
-  for (int s=0;s<3;s++)
+  for (int s=0;s<3;s++) {
     kv_opts->imageSpacing[s]=this->GetActiveLabelMap( )->GetSpacing()[s];
+  }
 
   //I think that makes sense,otherwise KSlice crashed everytime you load a new image with different dims when labels were pre-loaded
   kv_opts_input->LabelArrayFilenames.clear();
 
   UpdateMultiLabelMapDisplay( );
+
+  // TODO: only if a verbose mode is on! wastes memory and time
+  uk_recorder.initialize( this->GetActiveLabelMap() );
+
 }
 
 //  ************************************************************************   //
@@ -423,6 +429,14 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss,
       labelWriter->SetFileName(  ("U_" + labelmap_filename).c_str() );
       labelWriter->Write();
       IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelWriter->GetFileName() << endl );
+
+      /** For товарищ Иван Колесов, "just the clicks" */
+      vtkImageData* uk_with_timestamp = this->uk_recorder.timestamp_volume;
+      labelWriter->SetInput( uk_with_timestamp );
+      labelWriter->SetFileName(  ("uk_" + labelmap_filename).c_str() );
+      labelWriter->Write();
+      IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelWriter->GetFileName() << endl );
+
     }
         // wtf @ png libs ...
         // multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );

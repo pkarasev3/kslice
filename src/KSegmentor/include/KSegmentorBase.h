@@ -91,7 +91,6 @@ class KSegmentorBase
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
-
         virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
 
         void AddPointToUpdateVector(unsigned int element){

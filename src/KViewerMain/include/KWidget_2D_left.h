@@ -148,6 +148,10 @@ Multiple Label Maps
     return m_OutputSpacing;
   }
 
+  /** struct to verbosely record all the input click points for explanatory visualization.
+            use uk_recorder.process_click( element ) to push new value in. */
+  UserInputVerboseRecorder   uk_recorder;
+
  ///TODO: make private
 vtkTransform* m_SliderTrans;
 private:

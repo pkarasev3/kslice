@@ -99,5 +99,30 @@ public:
 };
 
 
+struct UserInputVerboseRecorder
+{
+  typedef std::map<unsigned int, unsigned int> index_to_tk_mapper;
+  vtkSmartPointer<vtkImageData>          timestamp_volume;
+  std::map<unsigned int, unsigned int>   inputLocationandTime;
+  int startTime;
+  void initialize( vtkImageData* reference_volume ) {
+      startTime        = (int) time(NULL);
+      timestamp_volume = vtkSmartPointer<vtkImageData>::New();
+      timestamp_volume->DeepCopy( reference_volume ); // get the field data, scalar alloc, etc
+      unsigned short* ptr = static_cast<unsigned short*>( timestamp_volume->GetScalarPointer() );
+      long Nelements      = timestamp_volume->GetNumberOfPoints();
+      cout<<"created UserInputVerboseRecorder,  t0=" << startTime << ", #pts=" << Nelements <<endl;
+      for( int i=0; i < Nelements; i++ ) {
+          ptr[i] = 0;
+      }
+  }
+
+  void process_click( unsigned int element ) {
+      unsigned int timeDiff        = (int) time(NULL) - startTime; assert(timeDiff>0);
+      inputLocationandTime.insert(index_to_tk_mapper::value_type(element,timeDiff));
+      unsigned short* ptr = static_cast<unsigned short*>( timestamp_volume->GetScalarPointer() );
+      ptr[element] = (unsigned short) timeDiff; assert(timeDiff < 1e4);
+  }
+};
 
 #endif
