@@ -32,31 +32,38 @@ vector<double> get_good_color_0to7( int idx )
   switch( idx )
   {
   case 0:
-    rgb = {0,117,220}; // blue
+    rgb[0]=0; rgb[1]=117; rgb[2]=220;  // ? 
     break;
   case 1:
-    rgb = {255,0,16}; // red
+    rgb[0]=255; rgb[1]=0; rgb[2]=16; // red
     break;
   case 2:
-    rgb = {43,206,72}; // green
+//    double rgb[3] = {43,206,72}; // green
+    rgb[0]=43; rgb[1]=206; rgb[2]=72; 
     break;
   case 3:
-    rgb = {224,255,102}; // uranium
+    //double rgb[3] = {224,255,102}; // uranium
+    rgb[0]=224; rgb[1]=255; rgb[2]=102; 
     break;
   case 4:
-    rgb = {194,0,136}; // mallow
+//    double rgb[3] = {194,0,136}; // mallow
+   rgb[0]=194; rgb[1]=0; rgb[2]=136; 
     break;
   case 5:
-    rgb = {255,80,5}; // zinnia
+  //  double rgb[3] = {255,80,5}; // zinnia
+    rgb[0]=255; rgb[1]=80; rgb[2]=5; 
     break;
   case 6:
-    rgb = {220, 163, 255}; // amethyst
+   // double rgb[3] = {220, 163, 255}; // amethyst
+    rgb[0]=220; rgb[1]=163; rgb[2]=255; 
     break;
   case 7:
-    rgb = {0,153,143}; // turquoise
+//    double rgb[3] = {0,153,143}; // turquoise
+    rgb[0]=0; rgb[1]=153; rgb[2]=143; 
     break;
   default:
-    rgb = {200,200,200};
+//    double rgb[3] = {200,200,200}; // default, grayish
+    rgb[0]=200; rgb[1]=200; rgb[2]=200; 
     break;
   }
   rgb[0] /= 255.0;
@@ -298,8 +305,12 @@ void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data)
   kv_opts->imgHeight            = dataExtent[3]-dataExtent[2]+1;
   kv_opts->imgWidth            = dataExtent[1]-dataExtent[0]+1;
 
-  kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1;
-  kv_opts->maxIntensity        = image2D->GetScalarRange()[1];
+  if( kv_opts->maxIntensity <= 0 )
+  {
+      std::cout << " no min,max display image values provided, using defaults relative to image min,max " << std::endl;
+     kv_opts->minIntensity        = image2D->GetScalarRange()[0]*1.1; //IKChange
+     kv_opts->maxIntensity        = image2D->GetScalarRange()[1];  //IKChange
+  }
 
   std::vector<double> imgOrigin(3);
   memcpy( &(imgOrigin[0]), image2D->GetOrigin(), 3 * sizeof(double) );

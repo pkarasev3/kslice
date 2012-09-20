@@ -167,7 +167,9 @@ private:
 
 
   /** internal common code for saving label files */
-  void SaveLabelsInternal( const std::stringstream& ss );
+  void SaveLabelsInternal( const std::stringstream& ss,
+                           bool bCurrentOnly=false, /*save all or only active label?*/
+                           bool bSaveUserInput_U=false /*also save the U(t)?*/ );
 
   void SetupRenderWindow();
   void SetupImageDisplay(bool transformUpdate=false);
