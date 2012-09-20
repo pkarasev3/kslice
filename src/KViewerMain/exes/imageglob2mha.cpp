@@ -71,9 +71,13 @@ int main( int argc, char **argv)
       cout << "attempting to load " << argv[k] << endl;
       cv::Mat img = imread(argv[k]); // read it from disk, fails if file name is wacked
       cv::flip(img.clone(),img,0);
-      img.clone().convertTo(img,CV_32FC3);
 
-      cv::cvtColor(img.clone(),img,CV_RGB2GRAY);
+      if( img.channels() > 1 ) {
+        img.clone().convertTo(img,CV_32FC3);
+          cv::cvtColor(img.clone(),img,CV_RGB2GRAY);
+      } else {
+        img.clone().convertTo(img,CV_32FC1);
+      }
       cv::minMaxLoc(img,&dmin,&dmax);
       cout << "initial min,max = " << dmin << "," << dmax << " ... ";
       img = (img - dmin) / (dmax - dmin) * (pow(2.0,12)-1.0);
