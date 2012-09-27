@@ -133,6 +133,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
        //currently not used
       // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
+      ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
       ("help","print help");
 
   po::variables_map vm;

@@ -331,17 +331,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
-    //Currently not used
-    /*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
-        cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
-        if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
-            cout << " ... failed, could not read. " << endl;
-        } else {
-            multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
-            cout << " ... ok. " << endl;
-        }
-
-    }*/
+    multiLabelMaps[k]->ksegmentor->SetUmax( (1.0 + 68.0) * kv_opts->m_bForceLargeU );
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -673,6 +663,28 @@ SP(vtkImageData) KWidget_2D_left::GetActiveLabelMap( )
 
 
 #if 0        // Guillotine
+
+
+
+//New Prisoner
+  //Currently not used
+  /*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
+      cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
+      if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
+          cout << " ... failed, could not read. " << endl;
+      } else {
+          multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
+          cout << " ... ok. " << endl;
+      }
+
+  }*/
+
+
+
+
+
+
+
 
 void KWidget_2D_left::SetupLabelDisplay()  {
 

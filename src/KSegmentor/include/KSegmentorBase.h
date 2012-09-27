@@ -84,6 +84,7 @@ class KSegmentorBase
         void intializeLevelSet3D();
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
+        double GetUmax() const { return m_Umax; }
         virtual void Update2D()=0;
         virtual void Update3D()=0;
 
@@ -166,6 +167,11 @@ class KSegmentorBase
             this->m_ThreshWeight=dw;
         }
 
+        void SetUmax(double Umax)
+        {
+            this->m_Umax = Umax;
+        }
+
         void SetEnergyChanVese( )
         {
             this->m_EnergyName = GetSupportedEnergyNames()[0];
@@ -207,7 +213,7 @@ class KSegmentorBase
         vtkImageData *labelVol; //full label volume (at the current time)
         double* m_PlaneNormalVector, *m_PlaneCenter;
         float m_DistWeight,m_ThreshWeight;
-
+        double m_Umax;
         std::string m_EnergyName;
 
 public:
@@ -215,7 +221,6 @@ public:
         unsigned short *ptrCurrLabel; //ptr to current label slice
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
-
 
 /** Might (??) own anything else below */
         int currSlice;       //the slice we are segmenting

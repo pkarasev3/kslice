@@ -42,7 +42,8 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit)
+void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image,
+                                         vtkImageData *label, bool contInit)
 {
     segPointer->m_CustomSpeedImgPointer=NULL;
     segPointer->imageVol=image;
@@ -132,6 +133,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     segPointer->dims[3] = segPointer->dims[0]*segPointer->dims[1];
     segPointer->dims[4] = segPointer->dims[0]*segPointer->dims[1]*segPointer->dims[2];
+
+    this->m_Umax = 1.0;
 
     cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
@@ -269,6 +272,9 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
 
 
 void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
+
+    double Umax = this->GetUmax();
+    //cout << "using UMax = " << Umax << endl;
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;
 }

@@ -56,6 +56,9 @@ namespace vrcl
                                         // technically it shouldn't because we're using inside the  tanh() function
                                         // comparing it with \phi() which is between -3 and +3 . If we can't get
                                         // values between -3 and +3 the smoothness breaks down.
+
+        Umax = this->GetUmax();
+
         double user_input      = -Umax * ( value > 0.5 ) + Umax * ( value <= 0.5 );
 
         //Changed accumulation! (+=) instead of (=)

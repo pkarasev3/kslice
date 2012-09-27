@@ -46,8 +46,9 @@ public:
   bool  labelInterpolate;
   bool  writeCompressed;
   bool  m_bUseEdgeBased;
-  bool  m_bResampleImageAtStartupToCubicVoxels;
+  bool  m_bResampleImageAtStartupToCubicVoxels; // deprecated, don't do this here ...
   bool  time_triggered_seg_update;
+  bool  m_bForceLargeU; // all clicks are high-magnitude
   int   minIntensity;
   int   maxIntensity;
   int   m_DrawSpreadOffViewPlane;
