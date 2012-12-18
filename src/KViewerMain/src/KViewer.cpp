@@ -209,6 +209,7 @@ void KViewer::UpdateModel3D() {
 
 
 void KViewer::SaveSegmentation( ) {
+  this->ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
   kwidget_2d_left->SaveCurrentLabelMap( );
 }
 
