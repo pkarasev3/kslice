@@ -83,7 +83,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
     segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
     segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
-    segPointer->rad=7; //IKChange
+    // what the fuck? not in IK's version? // segPointer->rad=7; //IKChange
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
