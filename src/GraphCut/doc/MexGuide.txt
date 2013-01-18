@@ -1,0 +1,17 @@
+Libraries for C/C++ General Configuration Properties:
+ProjectProperties->Configuration Properties-> C/C++ -> General -> Additonal Include Properties:
+														C:\Program Files\MATLAB\R2008b\extern\include
+														
+														
+
+
+Libraries for the linker:
+ProjectProperties->Configuration Properties-> Linker -> General -> Additonal Library Directories:		
+												
+														C:\Program Files\MATLAB\R2008b\extern\lib\win32\microsoft
+
+														
+														
+Libraries for linker input:
+Project Properties->Configuration Properties-> Linker-> Input ->Additional Dependencies
+														libmx.lib libmex.lib libmat.lib
