@@ -90,13 +90,13 @@ endif(${TOTENKOPF_WERROR})
 
 message(STATUS "CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
 
-set( KSlice_include  ${CMAKE_CURRENT_SOURCE_DIR}/util/getopt
+set( KSlice_include # ${CMAKE_CURRENT_SOURCE_DIR}/util/getopt
                      ${CMAKE_CURRENT_SOURCE_DIR}/util/vrcl/include
                      ${CMAKE_CURRENT_SOURCE_DIR}/KViewerMain/include
                      ${CMAKE_CURRENT_SOURCE_DIR}/KSegmentor/include
-                     ${CMAKE_CURRENT_SOURCE_DIR}/Gao3DRSS/include
+                    # ${CMAKE_CURRENT_SOURCE_DIR}/Gao3DRSS/include
                      ${CMAKE_CURRENT_SOURCE_DIR}/sfm_local_chanvese/include
-                     ${CMAKE_CURRENT_SOURCE_DIR}/MeshCurvolver-2.0/include
+                    # ${CMAKE_CURRENT_SOURCE_DIR}/MeshCurvolver-2.0/include
                     # ${CMAKE_CURRENT_SOURCE_DIR}/VTKtoITKConnection/include
    )
 
@@ -107,7 +107,7 @@ include_directories(
         ${KSlice_include}
 )
 
-add_subdirectory(util/getopt)  # DEPRECATED, Use boost::program_options instead, or raw argv[k] when lazy
+#add_subdirectory(util/getopt)  # DEPRECATED, Use boost::program_options instead, or raw argv[k] when lazy
 add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
 add_subdirectory(SampleApplications)
