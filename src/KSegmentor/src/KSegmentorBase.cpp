@@ -42,99 +42,99 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit)
+void KSegmentorBase::InitializeVariables(vtkImageData *image, vtkImageData *label, bool contInit)
 {
-    segPointer->m_CustomSpeedImgPointer=NULL;
-    segPointer->imageVol=image;
-    segPointer->labelVol=label;
+    m_CustomSpeedImgPointer=NULL;
+    imageVol=image;
+    labelVol=label;
 
-    segPointer->numberdims=3;
+    numberdims=3;
 
-    segPointer->m_bUseEdgeBased = false;
-    segPointer->penaltyAlpha=0;
-    segPointer->seed=0;
-    segPointer->useContInit=contInit;
-    segPointer->display=0;
+    m_bUseEdgeBased = false;
+    penaltyAlpha=0;
+    seed=0;
+    useContInit=contInit;
+    display=0;
 
     //Should we keep these abolute values in here
-    segPointer->iter=500;
-    segPointer->m_DistWeight=0;
-    segPointer->m_ThreshWeight=0;
-    segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
-    segPointer->mdims = new int[3];
-    image->GetDimensions( segPointer->mdims );
+    iter=500;
+    m_DistWeight=0;
+    m_ThreshWeight=0;
+    lambda=defaultKappaParam; // this could/should be user togglable!
+    mdims = new int[3];
+    image->GetDimensions( mdims );
 
-    segPointer->LL3D.init();
-    segPointer->LL2D.init();
-    segPointer->Sz=NULL ;
-    segPointer->Sn1=NULL ;
-    segPointer->Sn2=NULL ;
-    segPointer->Sp1=NULL ;
-    segPointer->Sp2=NULL ;
+    LL3D.init();
+    LL2D.init();
+    Sz=NULL ;
+    Sn1=NULL ;
+    Sn2=NULL ;
+    Sp1=NULL ;
+    Sp2=NULL ;
 
-    segPointer->img=NULL;
-    segPointer->mask=NULL;
+    img=NULL;
+    mask=NULL;
 
-    image->GetSpacing( segPointer->m_Spacing_mm );
+    image->GetSpacing( m_Spacing_mm );
 
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
-    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
-    segPointer->rad=7; //IKChange
-    cout << "segmentor using ROI size: " << segPointer->rad << endl;
+    rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
+    rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+    rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    rad=7; //IKChange
+    cout << "segmentor using ROI size: " << rad << endl;
 
-    segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
-    segPointer->U_t_image= vtkSmartPointer<vtkImageData>::New();
+    U_Integral_image = vtkSmartPointer<vtkImageData>::New();
+    U_t_image= vtkSmartPointer<vtkImageData>::New();
 
-    segPointer->U_Integral_image->SetExtent(image->GetExtent());
-    segPointer->U_Integral_image->SetScalarTypeToDouble();
-    segPointer->U_Integral_image->SetSpacing(image->GetSpacing());
-    segPointer->U_Integral_image->AllocateScalars();
-    segPointer->ptrIntegral_Image = static_cast<double*>(segPointer->U_Integral_image->GetScalarPointer());
+    U_Integral_image->SetExtent(image->GetExtent());
+    U_Integral_image->SetScalarTypeToDouble();
+    U_Integral_image->SetSpacing(image->GetSpacing());
+    U_Integral_image->AllocateScalars();
+    ptrIntegral_Image = static_cast<double*>(segPointer->U_Integral_image->GetScalarPointer());
 
-    segPointer->U_t_image->SetExtent(image->GetExtent());
-    segPointer->U_t_image->SetScalarTypeToDouble();
-    segPointer->U_t_image->SetSpacing(image->GetSpacing());
-    segPointer->U_t_image->AllocateScalars();
-    segPointer->ptrU_t_Image = static_cast<double*>(segPointer->U_t_image->GetScalarPointer());
+    U_t_image->SetExtent(image->GetExtent());
+    U_t_image->SetScalarTypeToDouble();
+    U_t_image->SetSpacing(image->GetSpacing());
+    U_t_image->AllocateScalars();
+    ptrU_t_Image = static_cast<double*>(segPointer->U_t_image->GetScalarPointer());
 
-    segPointer->m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
+    m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
-    segPointer->imgRange   = new double[2];
-    segPointer->labelRange = new double[2];
+    imgRange   = new double[2];
+    labelRange = new double[2];
 
-    cout << "I think the # of rows is: " << segPointer->mdims[1] << ", # of cols is: " << segPointer->mdims[0] << endl;
+    cout << "I think the # of rows is: " << mdims[1] << ", # of cols is: " << mdims[0] << endl;
 
-    segPointer->iList=NULL;
-    segPointer->jList=NULL;
+    iList=NULL;
+    jList=NULL;
 
     //Set dimensions
-    segPointer->dimz = (int)segPointer->mdims[2];
-    segPointer->dimy = (int)segPointer->mdims[1];
-    segPointer->dimx = (int)segPointer->mdims[0];
+    dimz = (int) mdims[2];
+    dimy = (int) mdims[1];
+    dimx = (int) mdims[0];
 
     try {
-      segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-      segPointer->label      = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-      segPointer->mask       = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
-      segPointer->img        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
+      phi        = new double[dimx*dimy*dimz];
+      label      = new double[dimx*dimy*dimz];
+      mask       = new double[dimx*dimy*dimz];
+      img        = new double[dimx*dimy*dimz];
     } catch ( const std::bad_alloc& e) {
       std::cout << "Failed to allocate KSegmentorBase pointers! ";
       std::cout << "Perhaps it is a big data-set on 32-bit OS? " << std::endl;
       exit(-1);
     }
 
-    segPointer->dims[2] = segPointer->dimz;
-    segPointer->dims[1] = segPointer->dimy;
-    segPointer->dims[0] = segPointer->dimx;
+    dims[2] = dimz;
+    dims[1] = dimy;
+    dims[0] = dimx;
 
-    segPointer->dims[3] = segPointer->dims[0]*segPointer->dims[1];
-    segPointer->dims[4] = segPointer->dims[0]*segPointer->dims[1]*segPointer->dims[2];
+    dims[3] = dims[0]*dims[1];
+    dims[4] = dims[0]*dims[1]*dims[2];
 
     cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
-         << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
+         << dims[0] << "," << dims[1] << "," << dims[2] << endl;
 
 }
 

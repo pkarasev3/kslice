@@ -110,7 +110,7 @@ include_directories(
 #add_subdirectory(util/getopt)  # DEPRECATED, Use boost::program_options instead, or raw argv[k] when lazy
 add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
-add_subdirectory(SampleApplications)
+#add_subdirectory(SampleApplications)
 add_subdirectory(KSegmentor)
 
 set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)
@@ -124,7 +124,7 @@ else(${BUILD_ITK_DEPENDENT_STUFF})
 endif(${BUILD_ITK_DEPENDENT_STUFF})
 
 add_subdirectory(sfm_local_chanvese)
-add_subdirectory(MeshCurvolver-2.0)
+#add_subdirectory(MeshCurvolver-2.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 

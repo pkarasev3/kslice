@@ -1,48 +1,90 @@
-/*=========================================================================
+#include "KSlice.h"
 
-  Copyright 2004 Sandia Corporation.
-  Under the terms of Contract DE-AC04-94AL85000, there is a non-exclusive
-  license for use of this work by or on behalf of the
-  U.S. Government. Redistribution and use in source and binary forms, with
-  or without modification, are permitted provided that this Notice and any
-  statement of authorship are reproduced on all copies.
 
-=========================================================================*/
-
-/*========================================================================
- For general information about using VTK and Qt, see:
- http://www.trolltech.com/products/3rdparty/vtksupport.html
-=========================================================================*/
-
-/*========================================================================
- !!! WARNING for those who want to contribute code to this file.
- !!! If you use a commercial edition of Qt, you can modify this code.
- !!! If you use an open source version of Qt, you are free to modify
- !!! and use this code within the guidelines of the GPL license.
- !!! Unfortunately, you cannot contribute the changes back into this
- !!! file.  Doing so creates a conflict between the GPL and BSD-like VTK
- !!! license.
-=========================================================================*/
-
-#include "qapplication.h"
-
-#include "KViewer.h"
-#include "KViewerOptions.h"
-
-using namespace vrcl;
-
+/**
+ * this function is only used to debug the KSlice module
+ */
 int main(int argc, char** argv)
 {
+    //inputs
+    std::string imgVolName = "../../data/bbTest/imgVol.mha";
+    std::string labVolName = "../../data/bbTest/labVol.mha";
+    std::string uiVolName  = "../../data/bbTest/uiVol.mha";
+
+    //create two readers one for the image and one for the labels
+    vtkMetaImageReader labReader       = vtkMetaImageReader::New();
+    vtkMetaImageReader imgReader       = vtkMetaImageReader::New();
+    vtkMetaImageReader uiReader        = vtkMetaImageReader::New();
+
+    //one instance of a call to KSlice
+    vtkImageData* labVol;
+    vtkImageData* imgVol;
+    vtkImageData* uiVol;
+    int numIts;
+    int rad;
+    float distWeight=.3;
+    int currSlice=0;
 
 
-  KViewerOptions  kview_opt;
-  kview_opt.setFromArgs(argc,argv);
+    //test if we can read each file
+    int canReadImg = imgReader->CanReadFile(imgVolName);
+    int canReadLab = 0;               // try to read multiple labels later
 
-  QApplication app(argc, argv);
+    if ( canReadLab == 0 )
+    {		// can't read label file, try to create a blank one
+      if( canReadImg==0)
+      {
+        cout<<"Could not read file "<<imgVolName<<" \n";
+        exit(-1);
+      }
 
-  KViewer* widget=new KViewer( kview_opt );
+      imgReader->SetFileName(imgVolName);
+      imgReader->SetDataScalarTypeToUnsignedShort();
+      imgReader->Update();
 
-  widget->show();
-  return app.exec();
+      labReader->SetFileName(labVolName);
+      labReader->SetDataScalarTypeToUnsignedShort();
+      labReader->Update();
+
+      uiReader->SetFileName(uiVolName);
+      uiReader->SetDataScalarTypeToUnsignedShort();
+      uiReader->Update();
+
+      labVol = labReader->GetOutput();
+      imgVol = imgReader->GetOutput();
+      uiVol = uiReader->GetOutput();
+
+      int* imgDim = imgReader->GetDataExtent();
+      int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
+      int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
+
+      labVol->Update();
+      imgVol->Update();
+      uiVol->Update();
+
+    } else if(canReadImg==0){
+      cout<<"Could not read file"<<labVol<<"\n";
+      exit(-1);
+    }
+
+
+
+
+  //set up the black box
+  KSlice* bbKSlice=new KSlice(); //created the data, options structures empty for now
+  bbKSlice->SetImage(imgVol);
+  bbKSlice->SetLabel(labVol);
+  bbKSlice->SetUI(uiVol);
+  bbKSlice->SetNumIters(numIts);
+  bbKSlice->SetBrushRad(rad);
+  bbKSlice->SetCurrSlice(currSlice);
+  bbKSlice->SetDistWeight(distWeight);
+  bbKSlice->Initialize();
+  //evolve
+  bbKSlice->Update();
+
+
+
+  return 0;
 }
 
