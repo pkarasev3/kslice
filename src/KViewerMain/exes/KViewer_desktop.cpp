@@ -20,10 +20,10 @@ int main(int argc, char** argv)
     vtkImageData* labVol;
     vtkImageData* imgVol;
     vtkImageData* uiVol;
-    int numIts=100;
+    int numIts=500;
     int rad=15;
     float distWeight=.3;
-    int currSlice=0;
+    int currSlice=50;
 
 
     //test if we can read each file
@@ -54,9 +54,9 @@ int main(int argc, char** argv)
       imgVol = imgReader->GetOutput();
       uiVol = uiReader->GetOutput();
 
-//      int* imgDim = imgReader->GetDataExtent();
-//      int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
-//      int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
+      int* imgDim = imgReader->GetDataExtent();
+      int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
+      int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
 
       labVol->Update();
       imgVol->Update();
@@ -68,7 +68,10 @@ int main(int argc, char** argv)
     }
 
 
-
+   //debug to make sure we've loaded things correctly
+   double range[2];
+   imgVol->GetScalarRange(range);
+   labVol->GetScalarRange(range);
 
   //set up the black box
   KSlice* bbKSlice=new KSlice(); //created the data, options structures empty for now
@@ -84,6 +87,12 @@ int main(int argc, char** argv)
   bbKSlice->runUpdate();
 
 
+  bbKSlice->SetCurrSlice(49);
+  bbKSlice->runUpdate();
+  bbKSlice->SetCurrSlice(48);
+  bbKSlice->runUpdate();
+  bbKSlice->SetCurrSlice(47);
+  bbKSlice->runUpdate();
 
   //record the output (FOR TESTING ONLY)
   vtkMetaImageWriter *writer = vtkMetaImageWriter::New();

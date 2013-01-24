@@ -4,9 +4,9 @@
 
 #include "vtkSmartPointer.h"
 #include "vtkImageReslice.h"
+#include "KViewerOptions.h"
 
-//For testing
-#include"vtkMetaImageWriter.h"
+
 #include <opencv2/core/core.hpp>
 
 
@@ -79,6 +79,7 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        void SetCurrentSlice(int currSlice);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet3D();
@@ -186,7 +187,7 @@ class KSegmentorBase
         std::vector<unsigned int > m_UpdateVector;
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
-        void InitializeVariables(vtkImageData *image, vtkImageData *label, bool contInit);
+        void InitializeVariables(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions);
         void InitializeMaskAndImage();
         void UpdateMask(bool bForceUpdateAll = false);
 
@@ -228,7 +229,7 @@ public:
         double *img;         // single slice!
         double *mask;        // single slice!
 
-         double* m_CustomSpeedImgPointer;
+        double* m_CustomSpeedImgPointer;
 
         double penaltyAlpha; //regularizer for "user constraints" experiments
         double *seed;        //again, only used in functions for "user constraints" experiments
@@ -266,7 +267,7 @@ public:
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
         //LL *Lin2out, *Lout2in,*Lchanged;
 
-         LLset LL2D,LL3D;
+        LLset LL2D,LL3D;
 };
 
 

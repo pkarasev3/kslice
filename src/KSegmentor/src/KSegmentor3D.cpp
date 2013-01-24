@@ -25,10 +25,12 @@ extern bool UseInitContour;
 extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 
-KSegmentor3D::KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit){
+KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions){
+
+    bool contInit = ksliceOptions->contInit;
 
     m_EnergyName = GetSupportedEnergyNames()[1];
-    this->InitializeVariables(image,label, contInit);
+    this->InitializeVariables(image,label, ksliceOptions);
 
     if(contInit)
     {
@@ -46,6 +48,8 @@ KSegmentor3D::KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contIn
     this->intializeLevelSet3D();
 
 }
+
+
 
 void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
 {
@@ -126,6 +130,7 @@ void KSegmentor3D::initializeData()
     ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
     ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
 
+
     long elemNum=0;
     for (int k=0; k<=dimx-1; k++) {
         for (int j=0; j<=dimy-1; j++)  {
@@ -192,21 +197,23 @@ void KSegmentor3D::Update2D()
             double phi_out = (-phi_val + 3.0) / 6.0; // shift and scale from [-3,3] to [0,1]
 
             element3D=this->currSlice*mdims[1]*mdims[0] +j*mdims[0]+i;
-            ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95)
-                                                          + (phi_out > 0.8) + (phi_out > 0.65)
-                                                          + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
+//            ptrCurrLabel[element3D]= (unsigned short) ( ( (phi_out > 0.95)
+//                                                          + (phi_out > 0.8) + (phi_out > 0.65)
+//                                                          + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
+
+            ptrCurrLabel[element3D]=   ( (unsigned short) 0 >= phi_val )*labelRange[1];
 
             elemNum++;
         }
     }
 
-    cout <<  ", Lz size: "       << LL2D.Lz->length << endl;
+    cout <<  "Lz size: "       << LL2D.Lz->length << endl;
 
     bool bSavePNG = false;
     if( bSavePNG ) {
         std::stringstream ss;
         ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-        saveMatToPNG( phiSlice, ss.str() ); //saveMatToPNG( U_I_slice, ss.str() );
+        saveMatToPNG( imgSlice, ss.str() ); //saveMatToPNG( U_I_slice, ss.str() );
     }
     delete imgSlice;
     delete labelSlice;

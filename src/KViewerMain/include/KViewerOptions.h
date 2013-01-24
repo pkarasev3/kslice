@@ -22,6 +22,7 @@ static double getDefaultDrawLabelMaxVal()
     bool initCorrectFlag; //if Kslice has been initialized =1, else starts out being 0
     bool m_bUseEdgeBased; //if =1, use edge based energy, else region based (default =0)
     float distWeight; // slow down speed away from view/edit plane
+    bool contInit; //flag for initializing the
 };
 
 

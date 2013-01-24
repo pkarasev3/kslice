@@ -47,6 +47,7 @@ KSlice::KSlice( ) {
     ksliceOptions->sliceNum=50; //make this so segmentation is non-trivial (no points initialized on level set)
     ksliceOptions->m_bUseEdgeBased=0;
     ksliceOptions->distWeight=.3;
+    ksliceOptions->contInit=0;
 }
 
 
@@ -85,7 +86,7 @@ void KSlice::SetDistWeight(float distWeight){
 }
 
 void KSlice::Initialize(){
-    dataWarehouse->ksegmentor= new KSegmentor3D(dataWarehouse->imgVol, dataWarehouse->labVol, 0);
+    dataWarehouse->ksegmentor= new KSegmentor3D(dataWarehouse->imgVol, dataWarehouse->labVol, ksliceOptions);
     dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( ksliceOptions->m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(ksliceOptions->distWeight);
     ksliceOptions->initCorrectFlag=1; //initialization is complete
@@ -94,6 +95,7 @@ void KSlice::Initialize(){
 
 void KSlice::runUpdate(){
     if(ksliceOptions->initCorrectFlag==1){ //already initialized
+        dataWarehouse->ksegmentor->SetCurrentSlice(ksliceOptions->sliceNum);
         dataWarehouse->ksegmentor->Update2D();
     }
 }

@@ -6,6 +6,7 @@
 #include "vtkImageReslice.h"
 
 #include "KSegmentorBase.h"
+#include "KViewerOptions.h"
 
 //For testing
 #include"vtkMetaImageWriter.h"
@@ -20,7 +21,7 @@ struct LL;
 
 class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
-        KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit);
+        KSegmentor3D(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions);
         virtual ~KSegmentor3D();
         void initializeData();
         virtual void Update3D();

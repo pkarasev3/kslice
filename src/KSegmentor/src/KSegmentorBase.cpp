@@ -42,7 +42,7 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, bool contInit)
+void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions)
 {
     m_CustomSpeedImgPointer=NULL;
     imageVol=image;
@@ -50,15 +50,20 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     numberdims=3;
 
+    //set some variables, take the defaults outside
+    //(into ksliceOptions constructor (for example) if desired)
+    useContInit=ksliceOptions->contInit;
+    currSlice=ksliceOptions->sliceNum;
+    iter=ksliceOptions->numIters;
+    m_DistWeight=ksliceOptions->distWeight;
+
+
     m_bUseEdgeBased = false;
     penaltyAlpha=0;
     seed=0;
-    useContInit=contInit;
     display=0;
 
-    //Should we keep these abolute values in here
-    iter=500;
-    m_DistWeight=0;
+
     m_ThreshWeight=0;
     lambda=defaultKappaParam; // this could/should be user togglable!
     mdims = new int[3];
@@ -77,12 +82,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     image->GetSpacing( m_Spacing_mm );
 
-    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
-    // "10" pixels is 3mm in this context.
-    rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-    rad = std::min(7.0,rad); // force non-huge radius if the spacing is retarded
-    rad = std::max(3.0,rad); // force non-tiny radius if the spacing is retarded
-    rad=7; //IKChange
+    rad=ksliceOptions->brushRad;
     cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -278,6 +278,10 @@ void KSegmentorBase::setNumIterations(int itersToRun){
     this->iter=itersToRun;
 }
 
+void KSegmentorBase::SetCurrentSlice(int currSlice)
+{
+    this->currSlice=currSlice;
+}
 
 void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool invert)
 {
@@ -350,6 +354,13 @@ void KSegmentorBase::CreateLLs(LLset& ll)
 }
 
 void KSegmentorBase::intializeLevelSet3D(){
+
+//    //IKDebug
+//    std::ofstream maskFile("mask.txt",std::ios_base::out);
+//    for(int i=0;i< dimx*dimy*dimz; i++){
+//        maskFile<<mask[i]<<' ';
+//    }
+//    maskFile.close();
 
     //initialize lists, phi, and labels
     ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
