@@ -3,7 +3,7 @@
 
 #include "KSandbox.h"
 #include "KDataWarehouse.h"
-
+#include "KSegmentorBase.h"
 
 
 KSlice::KSlice( ) {
@@ -51,6 +51,15 @@ void KSlice::SetCurrSlice(int currSlice){
 
 void KSlice::SetDistWeight(float distWeight){
     ksliceOptions->distWeight=distWeight;
+}
+
+void KSlice::CopySlice(int fromSlice){
+    ksliceOptions->fromSlice=fromSlice;
+}
+
+void KSlice::PasteSlice(int toSlice){
+    ksliceOptions->toSlice=toSlice;
+    vrcl::copySliceFromTo( dataWarehouse->labVol, ksliceOptions->fromSlice, ksliceOptions->toSlice);
 }
 
 void KSlice::Initialize(){

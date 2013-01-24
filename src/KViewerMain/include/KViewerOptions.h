@@ -21,8 +21,10 @@ static double getDefaultDrawLabelMaxVal()
     int sliceNum; //index of the current slice in the volume
     bool initCorrectFlag; //if Kslice has been initialized =1, else starts out being 0
     bool m_bUseEdgeBased; //if =1, use edge based energy, else region based (default =0)
-    float distWeight; // slow down speed away from view/edit plane
+    float distWeight; //slow down speed away from view/edit plane
     bool contInit; //flag for initializing the
+    int fromSlice; //put this slice into storage, to paste later
+    int toSlice; //paste the cached slice to this one
 };
 
 

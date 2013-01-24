@@ -83,16 +83,19 @@ int main(int argc, char** argv)
   bbKSlice->SetCurrSlice(currSlice);
   bbKSlice->SetDistWeight(distWeight);
   bbKSlice->Initialize();
-  //evolve
+
+
+
+  //evolve (simulated user)
+  bbKSlice->runUpdate();
+  bbKSlice->SetCurrSlice(currSlice-1);
+  bbKSlice->runUpdate();
+  bbKSlice->SetCurrSlice(currSlice-2);
+  bbKSlice->runUpdate();
+  bbKSlice->SetCurrSlice(currSlice-3);
   bbKSlice->runUpdate();
 
 
-  bbKSlice->SetCurrSlice(49);
-  bbKSlice->runUpdate();
-  bbKSlice->SetCurrSlice(48);
-  bbKSlice->runUpdate();
-  bbKSlice->SetCurrSlice(47);
-  bbKSlice->runUpdate();
 
   //record the output (FOR TESTING ONLY)
   vtkMetaImageWriter *writer = vtkMetaImageWriter::New();

@@ -19,8 +19,8 @@ message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
 add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
 
 TARGET_LINK_LIBRARIES( KViewer
-  QVTK
-  ${QT_LIBRARIES}
+ # QVTK
+ # ${QT_LIBRARIES}
   vtkRendering
   vtkGraphics
   vtkIO
