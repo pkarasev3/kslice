@@ -9,13 +9,12 @@
 
 struct KViewerOptions
 {
-//public:
-//    KViewerOptions();
-//    ~KViewerOptions();
-//    SetBrushRad(int rad);
-//    int GetBrushRad();
-//    SetNumIters(int numIts);
-//    int GetNumIters();
+
+public:
+static double getDefaultDrawLabelMaxVal()
+{
+      return 1000.0;
+}
 
     int brushRad; //radius of the local ball
     int numIters; //number of iterations the contour will evolve for

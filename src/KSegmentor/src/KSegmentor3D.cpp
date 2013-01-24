@@ -25,7 +25,7 @@ extern bool UseInitContour;
 extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 
-void KSegmentor3D::KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit){
+KSegmentor3D::KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit){
 
     m_EnergyName = GetSupportedEnergyNames()[1];
     this->InitializeVariables(image,label, contInit);
@@ -206,7 +206,7 @@ void KSegmentor3D::Update2D()
     if( bSavePNG ) {
         std::stringstream ss;
         ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-        saveMatToPNG( U_I_slice, ss.str() );
+        saveMatToPNG( phiSlice, ss.str() ); //saveMatToPNG( U_I_slice, ss.str() );
     }
     delete imgSlice;
     delete labelSlice;
@@ -253,7 +253,6 @@ void KSegmentor3D::Update3D()
     // Thus, the next time around the mask doesn't get to update them!
 
     ll_init(LL3D.Lchanged);
-    std::set<unsigned int> idx_used;
 
     //        int Nelements=this->m_UpdateVector.size();
     //        for (int element=0;element<Nelements;element++)

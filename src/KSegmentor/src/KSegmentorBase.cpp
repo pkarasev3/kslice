@@ -42,7 +42,7 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(vtkImageData *image, vtkImageData *label, bool contInit)
+void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, bool contInit)
 {
     m_CustomSpeedImgPointer=NULL;
     imageVol=image;
@@ -79,9 +79,9 @@ void KSegmentorBase::InitializeVariables(vtkImageData *image, vtkImageData *labe
 
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
-    rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
+    rad = std::min(7.0,rad); // force non-huge radius if the spacing is retarded
+    rad = std::max(3.0,rad); // force non-tiny radius if the spacing is retarded
     rad=7; //IKChange
     cout << "segmentor using ROI size: " << rad << endl;
 
@@ -92,13 +92,13 @@ void KSegmentorBase::InitializeVariables(vtkImageData *image, vtkImageData *labe
     U_Integral_image->SetScalarTypeToDouble();
     U_Integral_image->SetSpacing(image->GetSpacing());
     U_Integral_image->AllocateScalars();
-    ptrIntegral_Image = static_cast<double*>(segPointer->U_Integral_image->GetScalarPointer());
+    ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
 
     U_t_image->SetExtent(image->GetExtent());
     U_t_image->SetScalarTypeToDouble();
     U_t_image->SetSpacing(image->GetSpacing());
     U_t_image->AllocateScalars();
-    ptrU_t_Image = static_cast<double*>(segPointer->U_t_image->GetScalarPointer());
+    ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
 
     m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
@@ -116,10 +116,10 @@ void KSegmentorBase::InitializeVariables(vtkImageData *image, vtkImageData *labe
     dimx = (int) mdims[0];
 
     try {
-      phi        = new double[dimx*dimy*dimz];
-      label      = new double[dimx*dimy*dimz];
-      mask       = new double[dimx*dimy*dimz];
-      img        = new double[dimx*dimy*dimz];
+      this->phi        = new double[dimx*dimy*dimz];
+      this->label      = new double[dimx*dimy*dimz];
+      this->mask       = new double[dimx*dimy*dimz];
+      this->img        = new double[dimx*dimy*dimz];
     } catch ( const std::bad_alloc& e) {
       std::cout << "Failed to allocate KSegmentorBase pointers! ";
       std::cout << "Perhaps it is a big data-set on 32-bit OS? " << std::endl;
@@ -354,6 +354,8 @@ void KSegmentorBase::intializeLevelSet3D(){
     //initialize lists, phi, and labels
     ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
                                     LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
+
+
     cout << "initialized levelset 3D. len(lz) = " << LL3D.Lz->length
          << ", len(Lchanged) = " << LL3D.Lchanged << endl;
 }

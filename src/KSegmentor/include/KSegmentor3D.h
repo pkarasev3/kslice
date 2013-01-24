@@ -18,10 +18,9 @@ class vtkTransform;
 struct LL;
 
 
-class KSegmentor3D : public KSegmentorBase
-{
+class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
-        void KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit);
+        KSegmentor3D(vtkImageData *image, vtkImageData *label, bool contInit);
         virtual ~KSegmentor3D();
         void initializeData();
         virtual void Update3D();

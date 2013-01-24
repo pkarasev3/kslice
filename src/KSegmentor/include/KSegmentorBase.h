@@ -186,7 +186,7 @@ class KSegmentorBase
         std::vector<unsigned int > m_UpdateVector;
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
-        void InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image, vtkImageData *label, bool contInit);
+        void InitializeVariables(vtkImageData *image, vtkImageData *label, bool contInit);
         void InitializeMaskAndImage();
         void UpdateMask(bool bForceUpdateAll = false);
 

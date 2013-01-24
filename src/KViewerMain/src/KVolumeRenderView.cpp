@@ -14,7 +14,6 @@
 #include "vtkImageGaussianSmooth.h"
 #include "vtkPolyData.h"
 #include "vtkDataSetMapper.h"
-#include "KWidget_3D_right.h"
 #include "vtkProperty.h"
 #include "vtkLODActor.h"
 #include "QVTKWidget.h"
