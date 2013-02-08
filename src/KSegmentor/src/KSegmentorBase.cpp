@@ -42,7 +42,8 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions)
+void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label,
+                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
 {
     m_CustomSpeedImgPointer=NULL;
     imageVol=image;
@@ -52,11 +53,11 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     //set some variables, take the defaults outside
     //(into ksliceOptions constructor (for example) if desired)
-    useContInit=ksliceOptions->contInit;
-    currSlice=ksliceOptions->CurrSlice;
-    iter=ksliceOptions->NumIts;
-    m_DistWeight=ksliceOptions->DistWeight;
-
+    this->useContInit=contInit;
+    this->currSlice=currSlice;
+    this->iter=numIts;
+    this->m_DistWeight=distWeight;
+    this->rad= brushRad;
 
     m_bUseEdgeBased = false;
     penaltyAlpha=0;
@@ -82,7 +83,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     image->GetSpacing( m_Spacing_mm );
 
-    rad=ksliceOptions->BrushRad;
+
     cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = vtkSmartPointer<vtkImageData>::New();

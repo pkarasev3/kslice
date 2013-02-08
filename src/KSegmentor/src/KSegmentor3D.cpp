@@ -25,12 +25,13 @@ extern bool UseInitContour;
 extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 
-KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, KViewerOptions* ksliceOptions){
+KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
+                           bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
+{
 
-    bool contInit = ksliceOptions->contInit;
 
     m_EnergyName = GetSupportedEnergyNames()[1];
-    this->InitializeVariables(image,label, ksliceOptions);
+    this->InitializeVariables(image,label, contInit, currSlice, numIts, distWeight, brushRad);
 
     if(contInit)
     {
