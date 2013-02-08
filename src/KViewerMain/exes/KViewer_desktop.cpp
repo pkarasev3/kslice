@@ -1,5 +1,5 @@
 #include "KSlice.h"
-
+#include <vtkSmartPointer.h>
 
 /**
  * this function is only used to debug the KSlice module
@@ -74,11 +74,12 @@ int main(int argc, char** argv)
    labVol->GetScalarRange(range);
 
   //set up the black box
-  KSlice* bbKSlice=new KSlice(); //created the data, options structures empty for now
-  bbKSlice->SetImage(imgVol);
-  bbKSlice->SetLabel(labVol);
-  bbKSlice->SetUI(uiVol);
-  bbKSlice->SetNumIters(numIts);
+  vtkSmartPointer<KSlice> bbKSlice = vtkSmartPointer<KSlice>::New();  //created the data, options structures empty for now
+  //KSlice* bbKSlice=new KSlice();
+  bbKSlice->SetImageVol(imgVol);
+  bbKSlice->SetLabelVol(labVol);
+  bbKSlice->SetUIVol(uiVol);
+  bbKSlice->SetNumIts(numIts);
   bbKSlice->SetBrushRad(rad);
   bbKSlice->SetCurrSlice(currSlice);
   bbKSlice->SetDistWeight(distWeight);

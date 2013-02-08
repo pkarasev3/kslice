@@ -5,17 +5,27 @@
 #include "KDataWarehouse.h"
 #include "KSegmentorBase.h"
 
+#include "vtkObjectFactory.h"
+#include "vtkSmartPointer.h"
+
+
+//vtkCxxRevisionMacro(KSlice, "$Revision$"); //necessary?
+vtkStandardNewMacro(KSlice); //for the new() macro
+
+//----------------------------------------------------------------------------
+
 
 KSlice::KSlice( ) {
     ksliceOptions= new KViewerOptions();
     dataWarehouse= new KDataWarehouse();
-    ksliceOptions->initCorrectFlag=0; //should not run updates before this flag is set to 1
-    ksliceOptions->brushRad=7;
-    ksliceOptions->numIters=50;
-    ksliceOptions->sliceNum=50; //make this so segmentation is non-trivial (no points initialized on level set)
+
+    ksliceOptions->BrushRad=7;
+    ksliceOptions->NumIts=50;
+    ksliceOptions->CurrSlice=50; //make this so segmentation is non-trivial (no points initialized on level set)
+    ksliceOptions->DistWeight=.3;
     ksliceOptions->m_bUseEdgeBased=0;
-    ksliceOptions->distWeight=.3;
     ksliceOptions->contInit=0;
+    ksliceOptions->initCorrectFlag=0; //should not run updates before this flag is set to 1
 }
 
 
@@ -25,57 +35,43 @@ KSlice::~KSlice() {
 }
 
 
-void KSlice::SetImage(vtkImageData* image){
-    dataWarehouse->imgVol = image;
-}
-
-void KSlice::SetLabel(vtkImageData* label){
-    dataWarehouse->labVol = label;
-}
-
-void KSlice::SetUI(vtkImageData* uiVol){
-    dataWarehouse->uiVol= uiVol;
-}
-
-void KSlice::SetNumIters(int numIts){
-    ksliceOptions->numIters = numIts;
-}
-
-void KSlice::SetBrushRad(int rad){
-    ksliceOptions->brushRad = rad;
-}
-
-void KSlice::SetCurrSlice(int currSlice){
-    ksliceOptions->sliceNum = currSlice;
-}
-
-void KSlice::SetDistWeight(float distWeight){
-    ksliceOptions->distWeight=distWeight;
-}
-
-void KSlice::CopySlice(int fromSlice){
-    ksliceOptions->fromSlice=fromSlice;
-}
 
 void KSlice::PasteSlice(int toSlice){
-    ksliceOptions->toSlice=toSlice;
-    vrcl::copySliceFromTo( dataWarehouse->labVol, ksliceOptions->fromSlice, ksliceOptions->toSlice);
+    ksliceOptions->ToSlice=toSlice;
+    vrcl::copySliceFromTo( dataWarehouse->LabelVol, ksliceOptions->FromSlice, ksliceOptions->ToSlice);
 }
 
 void KSlice::Initialize(){
-    dataWarehouse->ksegmentor= new KSegmentor3D(dataWarehouse->imgVol, dataWarehouse->labVol, ksliceOptions);
+
+    //organize this into containers (perhaps this should be removed, but vtk structure seems to enforce this)
+    //these values all got set with vtkSetMacros
+    dataWarehouse->ImageVol=ImageVol;
+    dataWarehouse->LabelVol=LabelVol;
+    dataWarehouse->UIVol=UIVol;
+    ksliceOptions->NumIts=NumIts;
+    ksliceOptions->BrushRad=BrushRad;
+    ksliceOptions->CurrSlice=CurrSlice;
+    ksliceOptions->DistWeight=DistWeight;
+    ksliceOptions->FromSlice=FromSlice;
+
+    //set up the segmentor
+    dataWarehouse->ksegmentor= new KSegmentor3D(dataWarehouse->ImageVol, dataWarehouse->LabelVol, ksliceOptions);
     dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( ksliceOptions->m_bUseEdgeBased );
-    dataWarehouse->ksegmentor->SetDistanceWeight(ksliceOptions->distWeight);
+    dataWarehouse->ksegmentor->SetDistanceWeight(ksliceOptions->DistWeight);
     ksliceOptions->initCorrectFlag=1; //initialization is complete
 
 }
 
 void KSlice::runUpdate(){
     if(ksliceOptions->initCorrectFlag==1){ //already initialized
-        dataWarehouse->ksegmentor->SetCurrentSlice(ksliceOptions->sliceNum);
+        dataWarehouse->ksegmentor->SetCurrentSlice(ksliceOptions->CurrSlice);
         dataWarehouse->ksegmentor->Update2D();
     }
 }
 
+void KSlice::PrintSelf(ostream &os, vtkIndent indent)
+{
+    os << "Fill in the print function!" << std::endl;
+}
 
 

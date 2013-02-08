@@ -53,9 +53,9 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     //set some variables, take the defaults outside
     //(into ksliceOptions constructor (for example) if desired)
     useContInit=ksliceOptions->contInit;
-    currSlice=ksliceOptions->sliceNum;
-    iter=ksliceOptions->numIters;
-    m_DistWeight=ksliceOptions->distWeight;
+    currSlice=ksliceOptions->CurrSlice;
+    iter=ksliceOptions->NumIts;
+    m_DistWeight=ksliceOptions->DistWeight;
 
 
     m_bUseEdgeBased = false;
@@ -82,7 +82,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     image->GetSpacing( m_Spacing_mm );
 
-    rad=ksliceOptions->brushRad;
+    rad=ksliceOptions->BrushRad;
     cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = vtkSmartPointer<vtkImageData>::New();

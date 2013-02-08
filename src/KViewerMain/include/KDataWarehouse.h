@@ -13,9 +13,10 @@ public:
         delete ksegmentor;
     }
 
-  vtkImageData* imgVol; //image volume
-  vtkImageData* labVol; //label volume
-  vtkImageData* uiVol; //integral of the user input per voxel
+
+  vtkImageData* ImageVol; //image volume
+  vtkImageData* LabelVol; //label volume
+  vtkImageData* UIVol; //integral of the user input per voxel
   KSegmentor3D* ksegmentor; //all the active contour vars
 };
 
