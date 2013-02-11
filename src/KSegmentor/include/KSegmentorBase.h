@@ -189,7 +189,7 @@ class KSegmentorBase
         vtkSmartPointer<vtkImageData> U_Integral_image;
 
     protected:
-        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,;
+        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
         vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
