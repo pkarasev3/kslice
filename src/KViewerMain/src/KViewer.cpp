@@ -561,7 +561,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
 
-              if( (distance < 1.0 ) && VerboseRecordMode ) {
+              if( (distance < 1.1 ) && VerboseRecordMode ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
@@ -584,6 +584,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           }
         }
       }
+      //PKDebug
+      //kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->PrintUpdateInfo();
 
      t2 = clock();
       if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)

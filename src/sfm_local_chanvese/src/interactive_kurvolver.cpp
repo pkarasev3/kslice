@@ -74,6 +74,7 @@ void interactive_rbchanvese(double *img, double *phi, double* U_integral, double
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display)
 {
+  /** 2D mode calls this! */
   double *F;
   double scale[1];
   scale[0] = 0.0;
@@ -83,8 +84,6 @@ void interactive_rbchanvese(double *img, double *phi, double* U_integral, double
     // compute force
     F = en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
 
-    /** TODO: currently uses approximation for input observer. port the full double-loop version from
-        matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
     // apply controller, modify F in-place
     apply_control_function( Lz, phi, F, U_integral, img, iter, dims );
 
@@ -114,9 +113,7 @@ void interactive_rbchanvese_ext(double *img, double *phi, double* U_integral, do
     // compute force
     F = en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
 
-    /** TODO: currently uses approximation for input observer. port the full double-loop version from
-        matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
-    // apply controller, modify F in-place
+     // apply controller, modify F in-place
     apply_control_function_ext( Lz, phi, F, U_integral, img, iter, dims,normvec, pointonplane,distweight );
 
     //perform iteration
@@ -229,13 +226,15 @@ void interactive_customspeed(double* speedimg, double *img, double *phi, double*
 
 void apply_control_function(LL *Lz,double *phi, double* F,
                             double* U_integral, double *img, int iter, long* dims)
-{ // apply user's time-integrated edits inside the updates
+{ /** \note used when running 2D level set, currently via "s" key */
+  // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
   double I,dpx,dpy,dpz;
   ll_init(Lz);
   n=0;
   double gamma        = 1.0 / 50.0; //1.0 / iter;
 
+  double maxU = -1e99;
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x;
     y = Lz->curr->y;
@@ -243,24 +242,30 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     idx          = Lz->curr->idx;
     I            = img[idx];
     double U     = U_integral[idx];
-    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
+    if( U > maxU ) { maxU = U; }
 
-    //kappa not used!?
-    //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
-    double f     = gamma * abs(U) * (F[n] - err);
+    //double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
+    //double f     = gamma * abs(U) * (F[n] - err);
+    // F[n]         = F[n] - f; // equiv to  F + [Gain] x [H(U) - H(phi)]
 
-    F[n]         = F[n] - f;
+    // U = 3[design choice] should always force phi
+    double err   = tanh(U) - tanh(phi[idx]);
+    double f     = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
+    F[n]         = F[n] + f;
+
     ll_step(Lz);
     n++;       //next point
   }
-
+  //cout << "maxU = " << maxU << endl;
 
 }
 
 void apply_control_function_ext(LL *Lz,double *phi, double* F,
                                 double* U_integral, double *img, int iter, long* dims,
                                 double* normal,double* poP,float distweight )
-{ // apply user's time-integrated edits inside the updates
+{
+  /** \note used when running 3D level set, currently via "a" key */
+  // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
   double I;
   ll_init(Lz);
@@ -268,6 +273,7 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
   double gamma        = 10.0 / 50.0; //10.0 / iter;
   double diff[3]={0,0,0};
   double distance=0;
+
   while(Lz->curr != NULL){
     distance=0;
     //loop through list
@@ -290,13 +296,16 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     idx          = Lz->curr->idx;
     I            = img[idx];
     double U     = U_integral[idx];
-    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
 
-    //kappa not used!?
-    //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
-    double f     = gamma * abs(U) * (F[n] - err);
+//    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
+//    double f     = gamma * abs(U) * (F[n] - err);
+//    F[n]         = (F[n] - f)*mult;
 
-    F[n]         = (F[n] - f)*mult;
+    // U = about 3 [design choice] should always force phi
+    double err   = tanh(U) - tanh(phi[idx]);
+    double f     = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
+    F[n]         = (F[n] + f)*mult;
+
     ll_step(Lz);
     n++;       //next point
   }

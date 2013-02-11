@@ -57,7 +57,9 @@ void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsi
   // comparing it with \phi() which is between -3 and +3 . If we can't get
   // values between -3 and +3 the smoothness breaks down.
 
-  Umax = this->GetUmax();
+  // Umax = this->GetUmax(); // this is initialized to bullshit, TODO fix it
+  Umax = 1.0/3.0;
+  if( fabs(Umax) < 0.01 ) { cout <<"whoa something is F'd, check Umax " << endl; exit(1); }
 
   double user_input      = -Umax * ( value > 0.5 ) + Umax * ( value <= 0.5 );
 
@@ -65,6 +67,16 @@ void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsi
   //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
   // at least, smoothness needs to be enforced somewhere else ...
   this->ptrU_t_Image[element] = user_input;
+
+  // integrate/updateVector are broken, this is a workaround
+  //ptrIntegral_Image[element] = user_input + ptrIntegral_Image[element];
+  double Ulimit = 3.0;
+  if( ptrIntegral_Image[element] < -Ulimit ) {
+    ptrIntegral_Image[element] = -Ulimit;
+  } else if( ptrIntegral_Image[element] > Ulimit ) {
+    ptrIntegral_Image[element] = Ulimit;
+  }
+
 
 }
 
@@ -75,6 +87,8 @@ void KSegmentor3D::integrateUserInputInUserInputImage()
 
   int pos=0;
   int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+  cout << " Integrating:  KSegmentor3D::integrateUserInputInUserInputImage(), N= "
+       << Nelements << endl; // TODO: This is broken in 2D case !?
   for (int element=0;element<Nelements;element++)
   {
     pos=this->m_UpdateVector[element];
@@ -163,6 +177,7 @@ void KSegmentor3D::Update2D()
   unsigned int element3D;
   long elemNum=0;
   long maskThresh=0.5*labelRange[1];
+  double maxU = -1e99; double minU = 1e99;
   for (int j=0; j<=mdims[1]-1; j++)  {
     for (int i=0; i<=mdims[0]-1; i++) {
       // indexing definition:  ptr[k*mdims[1]*mdims[0] +j*mdims[0]+i];
@@ -170,7 +185,12 @@ void KSegmentor3D::Update2D()
       imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
       maskSlice[elemNum]       = (double) (  maskThresh < ptrCurrLabel[element3D] );
 
-      U_I_slice[elemNum] =this->ptrIntegral_Image[element3D];
+      U_I_slice[elemNum] = (double) ptrIntegral_Image[element3D];
+      if ( maxU < U_I_slice[elemNum] ) { //PKDebug
+        maxU = U_I_slice[elemNum]; cout << "maxU = " << maxU << endl;
+      } else if ( minU > U_I_slice[elemNum] ) { //PKDebug
+        minU = U_I_slice[elemNum]; cout << "minU = " << minU << endl;
+      }
       elemNum++;
     }
   }
@@ -231,7 +251,7 @@ void KSegmentor3D::Update2D()
       ptrCurrLabel[element3D]= value_IK;
       //if( (value_PK == 0) && !( 0 == value_IK ) ) {
       if(value_IK != value_PK){
-        cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
+        //cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
         //cout << "crap, extraneous loss of levelset! " << endl; assert(0);
       }
       elemNum++;

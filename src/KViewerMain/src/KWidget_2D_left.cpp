@@ -493,10 +493,12 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
   if( !bAllLabels )
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
-    Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    KSegmentorBase* kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
+
+    kseg->PrintUpdateInfo();
 
     cout << "use2D ? " << use2D << endl;
 
