@@ -120,7 +120,7 @@ void KViewer::InitializeCircleCursor()
 void KViewer::updatePaintBrushStatus(vtkObject*) {
   std::stringstream ss;
   std::stringstream toggle;
-  ss << "Brush Sizetest: " << this->kv_opts->GetBrushSize();
+  ss << "Brush Size: " << this->kv_opts->GetBrushSize() << ";  x,y keys to modify";
 
   if( ! image_callback->Erase() ) {
     toggle << "Mode: Draw";
@@ -209,6 +209,7 @@ void KViewer::UpdateModel3D() {
 
 
 void KViewer::SaveSegmentation( ) {
+  this->ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
   kwidget_2d_left->SaveCurrentLabelMap( );
 }
 
