@@ -26,7 +26,7 @@ public:
   double  sliderMax;
   double  sliderMin;
   int     paintBrushRad;
-  double  paintBrushThreshold; 
+  double  paintBrushThreshold;
   int     loadImageTrigger;
   float     seg_time_interval; // time between auto-run segmentation
   float    distWeight;         // slow down speed away from view/edit plane
@@ -49,6 +49,7 @@ public:
   bool  m_bResampleImageAtStartupToCubicVoxels; // deprecated, don't do this here ...
   bool  time_triggered_seg_update;
   bool  m_bForceLargeU; // all clicks are high-magnitude
+  bool  m_bVerboseSave; // save extra stuff like uk_*
   int   minIntensity;
   int   maxIntensity;
   int   m_DrawSpreadOffViewPlane;
@@ -67,7 +68,7 @@ public:
 
   /////////////////////////
 
-  
+
   // METHODS
 
   /** send args from main() to me to set params

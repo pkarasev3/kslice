@@ -30,20 +30,23 @@ using namespace cv;
 int main( int argc, char **argv)
 {
 
-  SP(vtkMetaImageReader) reader = SP(vtkMetaImageReader)::New();
-  std::string filename = argv[1];
-  cout << "attempting to read " << filename << endl;
-  reader->SetFileName(filename.c_str());
-  reader->Update();
-  SP(vtkImageData) img = SP(vtkImageData)::New();
-  img = reader->GetOutput();
+  cout << "num args = " << argc << ", assuming the form is  a.mha b.mha c.mha ... " << endl;
+  for (int i = 1; i < argc; i++ ) {
+    SP(vtkMetaImageReader) reader = SP(vtkMetaImageReader)::New();
+    std::string filename = argv[i];
+    cout << "attempting to read " << filename << endl;
+    reader->SetFileName(filename.c_str());
+    reader->Update();
+    SP(vtkImageData) img = SP(vtkImageData)::New();
+    img = reader->GetOutput();
 
-  SP(vtkMetaImageWriter) labelWriter=   SP(vtkMetaImageWriter)::New();
-  labelWriter->SetInput( img );
-  labelWriter->SetFileName( (filename+"_decompressed.mha").c_str() );
-  labelWriter->SetCompression( false );
-  labelWriter->Write();
-  cout << "Wrote decompressed file: " << labelWriter->GetFileName() << endl;
+    SP(vtkMetaImageWriter) labelWriter=   SP(vtkMetaImageWriter)::New();
+    labelWriter->SetInput( img );
+    labelWriter->SetFileName( (filename+"_decompressed.mha").c_str() );
+    labelWriter->SetCompression( false );
+    labelWriter->Write();
+    cout << "Wrote decompressed file: " << labelWriter->GetFileName() << endl;
+  }
 
 
   return 0;
