@@ -641,7 +641,7 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
 
     ll_init(Lz);
     int        n= 0;
-    double Fmax = 0.001; //begining of list;
+    double Fmax = 0.001; // why different from regular cv?
     while(Lz->curr != NULL)
     {          //loop through list
         x = Lz->curr->x;
@@ -947,6 +947,8 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
     for(int j=0;j<Lz->length;j++){
         FVec[j] = FVec[j]/scale[0]+lam*KappaVec[j] ;
     }
+    /** \warning Gmax is effectively 1 + maxPossibleKappa
+                                 because of the normalization */
 
     return F;
 }

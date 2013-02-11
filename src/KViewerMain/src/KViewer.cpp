@@ -120,7 +120,7 @@ void KViewer::InitializeCircleCursor()
 void KViewer::updatePaintBrushStatus(vtkObject*) {
   std::stringstream ss;
   std::stringstream toggle;
-  ss << "Brush Sizetest: " << this->kv_opts->GetBrushSize();
+  ss << "Brush Size: " << this->kv_opts->GetBrushSize() << ";  x,y keys to modify";
 
   if( ! image_callback->Erase() ) {
     toggle << "Mode: Draw";
@@ -209,6 +209,7 @@ void KViewer::UpdateModel3D() {
 
 
 void KViewer::SaveSegmentation( ) {
+  this->ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
   kwidget_2d_left->SaveCurrentLabelMap( );
 }
 
@@ -425,7 +426,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
           kwidget_2d_left->InitializeTransform('y',-90);
         this->m_RotY=!this->m_RotY;
         break;
-    case 'z':    
+    case 'z':
         cout << "z key pressed: reset view! " << endl;
         ResetRotation(!this->m_RotX,!this->m_RotY,!this->m_RotZ);
         // no break, update 3D view
@@ -435,7 +436,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
          break;
     default:
       break;
-    } 
+    }
 
     if(keyPressed=='e' ||keyPressed=='t')
     {
@@ -505,7 +506,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
     vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
     double event_pos[3];
 
-    // TODO: must handle in left 2D widget!
+    // TODO: should handle in left 2D widget!
     kwidget_2d_left->sliceViewPicker->Pick( imgWindowInteractor->GetEventPosition()[0],
                                             imgWindowInteractor->GetEventPosition()[1],
                                             0.0, kwidget_2d_left->kvImageRenderer );
@@ -527,7 +528,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       int ymin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);
       int xmin = std::max(event_PixCoord[0]-kv_opts->paintBrushRad,0);
       int z = event_PixCoord[2];
-
+      const bool VerboseRecordMode = kv_opts->m_bVerboseSave;
       double image_range[2];
       kwidget_2d_left->color_HSV_LookupTable->GetTableRange(image_range);
       double paintSimilarityMinimum = (image_range[1] - image_range[0]) * kv_opts->paintBrushThreshold;
@@ -560,11 +561,11 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
 
-              if( (distance < 1.0 ) /*(TODO) && VerboseRecordMode*/  ) {
+              if( (distance < 1.1 ) && VerboseRecordMode ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
-              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {    
+              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
                   coord[0]=(i);
                   coord[1]=(j);
                   coord[2]=(kk);
@@ -583,6 +584,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           }
         }
       }
+      //PKDebug
+      //kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->PrintUpdateInfo();
 
      t2 = clock();
       if((t2-t1)> kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
