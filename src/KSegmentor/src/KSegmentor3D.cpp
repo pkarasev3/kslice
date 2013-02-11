@@ -34,7 +34,7 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
   seg3DPointer->InitializeVariables(seg3DPointer,image,label, contInit);
 
   if(contInit)
-  {
+  { /** an input label was provided; assume intent is for U initially strong then */
     std::cout<<"Initializing user input using label data"<<std::endl;
     seg3DPointer->initializeUserInputImageWithContour();
   }

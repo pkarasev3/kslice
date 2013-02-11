@@ -235,13 +235,18 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     std::vector<unsigned int> coord;
     ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
     ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
-
+    ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
     for (int i=0; i<=this->dimx-1; i++) {
         for (int j=0; j<=this->dimy-1; j++)  {
             for (int k=0; k<=this->dimz-1; k++) {
                 element=k*dimx*dimy +j*dimx+i;
-                if(accumulate)
+                if(accumulate) {
                     this->accumulateUserInputInUserInputImages((double)ptrCurrLabel[element],element);
+                    // not sure what the intent of this is
+                }
+                // force the initial U based on loaded label
+                ptrIntegral_Image[element] = (double)( +3.0 * ( ptrCurrLabel[element]<=0 )
+                                                       -3.0 * ( ptrCurrLabel[element]>0 ) );
                 if(ptrCurrLabel[element]>0)
                 {
                     this->AddPointToUpdateVector(element);

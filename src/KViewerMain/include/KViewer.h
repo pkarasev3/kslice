@@ -42,7 +42,7 @@ class vtkObject;
 class vtkCommand;
 class KvtkImageInteractionCallback;
 
-using cv::Ptr;
+using cv::Ptr; // Argh, remove this and use boost::shared_ptr instead
 
 class KViewer : public QMainWindow , public Ui::GUI
 {
@@ -76,7 +76,7 @@ public slots:
   /**  \brief Callback for 'click on update model button'
     */
   void UpdateModel3D();
-  
+
 
   /** \brief Record to file the current label map segmentation result
     */
@@ -124,19 +124,19 @@ public slots:
   int  getCurrentSliceIndex() {
     return kwidget_2d_left->currentSliceIndex;
   }
-  
+
   /** don't try to do it yet, this is called from a pipelined function */
   void queueCopyFromCurrentSlice( int idxFrom = -1 );
-  
+
   /** load the single-slice sfls contour segmentation, updates kvdata in place */
   void executeSingleSliceSegmentation( );
-  
+
   /** now do the copy operation, stuff should be in-sync now */
   void handleGenericEvent( vtkObject* obj, unsigned long event);
 
   /** Button-Press version of queueCopyFromCurrentSlice */
   void copyFromCurrentSlice( );
-  
+
   /** Button-Press version of handleGenericEvent( ... ) */
   void pasteToCurrentSlice( );
 
