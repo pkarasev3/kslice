@@ -71,7 +71,7 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   m_RotZ=false;
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=0;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(size_t labnum=0;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
          kwidget_2d_left->SelectActiveLabelMap( labnum );
          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
@@ -443,7 +443,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         id=  kwidget_2d_left->activeLabelMapIndex;
-        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        for (size_t k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
         {
             kwidget_2d_left->SelectActiveLabelMap( k);
             this->UpdateVolumeStatus();
@@ -485,7 +485,7 @@ void KViewer::ResetRotation(bool rotX,bool rotY, bool rotZ)
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         int id=  kwidget_2d_left->activeLabelMapIndex;
-        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        for (size_t k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
         {
             kwidget_2d_left->SelectActiveLabelMap( k);
             this->UpdateVolumeStatus();
@@ -634,7 +634,7 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     for (int i=0;i<3;i++)
         this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
     kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
-    for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+    for (size_t i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
     {
         this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
         this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
@@ -684,7 +684,7 @@ void KViewer::setupQVTKandData( )
       this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
   kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
 
-  for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+  for (size_t i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
   {
       this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
       this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
@@ -724,7 +724,7 @@ void KViewer::setupQVTKandData( )
 
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(size_t labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
           kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
           qVTK1->update();

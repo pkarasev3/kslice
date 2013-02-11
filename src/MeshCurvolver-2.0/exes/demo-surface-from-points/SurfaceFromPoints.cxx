@@ -134,7 +134,7 @@ vtkPoints* readPoints()
     int Npts = 1000;
     double PI = 3.14159265;
     for(int i=0; i<Npts; i++) {
-        double phi, theta,u,v;
+        double u,v;
         u = vtkMath::Random(0,2*PI);
         v = vtkMath::Random(0,2*PI);
 

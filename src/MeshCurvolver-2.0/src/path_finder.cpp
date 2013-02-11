@@ -238,15 +238,15 @@ void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<in
         return;
     }
 
-    int sFrom = 0;
-    int sTo   = 1;
-    int sPrev = sFrom;
+    size_t sFrom = 0;
+    size_t sTo   = 1;
+    size_t sPrev = sFrom;
 
     while ( done_dst.size() < seeds.size() )
     {
         sTo              = ( sTo < seeds.size() )  ?  sTo :  0 ;
-        int  src_idx     = seeds[sFrom];
-        int  dst_idx     = seeds[sTo];
+        size_t  src_idx     = seeds[sFrom];
+        size_t  dst_idx     = seeds[sTo];
 
         // assert( done_dst.count( sTo ) == 0 );
         done_dst.insert( sTo );

@@ -44,8 +44,6 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
   seg3DPointer->initializeData();
   seg3DPointer->CreateLLs(seg3DPointer->LL3D);
 
-  LL* Lztmp = seg3DPointer->LL3D.Lz;
-
   seg3DPointer->intializeLevelSet3D();
   return seg3DPointer;
 }
@@ -371,10 +369,7 @@ void KSegmentor3D::Update3D()
   double cutoff_thresh = (u_in - u_out)*this->m_ThreshWeight;
   cout << "uin, uout, cutoff=" << u_in << ", " << u_out << ", " << cutoff_thresh << endl;
 
-  long elemNum=0;
   double mult=labelRange[1] / 4.0;
-  elemNum=0;
-  int x,y,z,x0,y0,z0,idx;
 
   double phi_val = 0;
   double phi_out = 0;

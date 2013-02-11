@@ -278,7 +278,6 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
 
 void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
 
-    double Umax = this->GetUmax();
     //cout << "using UMax = " << Umax << endl;
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;

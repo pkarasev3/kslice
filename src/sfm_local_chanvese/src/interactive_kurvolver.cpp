@@ -136,7 +136,6 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
 {
     double *F;
     double scale[1]; scale[0] = 0;
-    int countdown;
 
     //initialize datastructures and statistics
     en_chanvese_init(img,phi,dims);
@@ -229,11 +228,9 @@ void apply_control_function(LL *Lz,double *phi, double* F,
 { /** \note used when running 2D level set, currently via "s" key */
   // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
-  double I,dpx,dpy,dpz;
+  double I;
   ll_init(Lz);
   n=0;
-  double gamma        = 1.0 / 50.0; //1.0 / iter;
-
   double maxU = -1e99;
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x;
@@ -270,7 +267,6 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
   double I;
   ll_init(Lz);
   n=0;
-  double gamma        = 10.0 / 50.0; //10.0 / iter;
   double diff[3]={0,0,0};
   double distance=0;
 

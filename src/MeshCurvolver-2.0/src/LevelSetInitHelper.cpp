@@ -56,11 +56,7 @@ void   accumulateLayerNeighbors( vtkPolyData* polydata, const std::set<int>&  la
 
 void   splitLayerSet( vtkPolyData* polydata, const std::set<int>&  layer, std::set<int>&  layer_one ) {
 
-    const int storage_step              = 4;
-    vtkCellArray* faces                 = polydata->GetPolys();
     vtkSmartPointer<vtkIdList> cellIds  = vtkSmartPointer<vtkIdList>::New();
-    vtkIdType npts;
-    vtkIdType* pts;
 
     int len_before, len_after;
     layer_one.clear();

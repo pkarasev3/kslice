@@ -116,13 +116,13 @@ void displaySyntheticSurface(vtkSmartPointer<vtkPolyData> mesh)
     compute_backwards_optimal_path( mesh, distanceMaps, seeds, 0, seeds[1], path_list );
 
     // for every seed, find the closest seed.
-    std::vector<int> closest_seed1( seeds.size() );
-    std::vector<int> closest_seed2( seeds.size() );
+    std::vector<size_t> closest_seed1( seeds.size() );
+    std::vector<size_t> closest_seed2( seeds.size() );
     std::vector<double> minD_seed1( seeds.size() );
     std::vector<double> minD_seed2( seeds.size() );
-    for( int sFrom = 0; sFrom < seeds.size(); sFrom++ ) {
+    for( size_t sFrom = 0; sFrom < seeds.size(); sFrom++ ) {
         minD_seed1[sFrom] = 1e6;
-        for( int sTo = 0; sTo < seeds.size(); sTo++ ) {
+        for( size_t sTo = 0; sTo < seeds.size(); sTo++ ) {
             if( sTo == sFrom )
                 continue;
             double dval = distanceMaps->GetComponent( seeds[sFrom], sTo );
@@ -132,7 +132,7 @@ void displaySyntheticSurface(vtkSmartPointer<vtkPolyData> mesh)
             }
         }
         minD_seed2[sFrom] = 1e6;
-        for( int sTo = 0; sTo < seeds.size(); sTo++ ) {
+        for( size_t sTo = 0; sTo < seeds.size(); sTo++ ) {
             if( sTo == sFrom || sTo == closest_seed1[sFrom] )
                 continue;
             double dval = distanceMaps->GetComponent( seeds[sFrom], sTo );
@@ -149,7 +149,7 @@ void displaySyntheticSurface(vtkSmartPointer<vtkPolyData> mesh)
 
     std::list<int> unpaired_seeds(0); // seeds that don't have 2 neighbors in agreement.
     std::list<int> unpaired_froms(0); // where the seeds want to connect
-    for( int sFrom = 0; sFrom < seeds.size(); sFrom++ ) {
+    for( size_t sFrom = 0; sFrom < seeds.size(); sFrom++ ) {
         int  n1 =  closest_seed1[sFrom];
         int  n2 =  closest_seed2[sFrom];
         if( sFrom != closest_seed1[n1] && sFrom != closest_seed2[n1] ) {
