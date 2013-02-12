@@ -39,7 +39,7 @@ void compute_backwards_optimal_path( /* const */ vtkPolyData* polydata,
 
 /**  If the seeds are given in order, form the L0 in the traversal order.
   */
-void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<int> seeds, std::list<int>& L0 );
+void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<int> & seeds, std::list<int>& L0 );
 
 
 

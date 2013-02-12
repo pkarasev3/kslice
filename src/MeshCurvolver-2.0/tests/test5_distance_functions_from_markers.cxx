@@ -99,13 +99,11 @@ void displaySyntheticSurface(vtkSmartPointer<vtkPolyData> outputMesh)
     colormap->SetNumberOfTuples(num_verts);
 
     for ( int k = 0; k < num_verts; k++ ) {
-        int idx_min   = 0;
         double minVal = 1e6;
         int nC      = distanceMaps->GetNumberOfComponents();
         for( int m = 0; m < nC; m++ ) {
             double val = distanceMaps->GetComponent( k, m );
             if( val < minVal ) {
-                idx_min = m;
                 minVal  = val;
                 colormap->SetValue(k,val);
             }

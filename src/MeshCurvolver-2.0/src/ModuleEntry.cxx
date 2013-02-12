@@ -36,8 +36,6 @@ namespace MeshContourEvolver {
 void MeshContourEvolver::path_finder( vtkPolyData* inputMesh, vtkIntArray* initVertIdx,
                                      vtkPolyData* outputMesh )
 {
-  int output_ref_count = outputMesh->GetReferenceCount(); // debug check that something is referring to obj
-
   // put through triangle filter: ensure that we have a "polys" field
   vtkSmartPointer<vtkTriangleFilter> triangle_filter = vtkSmartPointer<vtkTriangleFilter>::New();
   triangle_filter->SetInput(inputMesh);

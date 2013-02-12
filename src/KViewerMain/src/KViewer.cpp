@@ -71,7 +71,7 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
   m_RotZ=false;
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=0;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(size_t labnum=0;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
          kwidget_2d_left->SelectActiveLabelMap( labnum );
          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
@@ -304,7 +304,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
 {
 
   int cache_idx1 = kwidget_2d_left->cacheSliceIndex;
-  int id=  kwidget_2d_left->activeLabelMapIndex;
 
   if ( cache_idx1 >= 0 ) // if a copy-from is stored
   {
@@ -442,8 +441,7 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
-        id=  kwidget_2d_left->activeLabelMapIndex;
-        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        for (size_t k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
         {
             kwidget_2d_left->SelectActiveLabelMap( k);
             this->UpdateVolumeStatus();
@@ -485,7 +483,7 @@ void KViewer::ResetRotation(bool rotX,bool rotY, bool rotZ)
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         int id=  kwidget_2d_left->activeLabelMapIndex;
-        for (int k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
+        for (size_t k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
         {
             kwidget_2d_left->SelectActiveLabelMap( k);
             this->UpdateVolumeStatus();
@@ -548,7 +546,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
                                 (j-event_PixCoord[1])*(j-event_PixCoord[1])*1.0 , 0.5 ) + 1e-3;
           if( distance < kv_opts->paintBrushRad ) {
-            float dRatio = pow( ( kv_opts->paintBrushRad / distance), 2.0 );
+            float dRatio = pow( ( kv_opts->paintBrushRad / distance), 2.0f );
             short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
@@ -634,7 +632,7 @@ void KViewer::UpdateImageInformation(vtkImageData* image)
     for (int i=0;i<3;i++)
         this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
     kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
-    for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+    for (size_t i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
     {
         this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
         this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
@@ -684,7 +682,7 @@ void KViewer::setupQVTKandData( )
       this->kv_opts->m_PlaneCenter[i]=this->Get3DWidget()->GetImagePlane()->GetCenter()[i]/(double)this->kv_opts->imageSpacing[i];
   kv_opts->m_PlaneNormalVector=this->kwidget_3d_right->GetImagePlane()->GetNormal();
 
-  for (int i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
+  for (size_t i=0;i<kwidget_2d_left->multiLabelMaps.size();i++)
   {
       this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
       this->kwidget_2d_left->multiLabelMaps[i]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
@@ -724,7 +722,7 @@ void KViewer::setupQVTKandData( )
 
   if(kwidget_2d_left->multiLabelMaps.size()>1)
   {
-      for(int labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
+      for(size_t labnum=1;labnum<kwidget_2d_left->multiLabelMaps.size();labnum++)
       {
           kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
           qVTK1->update();

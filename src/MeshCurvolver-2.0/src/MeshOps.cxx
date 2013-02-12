@@ -38,7 +38,7 @@ int CountVertsOnMesh( vtkPolyData* poly ) {
     vtkIdType* ptsIds = NULL;
     //faces->GetCell(i, numpts, ptsIds );
     faces->GetNextCell(numpts, ptsIds );
-    for( ::size_t k = 0; k < numpts; k++ )
+    for( vtkIdType k = 0; k < numpts; k++ )
       {
       int pt = ptsIds[k];
       if( alreadyFound[pt] )
@@ -98,7 +98,6 @@ void MeshData::ComputeCurvatureData( )
   double dmin = MeanCurv.min();
   Lout() << "dmax: " << dmax << "  dmin: " << dmin ;
   LENDL
-  double breakhere = 1;
 }
 
 void MeshData::SmoothCurvature( )
@@ -384,7 +383,6 @@ vector<int> MeshData::InitPath( vector<int> pts)
 
 
   vtkPoints*    verts = this->polydata->GetPoints();
-  int numverts = verts->GetNumberOfPoints();
   if ( this->adjimm.size() == 0)
     {
     std::cerr << "InitPath: No mean adjacency computed on mesh\n";
@@ -534,10 +532,10 @@ void MeshData::ComputeNormals( )
 
 void MeshData::ComputeAdjacency(  )
 {
-    std::cout<<"Computing adjacency data... " << std::endl;
-  int NUMADJ = this->adj_levels; // how levels to traverse in adding neighbors
+  std::cout<<"Computing adjacency data... " << std::endl;
+  size_t NUMADJ = this->adj_levels; // how levels to traverse in adding neighbors
   this->polydata->BuildLinks();
-  int numverts = this->polydata->GetNumberOfPoints();
+  size_t numverts = this->polydata->GetNumberOfPoints();
   vtkCellArray* faces = this->polydata->GetPolys();
   if (faces->GetNumberOfCells() == 0)
     {
@@ -547,18 +545,17 @@ void MeshData::ComputeAdjacency(  )
   vtkSmartPointer<vtkIdList> cellIds = vtkSmartPointer<vtkIdList>::New();
 
   // for every face, make all vertices on the face store in the adjimm list
-  for( int i = 0; i < numverts; i++ ) { // NOT NEEDED !?
+  for( size_t i = 0; i < numverts; i++ ) { // NOT NEEDED !?
     this->adjimm[i].myNeighbs    = vector<int>(1);
     this->adjimm[i].myNeighbs[0] = i;
     this->adjimm[i].myIdx = i;
   }
 
-  int numfaces = faces->GetNumberOfCells();
-  for( int i = 0; i < numfaces; i++ ) {
+  size_t numfaces = faces->GetNumberOfCells();
+  for( size_t i = 0; i < numfaces; i++ ) {
     vtkIdType npts;
     vtkIdType* pts;
     faces->GetCell(i*4,npts, pts );
-    int vert0 = pts[0];    int vert1 = pts[1];    int vert2 = pts[2];
     for( int k = 0 ; k < 3; k++ ) {
       for( int kk = 0; kk < 3; kk++ ) {
         if( 0 == count( this->adjimm[pts[kk]].myNeighbs.begin(), this->adjimm[pts[kk]].myNeighbs.end(),pts[k] ) ) {
@@ -568,7 +565,7 @@ void MeshData::ComputeAdjacency(  )
     }
   }
 
-  for( int i = 0; i < numverts; i++ ) {
+  for( size_t i = 0; i < numverts; i++ ) {
     this->polydata->GetPointCells( i, cellIds );
     this->adj[i].myNeighbs = vector<int>(0);
     size_t iMaxExpectedNeigh = 64;

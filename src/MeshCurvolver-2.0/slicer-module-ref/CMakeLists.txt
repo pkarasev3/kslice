@@ -1,15 +1,15 @@
-#INCLUDE_DIRECTORIES( ${LSTVK_SOURCE_DIR} /module-code)
+#include_directories( ${LSTVK_SOURCE_DIR} /module-code)
 
 # Don't need ITK for now and it causes issues if ITK binaries have been deleted on windows
-#FIND_PACKAGE ( ITK )
-#IF (  ITK_FOUND  )
- #        INCLUDE(  ${USE_ITK_FILE}  )
-#ENDIF(   ITK_FOUND   )
+#find_package( ITK )
+#if(  ITK_FOUND  )
+ #        include(  ${USE_ITK_FILE}  )
+#endif(   ITK_FOUND   )
 
-FIND_PACKAGE ( VTK )
-IF (   VTK_FOUND   )
-         INCLUDE(  ${USE_VTK_FILE}  )
-ENDIF(   VTK_FOUND   )
+find_package( VTK )
+if(   VTK_FOUND   )
+         include(  ${USE_VTK_FILE}  )
+endif(   VTK_FOUND   )
 
 message( STATUS "vtk use file: ${USE_VTK_FILE} ")
 
@@ -17,6 +17,6 @@ include_directories( include )
 file( GLOB LSVTK_SRC  src/*.cxx src/*.cpp include/*.h)
 
 
-ADD_LIBRARY( MeshContourEvolver STATIC ${LSVTK_SRC} )
-TARGET_LINK_LIBRARIES (  MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
+add_library( MeshContourEvolver STATIC ${LSVTK_SRC} )
+target_link_libraries(  MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
 

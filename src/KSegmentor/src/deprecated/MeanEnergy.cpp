@@ -33,8 +33,6 @@ double MeanEnergy::Evaluate( CvMat* phi )
 	int w = phi->width;
 	int h = phi->height;
 	//CvMat* mask = cvCreateMat( h, w, CV_8U );
-	double Ain = 0;
-	double Aout = 0;
 	for( int i = 0; i < w*h; i++ ) {
 		if( (phi->data.fl[i] > 0) ) {
 			mask->data.ptr[i] =  0;
@@ -75,8 +73,6 @@ valarray<double> MeanEnergy::GetSpeed(const vector<int>& C, CvMat* phi)
 	int w = phi->width;
 	int h = phi->height;
 	
-	double Ain = 0;
-	double Aout = 0;
 	for( int i = 0; i < w*h; i++ ) {
 		if( (phi->data.fl[i] > 0) ) {
 			mask->data.ptr[i] =  0;

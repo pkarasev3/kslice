@@ -1,7 +1,7 @@
 
-ADD_EXECUTABLE( DemoStandaloneMeshCurvolver DemoStandaloneMeshCurvolver.cxx )
-TARGET_LINK_LIBRARIES ( DemoStandaloneMeshCurvolver  MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
+add_executable( DemoStandaloneMeshCurvolver DemoStandaloneMeshCurvolver.cxx )
+target_link_libraries( DemoStandaloneMeshCurvolver  MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
 
-ADD_EXECUTABLE( SurfaceCurvatureNoGui SurfaceCurvatureNoGui.cxx)
-TARGET_LINK_LIBRARIES ( SurfaceCurvatureNoGui MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
+add_executable( SurfaceCurvatureNoGui SurfaceCurvatureNoGui.cxx)
+target_link_libraries( SurfaceCurvatureNoGui MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
 

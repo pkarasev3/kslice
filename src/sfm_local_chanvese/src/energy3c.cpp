@@ -36,12 +36,11 @@ bool UseInitContour=1;
 
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
-    double *F, *kappa;
     double a,Fmax,u,v,I;
 
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
+    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
+    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
 
     ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
     while(Lz->curr != NULL){          //loop through list
@@ -177,12 +176,11 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
 
 double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
-    double *F, *kappa;
     double a,Fmax,u,v,I;
 
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
+    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
+    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
 
     ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
     while(Lz->curr != NULL){          //loop through list
@@ -351,7 +349,7 @@ namespace {
 }
 
 void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
-    int i,j,k,n,x,y,z,idx,ridx,bidx;
+    int i;
 
     //create ball
     gball = en_lrbac_gball(rad);
@@ -530,11 +528,10 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
-    double *F, *kappa;
-    double a,u,v,I;
+    double a;
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
-    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
+    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
+    double *kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
     int i,j,k;
     ll_init(Lz);
     int        n= 0;
@@ -545,7 +542,6 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
         y = Lz->curr->y;
         z = Lz->curr->z;
         idx = Lz->curr->idx;
-        I = img[idx];
 
         double block_img[3][3][3];
         double block_phi[3][3][3];
@@ -705,10 +701,10 @@ double *en_lrbac_gball(double rad){
 }
 
 double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam){
-    int x,y,z,idx,n,j;
+    int idx,n,j;
     double *F, *kappa;
     double a,Fmax,u,v,I;
-    double Gamuu, Gamuv, Gamvv, gamu, gamv, du, dv;
+    double Gamuu, Gamuv, Gamvv, gamu, gamv, du;
     double sumuu, sumvv, sumuv, Ibar, I2bar;
     bool ubad, vbad;
     // allocate space for F & kappa
@@ -737,8 +733,6 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
     Gamvv =  1/(aout*aout)*sumvv;
     gamu = sumuv/sumuu;
     gamv = sumuv/sumvv;
-    du = (u-v)*(Gamuu-Gamuv);
-    dv = (u-v)*(Gamuv-Gamvv);
 
     ubad = vbad = 0;
     if((Gamuv*(Gamuu+Gamvv))>(Gamuu*Gamvv+Gamuv*Gamuv)){
@@ -778,7 +772,7 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
 }
 
 void en_yezzi_init(LL* Lz, double *img, double *phi, long *dims){
-    int x,y,z,idx;
+    int idx;
     double Gamuu, Gamuv, sumuu, sumuv, Ibar, I2bar;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
     uin = 0; uout = 0; du_orig = 0;
@@ -814,7 +808,7 @@ void en_yezzi_init(LL* Lz, double *img, double *phi, long *dims){
 }
 
 void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
-    int x,y,z,idx;
+    int idx;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
         idx = Lin2out->curr->idx;
@@ -836,11 +830,10 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
 }
 
 double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam, double dthresh){
-    double *F,*kappa;
     int n = 0;
-    F = (double*)malloc(Lz->length*sizeof(double));
+    double *F = (double*)malloc(Lz->length*sizeof(double));
     if(F == NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));
+    double * kappa = (double*)malloc(Lz->length*sizeof(double));
     if(kappa == NULL) return NULL;
     ll_init(Lz); n=0;         //begining of list;
     while(Lz->curr != NULL){  //loop through list
@@ -861,9 +854,8 @@ double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam
 
 double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad, double lam, double *scale){
     double *F, *kappa;
-    double dx,dy,dz,kmax,fmax,pmin;
-    int dxi,dyi,dzi;
-    int x,y,z,idx,n,idxN;
+    double dx,dy,dz,fmax;
+    int x,y,z,idx,n;
     double MIN_INTERIOR;
 
     F = (double*)malloc(Lz->length*sizeof(double));
@@ -876,7 +868,7 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
     else
         MIN_INTERIOR = 0.25;
 
-    kmax = 0; fmax=0.0001;
+    fmax=0.0001;
     ll_init(Lz); n=0;         //begining of list;
     while(Lz->curr != NULL){  //loop through list
         x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
@@ -885,8 +877,6 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
         if(Ain[idx]<0){
             en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
         }
-
-        idxN = idx;
         F[n] = Ain[idx]-MIN_INTERIOR;
         if(fabs(F[n])>fmax) fmax = fabs(F[n]);
         ll_step(Lz); n++;    //  next point
@@ -906,7 +896,7 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
 
 double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
-    int x,y,z,idx,n;
+    int idx,n;
     double *F, *kappa;
     double a,I;
     CheckLevelSetSizes( Lz->length );
@@ -955,7 +945,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
 
 
 void en_lrbac_user_init(LL *Lz,double *img,double *phi, long *dims, double rad, double* seed){
-    int i,j,k,n,x,y,z,idx,ridx,bidx;
+    int i;
     double I;
     auser=0;
     uuser = 0;
@@ -1002,7 +992,6 @@ double *en_lrbac_user_compute(LL *Lz,double *phi, double *img,double penaltyAlph
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
-    int binNum;
     int numPointsOnLevSet=0;
 
     // allocate space for F
@@ -1076,7 +1065,7 @@ void en_chanvese_init(double* img, double* phi, long *dims){
 
 double *en_user_chanvese_compute(LL *Lz, double *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam)
 {
-    int x,y,z,idx,n;
+    int idx,n;
     double *F, *kappa;
     double a,I,Fmax;
     // allocate space for F
@@ -1146,7 +1135,7 @@ void en_user_chanvese_init(double* img, double* phi, long *dims, double* seed){
 }
 
 void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
-    int x,y,z,idx;
+    int idx;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
         idx = Lin2out->curr->idx;
@@ -1170,7 +1159,7 @@ void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
 
 double *en_meanvar_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
-    int x,y,z,idx,n;
+    int idx,n;
     double *F, *kappa;
     double a,I,Fmax;
     // allocate space for F
@@ -1230,7 +1219,7 @@ void en_meanvar_init(double* img, double* phi, long *dims){
 }
 
 void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
-    int x,y,z,idx;
+    int idx;
     double I,I2;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
@@ -1262,7 +1251,7 @@ void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
 
 double *en_bhattacharyya_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
-    int i,x,y,z,idx,n;
+    int i,idx,n;
     double *F, *kappa, *lookup;
     double a,Fmax,KappaMax,p,q,B,integral;
     int I;
@@ -1379,7 +1368,7 @@ void findMinMax(double *img,long *dims){
 
 double *en_user_bhattacharyya_compute(LL *Lz, double *phi, double *img, double penaltyAlpha, long *dims, double *scale, double lam)
 {
-    int i,x,y,z,idx,n;
+    int i,idx,n;
     double *F, *kappa, *lookup, *lookupUser;
     double a,Fmax,KappaMax,p,q,u,B,Buser,integral, integralUser;
     int I;
@@ -1558,7 +1547,7 @@ void en_user_bhattacharyya_destroy(){
 }
 
 void en_bhattacharyya_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
-    int x,y,z,idx;
+    int idx;
     int I;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
@@ -1603,7 +1592,7 @@ double *en_kappa_compute(LL *Lz, double *phi, long *dims)
 double en_kappa_norm_pt(PT* p, double *phi, long *dims, double *pdx, double *pdy, double *pdz){
     double kappa;
     double dx,dy,dz,dxx,dyy,dzz,dxy,dxz,dyz,dx2,dy2,dz2;
-    int idx,x,y,z,n;
+    int idx,x,y,z;
     int xok,yok,zok;
 
     x = p->x; y = p->y; z = p->z; idx = p->idx;
@@ -1712,12 +1701,6 @@ void smoothHist(double *pdfRough, double *pdfSmooth ){
     int kerSize=7;
     int kerSide=3;
     int currInd;
-
-    double testSumBefore=0;
-    double testSumAfter=0;
-    for(int l=0;l<nbins;l++){
-        testSumBefore+=pdfRough[l];
-    }
 
     double kernel[7]={0.0044,0.0540, 0.2420, 0.3989, 0.2420, 0.0540,0.0044};
     for(int i=0;i<nbins; i++){
@@ -1841,7 +1824,7 @@ void en_chanvese_rgb_init(double* img, double* phi, long *dims)
 
 double *en_chanvese_rgb_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
 {
-    int x,y,z,idx,n;
+    int idx,n;
     double *F, *kappa;
     double a,Ir,Ig,Ib,Fmax;
     // allocate space for F
@@ -1881,7 +1864,7 @@ double *en_chanvese_rgb_compute(LL *Lz, double *phi, double *img, long *dims, do
 
 void en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in)
 {
-    int x,y,z,idx;
+    int idx;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
         idx = Lin2out->curr->idx;

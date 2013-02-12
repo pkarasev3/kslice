@@ -113,7 +113,6 @@ namespace vrcl
 
 
       int   k = 0;
-      double  p_normal[3]; // to store normal vector
       double* q_normal;    // to store normal vector
       vtkDataArray* normal_vectors = polyData-> GetPointData()->GetNormals();
 

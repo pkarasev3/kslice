@@ -81,12 +81,11 @@ void redraw_func( vtkObject* caller, unsigned long eventID, void* ClientData, vo
 
 void clickhandle( vtkObject* caller, unsigned long eventID, void* ClientData, void* data )
 {
-	char keypressed = '.';
 	switch (eventID ) {
 		case vtkCommand::KeyPressEvent:
 			int X, Y;
-		    keypressed = *(iren -> GetKeySym());
 			iren->GetEventPosition( X, Y );
+//	                const char keypressed = *(iren -> GetKeySym());
 //			switch( keypressed )
 //			{
 //			    case 'w':
@@ -143,10 +142,7 @@ int main(int argc,      // Number of strings in array argv
   char* TunnelLabelArrayFilename=argv[2];
   float modelOpacity3D=atof(argv[3]); //convert character array to float
 
-  void* failure;
   cout<<"crashing, parse my args right while removing crasher" << endl;
-  free(failure);
-  free(failure);
 
   int imgPlacementZ=atoi(argv[6]);
   drawZpos = imgPlacementZ;

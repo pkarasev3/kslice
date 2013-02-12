@@ -49,10 +49,10 @@ valarray<double> MeanCurvatureEnergy::getforce( const std::list<int>& C_,
     }
   meshdata->kappa = kappa;
 
-  double alpha = 0.5;
   double skap = abs(kappa).max();
   if( skap > 1e-6 )
     {
+      const double alpha = 0.5;
       force = tanh(force);
       kappa = tanh(kappa);
       force = ((1-alpha)*force / (1e-9+abs(force).max()) + alpha*kappa / (1e-2+abs(kappa).max()));

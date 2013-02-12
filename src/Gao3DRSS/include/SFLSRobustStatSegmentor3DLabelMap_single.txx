@@ -773,7 +773,6 @@ void CSFLSRobustStatSegmentor3DLabelMap< TPixel >::updateMeans(){
 
 template< typename TPixel >
 void CSFLSRobustStatSegmentor3DLabelMap< TPixel >::computeHist(){
-    long numElements= this->m_nx * this->m_ny * this->m_nz;
 
     this->computeMinMax();
     this->binWidth=(this->m_inputImageIntensityMax - this->m_inputImageIntensityMin)/this->m_numberOfHistBins;
@@ -823,7 +822,6 @@ template< typename TPixel >
 void CSFLSRobustStatSegmentor3DLabelMap< TPixel >::updateHist(){
   typename CSFLSLayer::iterator iteratorIn = this->m_lOut2in.begin();
   typename CSFLSLayer::iterator iteratorOut = this->m_lIn2out.begin();
-  long numElements= this->m_nx * this->m_ny * this->m_nz;
   int currBin;
 
 
@@ -895,8 +893,6 @@ CSFLSRobustStatSegmentor3DLabelMap< TPixel >
       {
           (this->m_zeroLayerHistory).push_back(this->m_lz);
       }
-
-      double oldVoxelCount = this->m_insideVoxelCount;
 
       ComputeForce_rss();
 
@@ -1008,8 +1004,6 @@ void
 CSFLSRobustStatSegmentor3DLabelMap< TPixel >
 ::Segmentation_chan_vese()
 {
-  double startingTime = clock();
-
   //getThingsReady(); //this is only for RSS setup
 
   std::ofstream f("/tmp/d.txt", std::ios_base::app);
@@ -1045,9 +1039,6 @@ CSFLSRobustStatSegmentor3DLabelMap< TPixel >
       {
           (this->m_zeroLayerHistory).push_back(this->m_lz);
       }
-
-      double oldVoxelCount = this->m_insideVoxelCount;
-
       updateMeans();
       ComputeForce_chan_vese();
 
@@ -1122,19 +1113,10 @@ void
 CSFLSRobustStatSegmentor3DLabelMap< TPixel >
 ::Segmentation_bhattacharyya()
 {
-  double startingTime = clock();
-
   //getThingsReady(); //this is only for RSS setup
-
-
-
-
-
   std::ofstream f("/tmp/d.txt", std::ios_base::app);
   f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
   f.close();
-
-
 
   inputLableImageToSeeds(); //record into vector called m_seeds the i,j,k coordinates of all seed points
   seedToMask(); //make a binary mask showing all seed points and the neighbors (front,back, side to side, up,down) to 1
@@ -1156,8 +1138,6 @@ CSFLSRobustStatSegmentor3DLabelMap< TPixel >
       {
           (this->m_zeroLayerHistory).push_back(this->m_lz);
       }
-
-      double oldVoxelCount = this->m_insideVoxelCount;
 
       updateHist();
       ComputeForce_bhattacharyya();

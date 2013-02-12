@@ -3,7 +3,7 @@ file( GLOB ksegm_headers include/*.h  )
 
 # MACOSX_BUNDLE
 
-set( KSEGM_LIBS 
+set( KSEGM_LIBS
   ${OpenCV_LIBS}
   vtkRendering  vtkGraphics
   vtkHybrid vtkImaging vtkIO
