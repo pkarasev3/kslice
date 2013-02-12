@@ -236,6 +236,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
     ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
     ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
+    const double forceInitUval = 1.0;
     for (int i=0; i<=this->dimx-1; i++) {
         for (int j=0; j<=this->dimy-1; j++)  {
             for (int k=0; k<=this->dimz-1; k++) {
@@ -245,8 +246,9 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
                     // not sure what the intent of this is
                 }
                 // force the initial U based on loaded label
-                ptrIntegral_Image[element] = (double)( +3.0 * ( ptrCurrLabel[element]<=0 )
-                                                       -3.0 * ( ptrCurrLabel[element]>0 ) );
+                double d = forceInitUval;
+                ptrIntegral_Image[element] = (double)( +d * ( ptrCurrLabel[element]<=0 )
+                                                       -d * ( ptrCurrLabel[element]>0 ) );
                 if(ptrCurrLabel[element]>0)
                 {
                     this->AddPointToUpdateVector(element);
@@ -260,8 +262,8 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
      }
   }
   this->integrateUserInputInUserInputImage();
-    double spc[3];
-    this->U_Integral_image->GetSpacing(spc);
+  double spc[3];
+  this->U_Integral_image->GetSpacing(spc);
 
     /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
     labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );

@@ -552,7 +552,7 @@ void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
 
 void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_files )
 {
-
+  cout << "LoadMultiLabels();" << endl;
   multiLabelMaps.clear(); // clean slate
   assert( kv_data->imageVolumeRaw != NULL ); // image better exist or we're screwed
   int nLabels = label_files.size();  assert(nLabels > 0 ); // how many files to load

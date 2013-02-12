@@ -227,11 +227,14 @@ void KViewer::LoadImage() {
 void KViewer::LoadLabelMap(){
   QString path;
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
-  this->kv_opts->LoadLabel(path.toStdString());
-  string name = kv_opts->LabelArrayFilenames[0].c_str() ;
-  this->kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
-  this->kwidget_2d_left->kv_data->UpdateLabelDataArray( this->kwidget_2d_left->GetActiveLabelMap( ));
-  this->kwidget_2d_left->multiLabelMaps[this->kwidget_2d_left->activeLabelMapIndex]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
+  kv_opts->LoadLabel(path.toStdString());
+  string name = kv_opts->LabelArrayFilenames[0].c_str() ; cout << "string name = " << name << endl;
+  kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
+  kwidget_2d_left->kv_data->UpdateLabelDataArray( kwidget_2d_left->GetActiveLabelMap( ));
+  cout << "is active ksegmentor Null!? " << kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor << endl;
+  kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor
+      = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
+  // TODO: why is the segmentor null later after loading a second time?
 
   saveAsLineEdit->setText( QString( name.c_str() ) );
 }
