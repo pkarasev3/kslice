@@ -84,7 +84,7 @@ class KSegmentorBase
         void intializeLevelSet3D();
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
-        double GetUmax() const { return m_Umax; }
+        double GetUmax() { if( m_Umax <= 0 ) { std::cout << "Warning, m_Umax seems wrong!\n"; } return m_Umax; }
         virtual void Update2D()=0;
         virtual void Update3D()=0;
 
@@ -92,7 +92,7 @@ class KSegmentorBase
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
-        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+        virtual void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0);
 
         void AddPointToUpdateVector(unsigned int element){
             m_UpdateVector.push_back(element);
@@ -203,7 +203,7 @@ class KSegmentorBase
 
         virtual void initializeData()=0;
 
-        virtual void integrateUserInputInUserInputImage()=0;
+        virtual void integrateUserInput()=0;
 
         virtual void UpdateArraysAfterTransform()=0;
 
@@ -252,19 +252,11 @@ public:
         double m_SatRange[2];
         bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-        unsigned short *seg; //seg result from last run of the segmentor
-        short *iList;        //row indices of points on zero level set from last run
-        short *jList;        //column indices of points on zero level set from last run
-        long lengthZLS;      //number of point on the zero level set from last run
-
-
-        //Level Set Variables Stay persistent
-// TODO: delete these, no longer used
-//        /** time-integrated user inputs */
-//        std::vector< cv::Mat >  U_integral;
-
-//        /** instantaneous user input (stuff that was drawn between running 's') */
-//        std::vector< cv::Mat >  U_t;
+// Bogus/Deprecated !
+//        unsigned short *seg; //seg result from last run of the segmentor
+//        short *iList;        //row indices of points on zero level set from last run
+//        short *jList;        //column indices of points on zero level set from last run
+//        long lengthZLS;      //number of point on the zero level set from last run
 
         double *B, *phi, *C, *label;
         double *F;

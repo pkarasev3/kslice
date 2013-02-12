@@ -83,7 +83,6 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
     segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
     segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
-    // what the fuck? not in IK's version? // segPointer->rad=7; //IKChange
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -106,17 +105,18 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imgRange   = new double[2];
     segPointer->labelRange = new double[2];
 
-    cout << "I think the # of rows is: " << segPointer->mdims[1] << ", # of cols is: " << segPointer->mdims[0] << endl;
+    cout << "I think the # of rows is: " << segPointer->mdims[1]
+         << ", # of cols is: " << segPointer->mdims[0] << endl;
 
-    segPointer->iList=NULL;
-    segPointer->jList=NULL;
+//    segPointer->iList=NULL;
+//    segPointer->jList=NULL;
 
     //Set dimensions
     segPointer->dimz = (int)segPointer->mdims[2];
     segPointer->dimy = (int)segPointer->mdims[1];
     segPointer->dimx = (int)segPointer->mdims[0];
 
-    try {
+    try { // TODO: these are really really redundant; imposed by sfm_local_chanvese (fragile/confusing)
       segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
       segPointer->label      = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
       segPointer->mask       = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];
@@ -134,7 +134,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->dims[3] = segPointer->dims[0]*segPointer->dims[1];
     segPointer->dims[4] = segPointer->dims[0]*segPointer->dims[1]*segPointer->dims[2];
 
-    this->m_Umax = 1.0;
+    this->m_Umax = 3.0;
 
     cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
@@ -242,7 +242,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
             for (int k=0; k<=this->dimz-1; k++) {
                 element=k*dimx*dimy +j*dimx+i;
                 if(accumulate) {
-                    this->accumulateUserInputInUserInputImages((double)ptrCurrLabel[element],element);
+                    this->accumulateCurrentUserInput((double)ptrCurrLabel[element],element);
                     // not sure what the intent of this is
                 }
                 // force the initial U based on loaded label
@@ -261,7 +261,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
         }
      }
   }
-  this->integrateUserInputInUserInputImage();
+  this->integrateUserInput();
   double spc[3];
   this->U_Integral_image->GetSpacing(spc);
 
@@ -277,12 +277,20 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
   this->m_CoordinatesVector.clear();
 }
 
+void KSegmentorBase::accumulateCurrentUserInput( double value,
+                                                 const unsigned int element, double weight ){
 
-void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
+  double Umax            = this->GetUmax();
+  double Ustep           = weight * (Umax)/2.0;
+  double user_input      = -Ustep * ( value > 0.5 ) + Ustep * ( value <= 0.5 );
 
-    //cout << "using UMax = " << Umax << endl;
-    double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
-    this->ptrU_t_Image[element]=user_input;
+  ptrU_t_Image[element] = user_input;
+  if( ptrIntegral_Image[element] < -Umax ) {
+    ptrIntegral_Image[element] = -Umax;
+  } else if( ptrIntegral_Image[element] > Umax ) {
+    ptrIntegral_Image[element] = Umax;
+  }
+
 }
 
 

@@ -25,7 +25,7 @@
 #include "KSandbox.h"
 
 
-#define SP( X )  vtkSmartPointer<X> 
+#define SP( X )  vtkSmartPointer<X>
 using namespace std;
 using namespace cv;
 
@@ -35,7 +35,7 @@ void get_good_color( int idx, vector<int>& rgb_out )
   std::vector<double> rgb_f64 = vrcl::get_good_color_0to7( idx );
   rgb_out = std::vector<int>(3);
   for( int k=0; k<3; k++ ) { rgb_out[k] = 255 * rgb_f64[k]; }
-  
+
 }
 
 struct LabelVolumeMetaInfo {
@@ -52,14 +52,14 @@ SP(vtkImageData) image2ushort( vtkImageData* imageData )
   double spacing_in[3];
   imageData->GetSpacing(spacing_in);
   cout << "spacing:" << Mat( vector<double>(spacing_in,spacing_in+3) ) << endl;
-  
+
   imgvol->SetDimensions( dims[0],dims[1],dims[2] );
   imgvol->SetNumberOfScalarComponents(1);
   imgvol->SetSpacing( spacing_in );
   imgvol->SetOrigin( 0,0,0 );
   imgvol->SetScalarTypeToUnsignedShort( );
   imgvol->AllocateScalars( );
-  
+
   // Values stored 'linearly', slightly unsure about the orientation though.
   unsigned short*  outputPtr = (unsigned short *) imgvol->GetScalarPointer();
   short *inputPtr = static_cast<short*>( imageData->GetScalarPointer() );
@@ -68,10 +68,9 @@ SP(vtkImageData) image2ushort( vtkImageData* imageData )
   {
     short invalue            =  inputPtr[i];
     unsigned short nextvalue = (unsigned short ) invalue ;
-    *outputPtr= nextvalue;
-    *outputPtr++;
+    outputPtr[i]= nextvalue;
   }
-  
+
   return imgvol;
 }
 
@@ -85,7 +84,7 @@ SP(vtkImageData) mergeLabelMaps( const std::vector<SP(vtkImageData)> & multiLabe
   double labelRange[2];
   for( int k = 0; k < nLabels; k++ ) {
     vtkImageData* imgData = multiLabels[k];
-    
+
     // display the volume of each label for quick sanity checking of usefulness of label maps
     double spc[3];
     imgData->GetSpacing(spc);
@@ -140,7 +139,7 @@ int main( int argc, char **argv)
     cout << "bogus args! usage: " << argv[0] << " odin.mha dva.mha tri.mha ... blyat.mha " << endl;
     exit(1);
   }
-  
+
   SP(vtkImageData) imageData = mergeLabelMaps( multiLabels, volume_info);
 
   cout << "successfully processed labels. printing their meta info: " << endl;
@@ -155,12 +154,12 @@ int main( int argc, char **argv)
   resampler->SetAxisMagnificationFactor(2,1.0);
   resampler->Update();
   imageData = resampler->GetOutput();
-    
+
   double imgRange[2];
   imageData->GetScalarRange( imgRange );
-  
+
   vtkPiecewiseFunction *opacityTranferFunction = vtkPiecewiseFunction::New();
-  
+
   opacityTranferFunction->AddPoint( imgRange[1],     0.8);
   opacityTranferFunction->AddPoint( 2,0.8);
   opacityTranferFunction->AddPoint( 1,0.0);
@@ -174,39 +173,39 @@ int main( int argc, char **argv)
     get_good_color(k,rgb);
     colorTransferFunction->AddRGBPoint(   v[k], rgb[0]/255.0, rgb[1]/255.0, rgb[2]/255.0 );
   }
-  
+
   //
   SP(vtkVolumeProperty) volumeProperty = SP(vtkVolumeProperty)::New();
   volumeProperty->SetColor(colorTransferFunction);
   volumeProperty->SetScalarOpacity(opacityTranferFunction);
   volumeProperty->ShadeOn();
   volumeProperty->SetInterpolationTypeToLinear();
-  
+
   //
-  SP(vtkVolumeRayCastCompositeFunction) compositeFunction = 
+  SP(vtkVolumeRayCastCompositeFunction) compositeFunction =
       SP( vtkVolumeRayCastCompositeFunction)::New();
   SP(vtkVolumeRayCastMapper) volumeMapper = SP(vtkVolumeRayCastMapper)::New();
   volumeMapper->SetVolumeRayCastFunction(compositeFunction);
-  
+
   volumeMapper->SetInput( imageData );
-  
+
   volumeMapper->Update( );
-  
+
   //
   vtkVolume *volume = vtkVolume::New();
   volume->SetMapper(volumeMapper);
   volume->SetProperty(volumeProperty);
-  
+
   vtkRenderer *ren1 = vtkRenderer::New();
   vtkRenderWindow *renWin = vtkRenderWindow::New();
   ren1->SetBackground(1.0,1.0,1.0);
   renWin->AddRenderer(ren1);
   vtkRenderWindowInteractor *renderWindowInteractor = vtkRenderWindowInteractor ::New();
   renderWindowInteractor->SetRenderWindow(renWin);
-  
+
   ren1->AddVolume(volume);
   ren1->Render();
   renderWindowInteractor->Start();
-  
+
   return 0;
 }

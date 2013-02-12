@@ -15,9 +15,9 @@
 #include "KVolumeRenderView.h"
 #include "opencv2/core/core.hpp"
 #include "vtkImagePlaneWidget.h"
+#include <boost/shared_ptr.hpp>
 
-
-using cv::Ptr;
+//using cv::Ptr;
 class QVTKWidget;
 struct KViewerOptions;
 struct KDataWarehouse;
@@ -54,23 +54,23 @@ public:
   vtkSmartPointer<vtkRenderWindow>         renderWindowRight;
 
   // options and parameter settings
-  cv::Ptr<KViewerOptions>                  kv_opts;
+  boost::shared_ptr<KViewerOptions>                  kv_opts;
 
   // handles to data objects and file IO
-  cv::Ptr<KDataWarehouse>                  kv_data;
-  
-  void AddFocusPoint( int x, int y, int z );
-  
-  cv::Ptr<KVolumeRenderView>               volRenView;
+  boost::shared_ptr<KDataWarehouse>                  kv_data;
 
-  // written to during mouse callbacks, 
+  void AddFocusPoint( int x, int y, int z );
+
+  boost::shared_ptr<KVolumeRenderView>               volRenView;
+
+  // written to during mouse callbacks,
   //     can be grabbed from QT side and put into QString.   (???)
   std::string mouse_position_string;
-  
-  /** set and re-update the sub volume extractor source data 
+
+  /** set and re-update the sub volume extractor source data
     */
   void UpdateSubVolumeExtractor(vtkImageData* new_subvolume_source, unsigned int labNumber=0 );
-                             
+
   void UpdateVolumeRenderer( vtkImageData* image, vtkImageData* label );
 
   LabelActorMap3DType Get3DLabelMaps()
@@ -80,9 +80,9 @@ public:
 
   /* Initialization */
 
-  static void Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
-                          Ptr<KViewerOptions> kv_opts,
-                          Ptr<KDataWarehouse> kv_data );
+  static void Initialize( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,
+                          boost::shared_ptr<KViewerOptions> kv_opts,
+                          boost::shared_ptr<KDataWarehouse> kv_data );
 
   /* Debug/Help */
 
@@ -119,7 +119,7 @@ public:
   }
 
 
-  static void AddNewLabel(Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
+  static void AddNewLabel(boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
 
   vtkImagePlaneWidget* GetImagePlane(){
       return m_PlaneWidgetZ;

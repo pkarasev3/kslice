@@ -45,21 +45,21 @@ struct BogusSingletonException : public std::exception
   }
 };
 
-void SetupSaturationLUT( vtkLookupTable* satLUT, Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data )
+void SetupSaturationLUT( vtkLookupTable* satLUT, KViewerOptions* kv_opts, KDataWarehouse* kv_data )
 {
   /** Sets up the mapping of intensity values to displayed colors.
     * Needs to be adjusted if all you see is black & white.
     */
 
 
-//IKChange
-//  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
-//    cout << "no min,max passed; setting default window: min,max of image." << endl;
-//    double minMaxImage[2];
-//    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
-//    kv_opts->minIntensity = minMaxImage[0];
-//    kv_opts->maxIntensity = minMaxImage[1];
-//  }
+  //IKChange
+  //  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
+  //    cout << "no min,max passed; setting default window: min,max of image." << endl;
+  //    double minMaxImage[2];
+  //    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
+  //    kv_opts->minIntensity = minMaxImage[0];
+  //    kv_opts->maxIntensity = minMaxImage[1];
+  //  }
 
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
@@ -110,153 +110,153 @@ void KWidget_2D_left:: SetupRenderWindow() {
 
 void  KWidget_2D_left::InitializeTransform(char transform,float angle)
 {
-    double  rCenter[3]={kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]};
-    kv_opts->m_CurrentAngle=angle;
-    kv_opts->GetTransform()->Identity();
-    kv_opts->GetTransform()->PostMultiply();
-    kv_opts->GetTransform()->Translate(-(rCenter[0]+kv_opts->imageOrigin[0]),-(rCenter[1]+kv_opts->imageOrigin[1]),-(rCenter[2]+kv_opts->imageOrigin[2]));
+  double  rCenter[3]={kv_opts->m_Center[0],kv_opts->m_Center[1],kv_opts->m_Center[2]};
+  kv_opts->m_CurrentAngle=angle;
+  kv_opts->GetTransform()->Identity();
+  kv_opts->GetTransform()->PostMultiply();
+  kv_opts->GetTransform()->Translate(-(rCenter[0]+kv_opts->imageOrigin[0]),-(rCenter[1]+kv_opts->imageOrigin[1]),-(rCenter[2]+kv_opts->imageOrigin[2]));
 
-    float corr;
-    float temp;
-    switch(transform)
-    {case 'x':
-            kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
+  float corr;
+  float temp;
+  switch(transform)
+  {case 'x':
+    kv_opts->GetTransform()->RotateX(kv_opts->m_CurrentAngle);
 
-            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
-            if(angle>0)
-            {
-                rCenter[1]=kv_opts->m_Center[2]+corr;
-                rCenter[2]=kv_opts->m_Center[1];
-            }
-            else
-             {
-                rCenter[1]=kv_opts->m_Center[2];
-                rCenter[2]=kv_opts->m_Center[1]-corr;
-             }
-
-
-            temp =kv_opts->imageSpacing[1];
-            kv_opts->imageSpacing[0]=kv_opts->imageSpacing[0];
-            kv_opts->imageSpacing[1]=kv_opts->imageSpacing[2];
-            kv_opts->imageSpacing[2]=temp;
-
-            break;
-    case 'y':
-            kv_opts->GetTransform()->RotateY(kv_opts->m_CurrentAngle);
-            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[0])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
-            if(angle>0)
-            {
-                rCenter[0]=kv_opts->m_Center[2];
-                rCenter[2]=kv_opts->m_Center[0]-corr;
-            }
-            else
-            {
-                rCenter[0]=kv_opts->m_Center[2]+corr;
-                rCenter[2]=kv_opts->m_Center[0];
-            }
-
-            temp =kv_opts->imageSpacing[0];
-            kv_opts->imageSpacing[0]=kv_opts->imageSpacing[2];
-            kv_opts->imageSpacing[1]=kv_opts->imageSpacing[1];
-            kv_opts->imageSpacing[2]=temp;
-            break;
-    case 'z':
-            kv_opts->GetTransform()->RotateZ(kv_opts->m_CurrentAngle);
-            corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1]);
-            if(angle>0)
-            {
-                rCenter[0]=kv_opts->m_Center[1]+corr;
-                rCenter[1]=kv_opts->m_Center[0];
-            }
-            else
-            {
-                rCenter[0]=kv_opts->m_Center[1];
-                rCenter[1]=kv_opts->m_Center[0]-corr;
-            }
-
-            temp =kv_opts->imageSpacing[0];
-            kv_opts->imageSpacing[0]=kv_opts->imageSpacing[1];
-            kv_opts->imageSpacing[1]=temp;
-            kv_opts->imageSpacing[2]=kv_opts->imageSpacing[2];
-            break;
-    default:
-        break;
+    corr=(float)(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
+    if(angle>0)
+    {
+      rCenter[1]=kv_opts->m_Center[2]+corr;
+      rCenter[2]=kv_opts->m_Center[1];
     }
-    kv_opts->GetTransform()->Translate((rCenter[0]+kv_opts->imageOrigin[0]),(rCenter[1]+kv_opts->imageOrigin[1]),(rCenter[2]+kv_opts->imageOrigin[2]));
+    else
+    {
+      rCenter[1]=kv_opts->m_Center[2];
+      rCenter[2]=kv_opts->m_Center[1]-corr;
+    }
+
+
+    temp =kv_opts->imageSpacing[1];
+    kv_opts->imageSpacing[0]=kv_opts->imageSpacing[0];
+    kv_opts->imageSpacing[1]=kv_opts->imageSpacing[2];
+    kv_opts->imageSpacing[2]=temp;
+
+    break;
+  case 'y':
+    kv_opts->GetTransform()->RotateY(kv_opts->m_CurrentAngle);
+    corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[0])-(kv_data->imageVolumeRaw->GetExtent()[5]*kv_opts->imageSpacing[2]);
+    if(angle>0)
+    {
+      rCenter[0]=kv_opts->m_Center[2];
+      rCenter[2]=kv_opts->m_Center[0]-corr;
+    }
+    else
+    {
+      rCenter[0]=kv_opts->m_Center[2]+corr;
+      rCenter[2]=kv_opts->m_Center[0];
+    }
+
+    temp =kv_opts->imageSpacing[0];
+    kv_opts->imageSpacing[0]=kv_opts->imageSpacing[2];
+    kv_opts->imageSpacing[1]=kv_opts->imageSpacing[1];
+    kv_opts->imageSpacing[2]=temp;
+    break;
+  case 'z':
+    kv_opts->GetTransform()->RotateZ(kv_opts->m_CurrentAngle);
+    corr=(float)(kv_data->imageVolumeRaw->GetExtent()[1]*kv_opts->imageSpacing[1])-(kv_data->imageVolumeRaw->GetExtent()[3]*kv_opts->imageSpacing[1]);
+    if(angle>0)
+    {
+      rCenter[0]=kv_opts->m_Center[1]+corr;
+      rCenter[1]=kv_opts->m_Center[0];
+    }
+    else
+    {
+      rCenter[0]=kv_opts->m_Center[1];
+      rCenter[1]=kv_opts->m_Center[0]-corr;
+    }
+
+    temp =kv_opts->imageSpacing[0];
+    kv_opts->imageSpacing[0]=kv_opts->imageSpacing[1];
+    kv_opts->imageSpacing[1]=temp;
+    kv_opts->imageSpacing[2]=kv_opts->imageSpacing[2];
+    break;
+  default:
+    break;
+  }
+  kv_opts->GetTransform()->Translate((rCenter[0]+kv_opts->imageOrigin[0]),(rCenter[1]+kv_opts->imageOrigin[1]),(rCenter[2]+kv_opts->imageOrigin[2]));
 }
 
 void  KWidget_2D_left::UpdateTransform()
 {
-    imageReslicer->SetResliceTransform(kv_opts->GetTransform());
+  imageReslicer->SetResliceTransform(kv_opts->GetTransform());
 
-    imageReslicer->SetOutputDimensionality(3);
-    imageReslicer->AutoCropOutputOn();
-    imageReslicer->SetOutputOrigin(0,0,0);
-    imageReslicer->SetOutputSpacing(kv_opts->imageSpacing[0],kv_opts->imageSpacing[1],kv_opts->imageSpacing[2]);
-    imageReslicer->Modified();
-    imageReslicer->UpdateWholeExtent();
-    imageReslicer->Update();
-    imageReslicer->UpdateInformation();
-    imageReslicer->GetOutput()->UpdateInformation();
+  imageReslicer->SetOutputDimensionality(3);
+  imageReslicer->AutoCropOutputOn();
+  imageReslicer->SetOutputOrigin(0,0,0);
+  imageReslicer->SetOutputSpacing(kv_opts->imageSpacing[0],kv_opts->imageSpacing[1],kv_opts->imageSpacing[2]);
+  imageReslicer->Modified();
+  imageReslicer->UpdateWholeExtent();
+  imageReslicer->Update();
+  imageReslicer->UpdateInformation();
+  imageReslicer->GetOutput()->UpdateInformation();
 
-    kv_data->UpdateRawImage(imageReslicer->GetOutput());
-    for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
-    {
-      multiLabelMaps[k]->ksegmentor->ptrCurrImage=static_cast<unsigned short*>(imageReslicer->GetOutput()->GetScalarPointer());
-    }
+  kv_data->UpdateRawImage(imageReslicer->GetOutput());
+  for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
+  {
+    multiLabelMaps[k]->ksegmentor->ptrCurrImage=static_cast<unsigned short*>(imageReslicer->GetOutput()->GetScalarPointer());
+  }
 
-    imageReslicer->SetResliceTransform(vtkTransform::New());
-    imageReslicer->AutoCropOutputOn();
-    imageReslicer->SetOutputDimensionality(2);
-    imageReslicer->Modified();
-    imageReslicer->UpdateWholeExtent();
-    imageReslicer->UpdateInformation();
-    imageReslicer->GetOutput()->UpdateInformation();
-    imageReslicer->Update();
+  imageReslicer->SetResliceTransform(vtkTransform::New());
+  imageReslicer->AutoCropOutputOn();
+  imageReslicer->SetOutputDimensionality(2);
+  imageReslicer->Modified();
+  imageReslicer->UpdateWholeExtent();
+  imageReslicer->UpdateInformation();
+  imageReslicer->GetOutput()->UpdateInformation();
+  imageReslicer->Update();
 
-    this->UpdateMultiLabelMapDisplay(true);
+  this->UpdateMultiLabelMapDisplay(true);
 
-    //Why do we have to do this (only for imageReslicer - not for LabelReslicer)
-    m_SliderTrans->Identity();
-    m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
-    imageReslicer->SetResliceTransform(m_SliderTrans);
+  //Why do we have to do this (only for imageReslicer - not for LabelReslicer)
+  m_SliderTrans->Identity();
+  m_SliderTrans->Translate(0,0,m_CurrentSliceOrigin);
+  imageReslicer->SetResliceTransform(m_SliderTrans);
 
 }
 
 void KWidget_2D_left::SetupImageDisplay(bool transformUpdate) {
 
-    satLUT = vtkSmartPointer<vtkLookupTable>::New();
-    SetupSaturationLUT( satLUT, kv_opts, kv_data );
+  satLUT = vtkSmartPointer<vtkLookupTable>::New();
+  SetupSaturationLUT( satLUT, kv_opts.get(), kv_data.get() );
 
-    intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
-    intensShift->SetInput( kv_data->imageVolumeRaw );
-    imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    imageReslicer->AutoCropOutputOn();
-    imageReslicer->SetOutputSpacingToDefault();
-    imageReslicer->SetOutputExtentToDefault();
-    imageReslicer->SetInputConnection(intensShift->GetOutputPort());
-    imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
-    imageReslicer->InterpolateOff();
+  intensShift=vtkSmartPointer<vtkImageShiftScale>::New();
+  intensShift->SetInput( kv_data->imageVolumeRaw );
+  imageReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+  imageReslicer->AutoCropOutputOn();
+  imageReslicer->SetOutputSpacingToDefault();
+  imageReslicer->SetOutputExtentToDefault();
+  imageReslicer->SetInputConnection(intensShift->GetOutputPort());
+  imageReslicer->SetResliceAxesOrigin(0,0,this->currentSliceIndex);
+  imageReslicer->InterpolateOff();
 
-    imageReslicer->SetOutputDimensionality(2);
+  imageReslicer->SetOutputDimensionality(2);
 
-    imageReslicer->Modified();
-    imageReslicer->UpdateWholeExtent();
-    imageReslicer->SetOutputOrigin(0,0,0);
-    imageReslicer->Update();
+  imageReslicer->Modified();
+  imageReslicer->UpdateWholeExtent();
+  imageReslicer->SetOutputOrigin(0,0,0);
+  imageReslicer->Update();
 
 
-    colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
-    colorMap->SetLookupTable(satLUT);
-    colorMap->SetInput( imageReslicer->GetOutput() );
-    colorMap->Update();
+  colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
+  colorMap->SetLookupTable(satLUT);
+  colorMap->SetInput( imageReslicer->GetOutput() );
+  colorMap->Update();
 
-    imageActor = vtkSmartPointer<vtkImageActor>::New( );
-    imageActor->SetInput( colorMap->GetOutput() );
-    imageActor->SetInterpolate( kv_opts->labelInterpolate );
+  imageActor = vtkSmartPointer<vtkImageActor>::New( );
+  imageActor->SetInput( colorMap->GetOutput() );
+  imageActor->SetInterpolate( kv_opts->labelInterpolate );
 
-    // keep a handle on it so that user can change contrast later from KViewer
-    color_HSV_LookupTable = satLUT;
+  // keep a handle on it so that user can change contrast later from KViewer
+  color_HSV_LookupTable = satLUT;
 
 }
 
@@ -268,12 +268,12 @@ KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
   m_SliderTrans = vtkTransform::New();
   //m_OutputSpacing = new double[3];
   m_CurrentSliceOrigin=0;
-   //m_TransformedZ=false;
+  //m_TransformedZ=false;
 }
 
 
-void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
-                                  Ptr<KDataWarehouse> kv_data_input ) {
+void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_input,
+                                  boost::shared_ptr<KDataWarehouse> kv_data_input ) {
   // set Logger flags for test/debug
   SETLOG(KWidget_2D_left::VERBOSE,1);
 
@@ -286,7 +286,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
     throw BogusSingletonException();
   }
 
- bNoInputLabelFiles = true;
+  bNoInputLabelFiles = true;
   if( ! kv_opts_input->LabelArrayFilenames.empty() )
   { // were there any label file names?
     if( ! kv_opts_input->LabelArrayFilenames[0].empty() )
@@ -298,8 +298,8 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   //this->InitializeTransform();
   if( bNoInputLabelFiles )
   {
-     this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
-     kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
+    this->AddNewLabelMap();  // create a new, empty, all-zeros labelmap
+    kv_data->UpdateLabelDataArray( this->GetActiveLabelMap( ));
   }
 
 
@@ -315,7 +315,7 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
 
 
   //else
-   // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+  // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
   //not used at the moment
   /*vtkMetaImageReader*reader = vtkMetaImageReader::New();
   if( !kv_opts_input->m_SpeedImageFileName.empty() )
@@ -326,12 +326,13 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   }*/
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
   {
-    vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray;
-    assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
-    multiLabelMaps[k]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
+    vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray; assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
+    KSegmentorBase* raw_ptr       = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
+    multiLabelMaps[k]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
+
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
-    multiLabelMaps[k]->ksegmentor->SetUmax( (1.0 + 68.0) * kv_opts->m_bForceLargeU );
+    multiLabelMaps[k]->ksegmentor->SetUmax( 3.0 /* whew... */ );
   }
 
   //Spacing has to be set manually since image reslicer does not update image spacing correctly after transform
@@ -345,7 +346,9 @@ void KWidget_2D_left::Initialize( Ptr<KViewerOptions> kv_opts_input,
   UpdateMultiLabelMapDisplay( );
 
   // TODO: only if a verbose mode is on! wastes memory and time
-  uk_recorder.initialize( this->GetActiveLabelMap() );
+  if( kv_opts->m_bVerboseSave ) {
+    uk_recorder.initialize( this->GetActiveLabelMap() );
+  }
 
 }
 
@@ -402,7 +405,7 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss,
     if( bCurrentOnly && ( label_idx != activeLabelMapIndex ) )
       continue;
     IFLOG(VERBOSE, cout << "... attempting to write label map to file ...  " )
-    stringstream label_index_ss;
+        stringstream label_index_ss;
     label_index_ss << "_" << std::setw(4) << std::setfill('0') << label_idx;
     string labelmap_filename = labelmap_name_base + label_index_ss.str() + ".mha";
 
@@ -428,8 +431,8 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss,
       IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelWriter->GetFileName() << endl );
 
     }
-        // wtf @ png libs ...
-        // multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );
+    // wtf @ png libs ...
+    // multiLabelMaps[label_idx]->ksegmentor->saveCurrentSliceToPNG( labelmap_filename );
   }
 
 }
@@ -490,10 +493,14 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     slice_index = currentSliceIndex;
   }
 
+  assert( 0 < multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax() );
+  double UmaxInit = this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->GetUmax();
+  cout << "Umax Init = " << UmaxInit << endl;
+
   if( !bAllLabels )
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
-    KSegmentorBase* kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    boost::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
@@ -503,24 +510,24 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     cout << "use2D ? " << use2D << endl;
 
     if (use2D) {
-        kseg->SetEnergyLocalCV( );
-        kseg->Update2D();
+      kseg->SetEnergyLocalCV( );
+      kseg->Update2D();
     }
     else {
-        kseg->SetEnergyChanVese( );
-        kseg->Update3D();
+      kseg->SetEnergyChanVese( );
+      kseg->Update3D();
     }
   } else
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
     { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
-      Ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+      boost::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
       kseg->setNumIterations( kv_opts->segmentor_iters );
       kseg->setCurrIndex( slice_index );
       if (use2D)
-          kseg->Update2D();
+        kseg->Update2D();
       else
-          kseg->Update3D();
+        kseg->Update3D();
     }
   }
   UpdateMultiLabelMapDisplay();
@@ -529,37 +536,41 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
 
 void KWidget_2D_left::UpdateMultiLabelMapDisplay( bool updateTransform) {
 
-    for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
-        if(updateTransform)
-        {
-            multiLabelMaps[k]->UpdateResliceTransform();
-            multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
-            multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
-            multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
-        }
-
-        double label_opacity = kv_opts->labelOpacity2D;
-        if( k != activeLabelMapIndex ) {
-            label_opacity *= 0.5;
-        }
-        multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
-        multiLabelMaps[k]->labelDataArray->Modified();
-        multiLabelMaps[k]->labelDataArray->Update();
+  for( int k = 0; k < (int) multiLabelMaps.size(); k++ ) {
+    if(updateTransform)
+    {
+      multiLabelMaps[k]->UpdateResliceTransform();
+      multiLabelMaps[k]->ksegmentor->UpdateImageSpacing( &(kv_opts->imageSpacing[0]));
+      multiLabelMaps[k]->ksegmentor->TransformUserInputImages(kv_opts->GetTransform(),0);
+      multiLabelMaps[k]->ksegmentor->ptrCurrLabel=static_cast<unsigned short*>(multiLabelMaps[k]->labelDataArray->GetScalarPointer());
     }
-    // update the QVTK display
-    qVTK_widget_left->update( );
+
+    double label_opacity = kv_opts->labelOpacity2D;
+    if( k != activeLabelMapIndex ) {
+      label_opacity *= 0.5;
+    }
+    multiLabelMaps[k]->labelActor2D->SetOpacity( label_opacity );
+    multiLabelMaps[k]->labelDataArray->Modified();
+    multiLabelMaps[k]->labelDataArray->Update();
+  }
+  // update the QVTK display
+  qVTK_widget_left->update( );
 }
 
 void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_files )
 {
   cout << "LoadMultiLabels();" << endl;
+  for( size_t k = 0; k < multiLabelMaps.size(); k++ ) {
+    boost::shared_ptr<KInteractiveLabelMap>  klm = multiLabelMaps[k];
+    klm.reset();
+  }
   multiLabelMaps.clear(); // clean slate
   assert( kv_data->imageVolumeRaw != NULL ); // image better exist or we're screwed
   int nLabels = label_files.size();  assert(nLabels > 0 ); // how many files to load
 
   for( int k = 0; k < nLabels; k++ ) {
-    Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
-    SP( vtkImageData ) label_from_file;
+    boost::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
+    SP( vtkImageData ) label_from_file;// = SP( vtkImageData )::New();
     SP( vtkMetaImageReader ) reader    = SP( vtkMetaImageReader )::New();
 
     if( !reader->CanReadFile(label_files[k].c_str()) ) {
@@ -587,6 +598,8 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
     //Update label data
     this->kv_data->UpdateLabelDataArray(multiLabelMaps[activeLabelMapIndex]->labelDataArray);
 
+    vtkRenderer* iren = kvImageRenderer; // for debug
+    cout << "rendering # props = " << iren->GetNumberOfPropsRendered() << endl;
     //Add new actor
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
@@ -597,7 +610,7 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 void KWidget_2D_left::AddNewLabelMap( )
 {
   bool bIsInitialization = ( 0 == multiLabelMaps.size() );
-  Ptr<KInteractiveLabelMap>   labelMap = new KInteractiveLabelMap();
+  boost::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
 
   // give the label map handles to kv_opts, image volume, and this widget
   labelMap->RegisterSourceWidget( this,true );
@@ -612,23 +625,25 @@ void KWidget_2D_left::AddNewLabelMap( )
   }
 
   if (!bIsInitialization) {
-      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
-      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
-      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
-      this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
-      if( !(kv_opts->m_SpeedImageFileName.empty()) )
-      {
-          vtkMetaImageReader*reader = vtkMetaImageReader::New();
-          if( ! reader->CanReadFile(kv_opts->m_SpeedImageFileName.c_str()) ) {
-              cout << "Failed to read speed image file " << kv_opts->m_SpeedImageFileName << "  ! setting to NULL..." << endl;
-              multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = NULL;
-          } else {
-              reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str());
-              reader->SetDataScalarTypeToDouble();
-              reader->Update();
-              multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
-          }
+    KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
+    double UmaxInit = this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->GetUmax(); cout << "Umax Init = " << UmaxInit << endl;
+    if( !(kv_opts->m_SpeedImageFileName.empty()) )
+    {
+      vtkMetaImageReader*reader = vtkMetaImageReader::New();
+      if( ! reader->CanReadFile(kv_opts->m_SpeedImageFileName.c_str()) ) {
+        cout << "Failed to read speed image file " << kv_opts->m_SpeedImageFileName << "  ! setting to NULL..." << endl;
+        multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = NULL;
+      } else {
+        reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str());
+        reader->SetDataScalarTypeToDouble();
+        reader->Update();
+        multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
       }
+    }
   }
 
 }
@@ -669,8 +684,8 @@ SP(vtkImageData) KWidget_2D_left::GetActiveLabelMap( )
 
 
 //New Prisoner
-  //Currently not used
-  /*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
+//Currently not used
+/*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
       cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
       if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
           cout << " ... failed, could not read. " << endl;

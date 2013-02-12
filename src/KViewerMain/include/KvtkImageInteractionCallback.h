@@ -2,14 +2,14 @@
 #define KvtkImageInteractionCallback_H
 
 #endif // KvtkImageInteractionCallback_H
-
+#include <boost/shared_ptr.hpp>
 #include "vtkCommand.h"
 #include "vtkRenderWindow.h"
 #include "KViewerOptions.h"
-#include "opencv2/core/core.hpp"
+//#include "opencv2/core/core.hpp"
 
 // forward declaration
-class KViewer; 
+class KViewer;
 class vtkLookupTable;
 
 // The mouse motion callback, to pick the image and recover pixel values
@@ -31,7 +31,7 @@ public:
   void SetRenderWindow(vtkRenderWindow* Window)  {
     this->Window = Window;
   }
-  void SetOptions(cv::Ptr<KViewerOptions> kv_opts)  {
+  void SetOptions(boost::shared_ptr<KViewerOptions> kv_opts)  {
     this->kv_opts = kv_opts;
   }
 
@@ -46,14 +46,14 @@ public:
     */
   void Execute(vtkObject *, unsigned long event, void *);
 
-  void SetKViewerHandle( KViewer* kviewer ) { masterWindow = kviewer; 
-                                              buttonDown = false; 
+  void SetKViewerHandle( KViewer* kviewer ) { masterWindow = kviewer;
+                                              buttonDown = false;
                                               erase = false; }
 
   bool ButtonDown() { return buttonDown; }
-  
+
   bool Erase() { return erase; }
-  
+
 private:
   bool buttonDown;
   bool erase;
@@ -62,6 +62,6 @@ private:
   vtkRenderWindow*          Window;        // I don't own it, someone else cleans up
   vtkLookupTable*           satLUT_shared; // I don't own it, someone else cleans up
   KViewer*                  masterWindow;  // reverse handle on my source
-  cv::Ptr<KViewerOptions>   kv_opts;       // not sure who owns it, be paranoid
+  boost::shared_ptr<KViewerOptions>   kv_opts;       // not sure who owns it, be paranoid
 
 };

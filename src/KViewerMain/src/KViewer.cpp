@@ -54,8 +54,8 @@ using std::vector;
 
 KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
 
-  kv_opts           =  Ptr<KViewerOptions>( new KViewerOptions( kv_opts_in ) );
-  kv_data           =  Ptr<KDataWarehouse>( new KDataWarehouse( kv_opts ) );
+  kv_opts           =  boost::shared_ptr<KViewerOptions>( new KViewerOptions( kv_opts_in ) );
+  kv_data           =  boost::shared_ptr<KDataWarehouse>( new KDataWarehouse( kv_opts ) );
 
   kv_opts->InitializeTransform();
 
@@ -226,16 +226,23 @@ void KViewer::LoadImage() {
 
 void KViewer::LoadLabelMap(){
   QString path;
+  kv_opts->LabelArrayFilenames.clear();
   path = QFileDialog::getOpenFileName(    this,    "Choose a file to open",    "../data/",   "*.mha" );
-  kv_opts->LoadLabel(path.toStdString());
-  string name = kv_opts->LabelArrayFilenames[0].c_str() ; cout << "string name = " << name << endl;
-  kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames );
+  kv_opts->LoadLabel(path.toStdString()); // records the string names
+  kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames ); // does the actual work
   kwidget_2d_left->kv_data->UpdateLabelDataArray( kwidget_2d_left->GetActiveLabelMap( ));
   cout << "is active ksegmentor Null!? " << kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor << endl;
-  kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor
-      = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
-  // TODO: why is the segmentor null later after loading a second time?
+  KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
+  kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>(raw_ptr);
 
+  /** Argh, this is tough because the 3D-right still has references that haven't been cleared.
+          Doesn't crash but leaves a "ghost" label behind. */
+  cout << "# multiLabelMaps3D present = " << kwidget_3d_right->multiLabelMaps3D.size() << endl;
+
+  //  kwidget_3d_right->multiLabelMaps3D.clear();
+//  this->UpdateModel3D();
+
+  string name = "Label.mha";
   saveAsLineEdit->setText( QString( name.c_str() ) );
 }
 
@@ -529,7 +536,6 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
       int ymin = std::max(event_PixCoord[1]-kv_opts->paintBrushRad,0);
       int xmin = std::max(event_PixCoord[0]-kv_opts->paintBrushRad,0);
       int z = event_PixCoord[2];
-      const bool VerboseRecordMode = kv_opts->m_bVerboseSave;
       double image_range[2];
       kwidget_2d_left->color_HSV_LookupTable->GetTableRange(image_range);
       double paintSimilarityMinimum = (image_range[1] - image_range[0]) * kv_opts->paintBrushThreshold;
@@ -548,8 +554,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
         for (int j=ymin; j<=ymax; j++) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
                                 (j-event_PixCoord[1])*(j-event_PixCoord[1])*1.0 , 0.5 ) + 1e-3;
-          if( distance < kv_opts->paintBrushRad ) {
-            float dRatio = pow( ( kv_opts->paintBrushRad / distance), 2.0f );
+          if( distance <= kv_opts->paintBrushRad ) {
+            float dRatio = pow( ( kv_opts->paintBrushRad / (1.0+distance) ), 2.0f );
             short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
@@ -562,11 +568,12 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
 
-              if( (distance < 1.1 ) && VerboseRecordMode ) {
+              if( (distance < 1.1 ) && kv_opts->m_bVerboseSave ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
-              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ) {
+              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax)
+                                                       && (ptrImage[elemNum] > imgMin) ) {
                   coord[0]=(i);
                   coord[1]=(j);
                   coord[2]=(kk);
@@ -578,7 +585,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                          // off-view-slice updates make sense for automated part. But it doesn't make sense to
                          // manually draw edits if we're editing things we can't see! Rather, we go to a slice where automated
                          // part is making mistakes and edit it there.
-                kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateUserInputInUserInputImages(Label_Fill_Value,elemNum);
+                double w_Ves = 0.5 + std::max( 0.5f, 1.0f - distance );
+                kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateCurrentUserInput(Label_Fill_Value,elemNum,w_Ves);
                 ptrLabel[elemNum] = Label_Fill_Value;
               }
             }
@@ -661,12 +669,12 @@ void KViewer::setupQVTKandData( )
 
 
   // Setup the 2D Widget: image, label map(s), some user interaction objects
-  kwidget_2d_left = cv::Ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
+  kwidget_2d_left = boost::shared_ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
   kwidget_2d_left->Initialize( kv_opts, kv_data);
   kwidget_2d_left->PrintHelp( );
 
   // Setup the 3D Widget: volume, label map(s), some user interaction objects
-  kwidget_3d_right = cv::Ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
+  kwidget_3d_right = boost::shared_ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
   KWidget_3D_right::Initialize( kwidget_3d_right, kv_opts, kv_data );
   kwidget_3d_right->PrintHelp( );
 

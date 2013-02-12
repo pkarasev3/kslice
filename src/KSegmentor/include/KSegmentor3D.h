@@ -28,12 +28,12 @@ class KSegmentor3D : public KSegmentorBase
     public:
         static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit);
         virtual ~KSegmentor3D();
-        void initializeData();
+        virtual void initializeData();
         virtual void Update3D();
         virtual void Update2D();
 
         /** external interface to update at a voxel */
-        void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+        virtual void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0);
 
     private:
 
@@ -42,9 +42,9 @@ class KSegmentor3D : public KSegmentorBase
 
         /** internal 'update from input' function */
 
-        void integrateUserInputInUserInputImage();
+        virtual void integrateUserInput();
 
-        void UpdateArraysAfterTransform();
+        virtual void UpdateArraysAfterTransform();
 
 };
 

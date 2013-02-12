@@ -10,7 +10,7 @@ using std::vector;
 using std::string;
 using namespace vrcl;
 
-#define SP( X )  vtkSmartPointer<X> 
+#define SP( X )  vtkSmartPointer<X>
 
 namespace {
 struct BogusDataException : public std::exception  {
@@ -22,7 +22,7 @@ const static string PrintVerbose = "VerboseKInteractiveLabelMap";
 }
 
 KInteractiveLabelMap::KInteractiveLabelMap()
-{  
+{
   SETL( PrintVerbose );
 
   // Initializiation! Allocate my stuff
@@ -32,7 +32,7 @@ KInteractiveLabelMap::KInteractiveLabelMap()
   label2D_shifter_scaler  = vtkSmartPointer<vtkImageShiftScale>::New();
   labelLUT                = vtkSmartPointer<vtkLookupTable>::New();
   labelDataArray          = vtkSmartPointer<vtkImageData>::New();
-  
+
   sourceWidget            = NULL;
   labelOpacity2D          = 0.9f;
   labelInterpolate        = true;
@@ -41,8 +41,8 @@ KInteractiveLabelMap::KInteractiveLabelMap()
 void KInteractiveLabelMap::RegisterSourceWidget(KWidget_2D_left *kwidget2D, bool regNewImage)
 {
   sourceWidget = kwidget2D; // get a 'reverse handle' on the widget whose container I'm in
-  
-  RegisterState(    sourceWidget->kv_opts );
+
+  RegisterState( sourceWidget->kv_opts.get() );
   if(regNewImage)
     RegisterNewImage( kwidget2D->kv_data->imageVolumeRaw );
   SetupLabelView(sourceWidget->multiLabelMaps.size());
@@ -174,7 +174,7 @@ void KInteractiveLabelMap::UpdateResliceTransform()
 //  cout << "image origin and extent: " << Mat( imgOrigin )
 //                                      << " ... " << Mat( imgExtent ) << endl;
 
-//void KInteractiveLabelMap::UpdateLabelMap( 
+//void KInteractiveLabelMap::UpdateLabelMap(
 //    vtkSmartPointer<vtkImageData> label_image_data /* new (?) */ )
 //{
 //// TODO: connect the label_image_data, 'push to current'

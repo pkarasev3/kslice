@@ -14,8 +14,9 @@
 #include "KSegmentorBase.h"
 #include "KInteractiveLabelMap.h"
 #include "vtkTransform.h"
+#include <boost/shared_ptr.hpp>
 
-using  cv::Ptr;
+//using  cv::Ptr;   /* Evil */
 class  QVTKWidget;
 class  vtkLookupTable;
 
@@ -33,7 +34,7 @@ public:
   vtkSmartPointer<vtkImageActor>          labelActor2D;
 
 
-  std::vector< Ptr<KInteractiveLabelMap> > multiLabelMaps;
+  std::vector< boost::shared_ptr<KInteractiveLabelMap> > multiLabelMaps;
   int activeLabelMapIndex; // which label is being functed
 
   int currentSliceIndex;   // which slice we're viewing now
@@ -67,10 +68,10 @@ public:
   vtkSmartPointer<vtkLookupTable>          color_HSV_LookupTable;
 
   // options and parameter settings
-  cv::Ptr<KViewerOptions>                  kv_opts;
+  boost::shared_ptr<KViewerOptions>                  kv_opts;
 
   // handles to data objects and file IO
-  cv::Ptr<KDataWarehouse>                  kv_data;
+  boost::shared_ptr<KDataWarehouse>                  kv_data;
 
   // written to during ^ouse callbacks, QT side can put in a QString.
   std::string mouse_position_string;
@@ -87,7 +88,7 @@ public:
   /** Create the necessary framework for displaying label and image in a render window,
     * connected to a QTVTK widget and interactor
     */
-  void Initialize( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
+  void Initialize( boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_ptr<KDataWarehouse> kv_data );
   void InitializeTransform(char trans=' ',float angle=90);
 
 
@@ -119,12 +120,12 @@ Multiple Label Maps
 
   /** free all the labelmaps, wipe the list, make a fresh list with one labelmap */
   void ResetLabelMapList( );
-  
-  /** for every labelmap, copy & paste from index A to index B */ 
+
+  /** for every labelmap, copy & paste from index A to index B */
   void CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll = false );
 
   void RunSegmentor( int slice_index = -1, bool bAllLabels = false, bool use2D=true );
- 
+
   /** called internally when a display update is needed,
       such as when a new labelmap is created */
   void UpdateMultiLabelMapDisplay( bool UpdateTransform=false );

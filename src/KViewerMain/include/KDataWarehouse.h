@@ -11,11 +11,11 @@
 #include <map>
 #include <set>
 
-
+#include <boost/shared_ptr.hpp>
 //#include "KSegmentorBase.h"
 #include "KViewerOptions.h"
 
-using cv::Ptr;
+//using cv::Ptr;
 
 struct KDataWarehouse
 {
@@ -33,7 +33,7 @@ private:
   }
 
 public:
-  KDataWarehouse( cv::Ptr<KViewerOptions> kv_opts_in ) ;
+  KDataWarehouse( boost::shared_ptr<KViewerOptions> kv_opts_in ) ;
 
   // smart pointers know to kill themselves
   ~KDataWarehouse( ) { }
@@ -47,8 +47,8 @@ public:
   // modified label array
   vtkSmartPointer<vtkImageData>       labelDataArray_new;
 
-  Ptr<KViewerOptions> kv_opts;
-  
+  boost::shared_ptr<KViewerOptions> kv_opts;
+
   std::vector<double> intensityModes;
 
   /** \brief  Record a new label data as the 'candidate new label data'

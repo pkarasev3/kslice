@@ -32,21 +32,21 @@
 #include "vtkVolume.h"
 #include "vtkVolumeProperty.h"
 #include "vtkVolumeRayCastMapper.h"
-#include "KVolumeRenderView.h"  
+#include "KVolumeRenderView.h"
 #include "vtkTransform.h"
 #include "KSandbox.h"
 #include "vtkLight.h"
 
-#define SP( X )  vtkSmartPointer<X> 
+#define SP( X )  vtkSmartPointer<X>
 
-using cv::Ptr;
+//using cv::Ptr;
 using namespace vrcl;
 
 namespace {
 
 
 
-void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
+void SetupSubVolumeExtractor( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
     int size=0;
     kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
@@ -56,7 +56,7 @@ void SetupSubVolumeExtractor( Ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 
 
-void SetupLabelActor3D( Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
+void SetupLabelActor3D( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
 {
 
     /** TODO: Don't use marching cubes to make surface! Utilize the levelset layers that we have,
@@ -162,7 +162,7 @@ void SaveTimestampedPolyData( vtkPolyData* polydata )
     writer->Write();
 }
 
-void SetupRenderWindow( Ptr<KWidget_3D_right> kwidget_3d_right ) {
+void SetupRenderWindow( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
     //////////////////// Render Window Right : 3D Display /////////////////////////////
     //vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
@@ -204,7 +204,7 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
     if( pairElement.second == NULL ) {
         std::cout << "warning, null pair of LOD/VOI!" << std::endl;
     }
-    
+
     multiLabelMaps3D[labNumber].second->SetInput( new_subvolume_source );
     multiLabelMaps3D[labNumber].second->Modified();
     multiLabelMaps3D[labNumber].second->UpdateWholeExtent( );
@@ -213,7 +213,7 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
 
 }
 
-void KWidget_3D_right::AddNewLabel(Ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
+void KWidget_3D_right::AddNewLabel(boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
     SetupSubVolumeExtractor( kwidget_3d_right );
     SetupLabelActor3D( kwidget_3d_right,color);
 }
@@ -233,9 +233,9 @@ void KWidget_3D_right::UpdateVolumeRenderer( vtkImageData* image, vtkImageData* 
 
 }
 
-void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
-                                   Ptr<KViewerOptions> kv_opts_input,
-                                   Ptr<KDataWarehouse> kv_data_input ) {
+void KWidget_3D_right::Initialize( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,
+                                   boost::shared_ptr<KViewerOptions> kv_opts_input,
+                                   boost::shared_ptr<KDataWarehouse> kv_data_input ) {
 
 
     bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
@@ -248,7 +248,7 @@ void KWidget_3D_right::Initialize( Ptr<KWidget_3D_right> kwidget_3d_right,
         // Turn off volume view temporarily for speed
         kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
         kwidget_3d_right->kv_data = kv_data_input;
-        kwidget_3d_right->volRenView = Ptr<KVolumeRenderView>( new KVolumeRenderView );
+        kwidget_3d_right->volRenView = boost::shared_ptr<KVolumeRenderView>( new KVolumeRenderView );
         if( !kwidget_3d_right->kv_data )
             throw "kv_data does not exist yet!" ;
 

@@ -39,7 +39,7 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
     seg3DPointer->initializeUserInputImageWithContour();
   }
 
-
+  assert( 0 < seg3DPointer->GetUmax() );
 
   seg3DPointer->initializeData();
   seg3DPointer->CreateLLs(seg3DPointer->LL3D);
@@ -48,45 +48,40 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
   return seg3DPointer;
 }
 
-void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
+void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
+                                                            double weight /*=1.0 default */)
 {
   double Umax            = 1.0;   // It is bizarre that having this at 10.0 works,
   // technically it shouldn't because we're using inside the  tanh() function
   // comparing it with \phi() which is between -3 and +3 . If we can't get
   // values between -3 and +3 the smoothness breaks down.
 
-  // Umax = this->GetUmax(); // this is initialized to bullshit, TODO fix it
-  Umax = 1.0/3.0;
-  if( fabs(Umax) < 0.01 ) { cout <<"whoa something is F'd, check Umax " << endl; exit(1); }
+  Umax         = this->GetUmax();
+  double Ustep = weight * (Umax)/2.0;
+  if( fabs(Ustep) < 0.01 ) { /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1); }
 
-  double user_input      = -Umax * ( value > 0.5 ) + Umax * ( value <= 0.5 );
+  double user_input      = -Ustep * ( value > 0.5 ) + Ustep * ( value <= 0.5 );
 
-  //Changed accumulation! (+=) instead of (=)
-  //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
-  // at least, smoothness needs to be enforced somewhere else ...
   this->ptrU_t_Image[element] = user_input;
 
-  // integrate/updateVector are broken, this is a workaround
-  //ptrIntegral_Image[element] = user_input + ptrIntegral_Image[element];
-  double Ulimit = 3.0;
-  if( ptrIntegral_Image[element] < -Ulimit ) {
-    ptrIntegral_Image[element] = -Ulimit;
-  } else if( ptrIntegral_Image[element] > Ulimit ) {
-    ptrIntegral_Image[element] = Ulimit;
+  if( ptrIntegral_Image[element] < -Umax ) {
+    ptrIntegral_Image[element] = -Umax;
+  } else if( ptrIntegral_Image[element] > Umax ) {
+    ptrIntegral_Image[element] = Umax;
   }
 
 
 }
 
-void KSegmentor3D::integrateUserInputInUserInputImage()
+void KSegmentor3D::integrateUserInput()
 {
   ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
   ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
   int pos=0;
-  int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-  cout << " Integrating:  KSegmentor3D::integrateUserInputInUserInputImage(), N= "
-       << Nelements << endl; // TODO: This is broken in 2D case !?
+  int Nelements=this->m_UpdateVector.size();
+  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N= "
+       << Nelements << endl;
   for (int element=0;element<Nelements;element++)
   {
     pos=this->m_UpdateVector[element];
@@ -159,7 +154,7 @@ void KSegmentor3D::initializeData()
 
 void KSegmentor3D::Update2D()
 {
-  this->integrateUserInputInUserInputImage();
+  this->integrateUserInput();
   this->CreateLLs(LL2D);
 
   ptrCurrImage        = static_cast<unsigned short*>(imageVol->GetScalarPointer());
@@ -301,7 +296,7 @@ void KSegmentor3D::Update3D()
           */
 
   cout << "integrating mask 3D " << endl;
-  this->integrateUserInputInUserInputImage();
+  this->integrateUserInput();
 
   cout << "updating mask 3D " << endl;
   this->UpdateMask(true);
@@ -369,15 +364,14 @@ void KSegmentor3D::Update3D()
   double cutoff_thresh = (u_in - u_out)*this->m_ThreshWeight;
   cout << "uin, uout, cutoff=" << u_in << ", " << u_out << ", " << cutoff_thresh << endl;
 
-  double mult=labelRange[1] / 4.0;
+  //double mult=labelRange[1] / 4.0;
 
   double phi_val = 0;
   double phi_out = 0;
-  double outputVal=0;
 
   // Caution: Lchanged can contain duplicate entries !!!
   ll_init(LL3D.Lchanged);
-  // while(Lchanged->curr != NULL)
+
   double changeInLabel = 0;
   int Nelements = this->dimx * this->dimy * this->dimz;
   for (int idx=0;idx<Nelements;idx++) {
@@ -391,11 +385,14 @@ void KSegmentor3D::Update3D()
       phi_val = std::min( phi_val, 0.0 );
     }
     phi_out = (-phi_val + 3.0) / 6.0;
-    outputVal=  (unsigned short) ( ( (phi_out > 0.95) +
-                                     (phi_out > 0.8) +
-                                     (phi_out > 0.65) +
-                                     (phi_out > 0.5) )
-                                   *mult);
+    unsigned short value_IK= ( (unsigned short) 0 >= phi_val )*labelRange[1];   // IK: if phi=0, make label 0, else it's 1
+    unsigned short value_PK= ( (unsigned short) ( ( (phi_out > 0.95)
+                                                    + (phi_out > 0.8) + (phi_out > 0.65)
+                                                    + (phi_out > 0.5) ) * labelRange[1] / 4.0 ) );
+    unsigned short outputVal=value_IK + 0*value_PK;
+         // Argh, fine use the "bug fix/workaround", but nice to make
+         // value_PK work to enable (1) accurate volume computation and  (2) better mesh model generation
+         //       i.e. keep a range of values for phi instead of truncating like this
     changeInLabel += fabs( (outputVal - ptrCurrLabel[idx]) > 1e-3 );
     ptrCurrLabel[idx] =outputVal;
     mask[idx]         =(double) ( 0 < outputVal ); // d'oh, *update the mask!*
@@ -421,9 +418,11 @@ KSegmentor3D::~KSegmentor3D(){
   delete [] this->labelRange;
   delete [] this->phi;
   delete [] this->label;
-  delete [] this->seg;
-  delete [] this->iList;
-  delete [] this->jList;
+
+  // argh, these don't exist!
+//  delete [] this->seg;
+//  delete [] this->iList;
+//  delete [] this->jList;
 
 
   LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;

@@ -32,38 +32,38 @@ vector<double> get_good_color_0to7( int idx )
   switch( idx )
   {
   case 0:
-    rgb[0]=0; rgb[1]=117; rgb[2]=220;  // ? 
+    rgb[0]=0; rgb[1]=117; rgb[2]=220;  // ?
     break;
   case 1:
     rgb[0]=255; rgb[1]=0; rgb[2]=16; // red
     break;
   case 2:
 //    double rgb[3] = {43,206,72}; // green
-    rgb[0]=43; rgb[1]=206; rgb[2]=72; 
+    rgb[0]=43; rgb[1]=206; rgb[2]=72;
     break;
   case 3:
     //double rgb[3] = {224,255,102}; // uranium
-    rgb[0]=224; rgb[1]=255; rgb[2]=102; 
+    rgb[0]=224; rgb[1]=255; rgb[2]=102;
     break;
   case 4:
 //    double rgb[3] = {194,0,136}; // mallow
-   rgb[0]=194; rgb[1]=0; rgb[2]=136; 
+   rgb[0]=194; rgb[1]=0; rgb[2]=136;
     break;
   case 5:
   //  double rgb[3] = {255,80,5}; // zinnia
-    rgb[0]=255; rgb[1]=80; rgb[2]=5; 
+    rgb[0]=255; rgb[1]=80; rgb[2]=5;
     break;
   case 6:
    // double rgb[3] = {220, 163, 255}; // amethyst
-    rgb[0]=220; rgb[1]=163; rgb[2]=255; 
+    rgb[0]=220; rgb[1]=163; rgb[2]=255;
     break;
   case 7:
 //    double rgb[3] = {0,153,143}; // turquoise
-    rgb[0]=0; rgb[1]=153; rgb[2]=143; 
+    rgb[0]=0; rgb[1]=153; rgb[2]=143;
     break;
   default:
 //    double rgb[3] = {200,200,200}; // default, grayish
-    rgb[0]=200; rgb[1]=200; rgb[2]=200; 
+    rgb[0]=200; rgb[1]=200; rgb[2]=200;
     break;
   }
   rgb[0] /= 255.0;
@@ -97,7 +97,7 @@ vtkSmartPointer<vtkImageData> image2ushort( vtkImageData* imageData )
   { // intentionally unwrapped for debugging; some files have weird data ...
     double invalue            =  (double) inputPtr[i] - img_range[0];
     unsigned short nextvalue = (unsigned short ) invalue ;
-    outputPtr[i]= nextvalue;
+    *outputPtr++ = nextvalue;
   }
 
   return imgvol;
@@ -216,7 +216,7 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
       return labelLUT;
 }
 
-void setup_file_reader(Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data) {
+void setup_file_reader(boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_ptr<KDataWarehouse> kv_data) {
 
   //create two readers one for the image and one for the labels
   SP(vtkMetaImageReader) labelFileReader = SP(vtkMetaImageReader)::New();
