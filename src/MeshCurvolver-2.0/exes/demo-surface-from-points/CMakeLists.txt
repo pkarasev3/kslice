@@ -1,3 +1,3 @@
-ADD_EXECUTABLE(SurfaceFromPoints SurfaceFromPoints.cxx )
+add_executable(SurfaceFromPoints SurfaceFromPoints.cxx )
 #  MeshContourEvolver     should be able to build and run without it!
-TARGET_LINK_LIBRARIES (SurfaceFromPoints   ${OUR_VTK_REQUIRED_LIBS} )
+target_link_libraries(SurfaceFromPoints   ${OUR_VTK_REQUIRED_LIBS} )

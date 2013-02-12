@@ -98,11 +98,7 @@ void KVolumeRenderView::AddFocusPoint( int x, int y, int z )
   if( NULL == vriLabel.data )
     return;
     
-  double ival = this->vriImage.data->GetScalarComponentAsDouble( x, y, z, 0 );
-  
   // TODO: display places where they're clicking ...
-  
-  
 }
 
 void KVolumeRenderView::UpdateDisplay( vtkImageData* img, vtkImageData* lbl ) 

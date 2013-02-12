@@ -16,5 +16,5 @@ vtkHybrid  vtkalglib vtkexpat vtkverdict vtkParallel VPIC Cosmo )
 file( GLOB   sources *.h *.cpp *.cxx  )
 message(STATUS "grabbed qmake files:  ${sources}, linking to qt libs: ${QT_LIBRARIES} " )
 
-ADD_EXECUTABLE(qtGUI_Demo ${sources} )
-TARGET_LINK_LIBRARIES(qtGUI_Demo  ${QT_LIBRARIES}  ${VTK_LIBS} QtOpenGL pthread )
+add_executable(qtGUI_Demo ${sources} )
+target_link_libraries(qtGUI_Demo  ${QT_LIBRARIES}  ${VTK_LIBS} QtOpenGL pthread )

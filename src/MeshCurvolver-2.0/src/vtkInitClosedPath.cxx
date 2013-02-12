@@ -134,13 +134,6 @@ int vtkInitClosedPath::RequestData(
     vtkSmartPointer<vtkIntArray>  activeContourVertIdx = vtkSmartPointer<vtkIntArray>::New();
     activeContourVertIdx = vtkIntArray::SafeDownCast( contourIdxArrayIn );
 
-    std::set<int>  Lp1;
-    std::set<int>  Ln1;
-    std::set<int>  Ln2;
-    std::set<int>  Lp2;
-    std::set<int>  Lz;
-    std::list<int> L0;
-
     // activeContourVertIdx = initLevelSetLists(  output, seedIdx, L0, Lp1, Ln1, Lp2, Ln2, Lz );
     // output->GetPointData()->AddArray( activeContourVertIdx );
 

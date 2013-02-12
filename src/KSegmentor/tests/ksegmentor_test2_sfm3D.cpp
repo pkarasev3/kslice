@@ -198,8 +198,8 @@ void mexFunctionReplacement(long numberdims, int *mdims,
     ll_destroy(Lin2out);
     ll_destroy(Lout2in);
 
-    delete phi;
-    delete label;
+    delete [] phi;
+    delete [] label;
 
     // The output has been written to ptrLabel_out!
 
@@ -238,11 +238,9 @@ void  RunTest_Segment3D( vtkImageData* image, vtkImageData* label, int contour_i
                             d_imagePtr, d_labelPtr, us_labelPtr,
                             contour_iters, smoothness_lambda);
 
-    delete d_imagePtr;
-    delete d_labelPtr;
-
+    delete [] d_imagePtr;
+    delete [] d_labelPtr;
     label->Update();
-
 }
 
 

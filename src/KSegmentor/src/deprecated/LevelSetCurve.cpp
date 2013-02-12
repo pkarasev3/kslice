@@ -242,11 +242,13 @@ double LevelSetCurve::EvolveSparseField( int iterations, IplImage* output )
 
 				
 		double current_energy = this->energy->Evaluate( L0, phi );
-		double delta = abs( current_energy - prev_energy );
 		prev_energy = current_energy;
 		
-                /*if( delta < 1000 && ii > 100 )
-			return delta;*/
+                /*
+		double delta = abs( current_energy - prev_energy );
+                if( delta < 1000 && ii > 100 )
+			return delta;
+                 */
 
 		// 1. for each active grid point x_i:
 		// a. compute local geometry of level set
@@ -304,7 +306,6 @@ double LevelSetCurve::EvolveSparseField( int iterations, IplImage* output )
 					if( labels[neighidx] != 0 )
 						vals[k] = 1.0;
 				}
-				double oldval = phi->data.fl[idx];
 				double newval = vals.min() + 1.0;
 				phi->data.fl[idx] = newval;
 				// if this new value is outside allowed range, move it to appropriate S layer
@@ -340,7 +341,6 @@ double LevelSetCurve::EvolveSparseField( int iterations, IplImage* output )
 					if( labels[neighidx] != 0 ) // found it in L0
 						vals[k] = -1.0;
 				}
-				double oldval = phi->data.fl[idx];
 				double newval = vals.max() - 1.0;
 				phi->data.fl[idx] = newval;
 				// if this new value is outside allowed range, move it to appropriate S layer
@@ -379,7 +379,6 @@ double LevelSetCurve::EvolveSparseField( int iterations, IplImage* output )
 					if( labels[neighidx] != 1 ) 
 						vals[k] = 5.0;
 				}
-				double oldval = phi->data.fl[idx];
 				double newval = vals.min() + 1.0;
 				phi->data.fl[idx] = newval;
 				// if this new value is outside allowed range, move it to appropriate S layer
@@ -415,7 +414,6 @@ double LevelSetCurve::EvolveSparseField( int iterations, IplImage* output )
 					if( labels[neighidx] != -1 ) // did not find it in Ln1
 						vals[k] = -5.0;
 				}
-				double oldval = phi->data.fl[idx];
 				double newval = vals.max() - 1.0;
 				phi->data.fl[idx] = newval;
 				if( newval >= -1.5 )
@@ -543,7 +541,6 @@ void LevelSetCurve::SelfUnion( vector<int>& vec )
 {
 	sort( vec.begin(), vec.end() );
 	vec.erase( unique(vec.begin(), vec.end()),vec.end() );
-	int breakhere = 1;
 }
 
 void LevelSetCurve::AppendIdx( const vector<int>& src, vector<int>& dst ) {

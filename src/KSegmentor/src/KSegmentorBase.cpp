@@ -25,12 +25,12 @@ namespace vrcl
 
 void test_OpenMP()
 {
-  int nthreads, tid;
   omp_set_num_threads(8);
-  nthreads = omp_get_num_threads();
+  int nthreads = omp_get_num_threads();
+  int tid;
   #pragma omp parallel shared(nthreads, tid)
   { // fork some threads, each one does one expensive operation
-    tid = omp_get_thread_num();
+    const int tid = omp_get_thread_num();
     if( tid == 0 )      { }
     else if( tid == 1 ) { }
     else if( tid == 2 ) { }
@@ -280,7 +280,6 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
 
 void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
 
-    double Umax = this->GetUmax();
     //cout << "using UMax = " << Umax << endl;
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;

@@ -93,8 +93,7 @@ MaskImageType::Pointer Gao3DRSS::PerformSegmentation(int numIters)
   case BHATTACHARYYA:
     seg.Segmentation_bhattacharyya();
     break;
-  break;
-    default:
+  default:
       throw "bogus Segmentation_Mode!";
   }
 

@@ -15,7 +15,6 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in){
   int x,y,z,i,idx;
-  int u,d,r,l,f,b;
   double p, phi_old;
   LL *Sz, *Sn1, *Sp1, *Sn2, *Sp2;
 
@@ -271,7 +270,6 @@ void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
         also assigned Lchanged, and doesn't free F
       */
   int x,y,z,i,idx;
-  int u,d,r,l,f,b;
   double p, phi_old;
   LL *Sz, *Sn1, *Sp1, *Sn2, *Sp2;
 
@@ -550,8 +548,6 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
                    LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2)
 {
   int x,y,z,idx;
-  int i,j,k;
-  int u,d,r,l,f,b;
   int  flag=0;
 
   //find 'interface' and mark as 0, create Lz
@@ -721,8 +717,6 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
 
 void ls_mask2phi3c_ext(double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL *Lchanged){
   int x,y,z,idx;
-  int i,j,k;
-  int u,d,r,l,f,b;
   int  flag=0;
 
   //find 'interface' and mark as 0, create Lz
@@ -917,7 +911,7 @@ void ls_mask2phi3c_update(const std::vector< unsigned int >& updateVector,
   int x,y,z,idx;
   int  flag=0;
   //only update in locations that have been changed
-  for (int i =0; i<updateVector.size();i++){
+  for (size_t i =0; i<updateVector.size();i++){
   //for(x=0;x<DIMX;x++) for(y=0;y<DIMY;y++) for(z=0;z<DIMZ;z++){
      //idx = (int)(z*DIMXY+x*DIMY+y);
       idx=updateVector[i];

@@ -61,16 +61,12 @@ void TestModuleInteraction1()
 {
     std::cout << "running demo and will display curvature..." << std::endl;
     vtkPolyData* inputMesh = *inputMesh_ptr;
-    int m1 = inputMesh->GetNumberOfCells();
-    int m2 = inputMesh->GetNumberOfPoints();
 
     vtkSmartPointer<vtkIntArray> initPoints = vtkSmartPointer<vtkIntArray>::New();
       vtkPolyData* outputMesh;
     //InitParam init = {5,1,1,1,1};
     path_finder( inputMesh, initPoints, outputMesh  /*, init*/);
 
-    int n1 = outputMesh->GetNumberOfCells();
-    int n2 = outputMesh->GetNumberOfPoints();
     inputMesh->DeepCopy( outputMesh );
     outputMesh->Delete();
 
@@ -116,8 +112,6 @@ void TestModuleInteraction2(bool bUseClickedInit = false)
   //InitParam init = {5,1,1,1,1};
   entry_main( inputMesh, initPoints3D, outputMesh/*, init*/);
 
-    int n1 = outputMesh->GetNumberOfCells();
-  int n2 = outputMesh->GetNumberOfPoints();
     inputMesh->DeepCopy( outputMesh );
 
   PrintPolydataArrayInfo( outputMesh ); // display the names of arrays in this polydata...
@@ -165,8 +159,6 @@ void SelectCell( vtkRenderer* ren, vtkCellPicker* pick, int X, int Y )
     if( CellId >= 0 ) {
         inputMesh->GetCellPoints( CellId, numpts, ptsIds );
         int i0 = ptsIds[0];
-        int i1 = ptsIds[1];
-        int i2 = ptsIds[2];
         std::cout<<"You have picked vertex number: "<<i0<<"\n";
         init_verts.push_back(i0);
         double xyzpt[3];
@@ -246,38 +238,17 @@ void userio_callback( vtkObject* caller, unsigned long eventID, void* ClientData
 
 vtkPoints* createSyntheticPoints()
 {
-    vtkPoints* points = vtkPoints::New();
+  vtkPoints* points = vtkPoints::New();
 
-    float x, y, z,u,v,r,theta;
-    // generate random points on bumpy surface
-  int ii,jj;
-  ii = 100;
-  jj = 100;
-    int Npts = 15000;
-    double PI = 3.14159265;
-
-  bool bHarderExample = false;
-  if( bHarderExample) {
-    for(int i=0; i<ii; i++) {
-      for( int j = 0; j < jj; j++ ) {
-            u     = vtkMath::Random(-5.0,5.0);
-            v     = vtkMath::Random(-5.0,5.0);
-            z     = std::sin(x) * std::sin(y);
-        x     = u;
-        y     = v;
-            points->InsertNextPoint(x, y, z);
-      }
-      }
+  // generate random points on bumpy surface
+  const int Npts = 15000;
+  for(int i=0; i<Npts; i++) {
+    const float x = vtkMath::Random(-10.0,10.0);
+    const float y = vtkMath::Random(-10.0,10.0);
+    const float z = std::sin(x) * std::sin(y);
+    points->InsertNextPoint(x, y, z);
   }
-  else {
-   for(int i=0; i<Npts; i++) {
-        x = vtkMath::Random(-10.0,10.0);
-        y = vtkMath::Random(-10.0,10.0);
-        z = std::sin(x) * std::sin(y);
-        points->InsertNextPoint(x, y, z);
-   }
-  }
-    return points;
+  return points;
 }
 
 void displaySyntheticSurface()
@@ -326,7 +297,6 @@ void displaySyntheticSurface()
 
     int iNumDispComp = 1; // number of display components
     int iNumVerts = inputMesh->GetNumberOfPoints( );
-    float fDefaultColorVal = 0.0;
     colormap->SetNumberOfComponents( iNumDispComp );
     colormap->SetNumberOfTuples( iNumVerts );
     colormap_int->SetNumberOfComponents( iNumDispComp );
@@ -348,7 +318,6 @@ void displaySyntheticSurface()
         colormap_int->SetValue( i, 0 );
     }
     colormap->GetRange( pty );
-    double dminy = pty[0]; double dmaxy = pty[1];
 
     /* Step 1 */
     inputMesh->GetPointData()->SetScalars(colormap); // attach colormap to mesh
@@ -439,7 +408,6 @@ void vtpReader(char* argc, const std::string& colormapName )
 
     int iNumDispComp = 1; // number of display components
     int iNumVerts = inputMesh->GetNumberOfPoints( );
-    float fDefaultColorVal = 0.0;
     colormap->SetNumberOfComponents( iNumDispComp );
     colormap->SetNumberOfTuples( iNumVerts );
     colormap_int->SetNumberOfComponents( iNumDispComp );
@@ -461,7 +429,6 @@ void vtpReader(char* argc, const std::string& colormapName )
         colormap_int->SetValue( i, 0 );
     }
     colormap->GetRange( pty );
-    double dminy = pty[0]; double dmaxy = pty[1];
 
     /* Step 1 */
     inputMesh->GetPointData()->SetScalars(colormap); // attach colormap to mesh

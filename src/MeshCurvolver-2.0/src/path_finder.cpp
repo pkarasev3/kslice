@@ -227,7 +227,7 @@ void compute_distance_map( vtkPolyData* polydata,  std::vector<double>& Lstar, i
 
 
 
-void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<int> seeds, std::list<int>& L0 )
+void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<int> & seeds, std::list<int>& L0 )
 {
     L0.clear();
     std::set<int>   done_src;
@@ -238,15 +238,14 @@ void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<in
         return;
     }
 
-    int sFrom = 0;
-    int sTo   = 1;
-    int sPrev = sFrom;
+    size_t sFrom = 0;
+    size_t sTo   = 1;
 
     while ( done_dst.size() < seeds.size() )
     {
         sTo              = ( sTo < seeds.size() )  ?  sTo :  0 ;
-        int  src_idx     = seeds[sFrom];
-        int  dst_idx     = seeds[sTo];
+        size_t  src_idx     = seeds[sFrom];
+        size_t  dst_idx     = seeds[sTo];
 
         // assert( done_dst.count( sTo ) == 0 );
         done_dst.insert( sTo );
@@ -255,7 +254,6 @@ void initialize_closed_path( /* const */ vtkPolyData* mesh, const std::vector<in
         cout << "from,to: " << sFrom << ", " << sTo << endl;
         std::list<int>  path_list;
         compute_backwards_optimal_path( mesh, dst_idx, src_idx, path_list );
-        sPrev = sFrom;
         sFrom = sTo;
         sTo++;
 
