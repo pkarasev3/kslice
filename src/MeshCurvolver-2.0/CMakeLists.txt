@@ -1,8 +1,8 @@
-SET( OUR_VTK_REQUIRED_LIBS vtkRendering  vtkGraphics vtkHybrid vtkImaging vtkIO vtkFiltering vtkCommon)
+set( OUR_VTK_REQUIRED_LIBS vtkRendering  vtkGraphics vtkHybrid vtkImaging vtkIO vtkFiltering vtkCommon)
 
 file( GLOB LSVTK_SRC  src/*.cxx src/*.cpp include/*.h)
-ADD_LIBRARY( MeshContourEvolver ${LSVTK_SRC} )
-TARGET_LINK_LIBRARIES (  MeshContourEvolver vrcl  ${OpenCV_LIBS}  ${OUR_VTK_REQUIRED_LIBS} )
+add_library( MeshContourEvolver ${LSVTK_SRC} )
+target_link_libraries(  MeshContourEvolver vrcl  ${OpenCV_LIBS}  ${OUR_VTK_REQUIRED_LIBS} )
 
 
 add_subdirectory(exes/demo-standalone-code)
