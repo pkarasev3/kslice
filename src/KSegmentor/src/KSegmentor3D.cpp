@@ -272,11 +272,11 @@ void KSegmentor3D::Update2D()
     ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
     saveMatToPNG( U_I_slice, ss.str() );
   }
-  delete imgSlice;
-  delete labelSlice;
-  delete maskSlice;
-  delete phiSlice;
-  delete U_I_slice;
+  delete [] imgSlice;
+  delete [] labelSlice;
+  delete [] maskSlice;
+  delete [] phiSlice;
+  delete [] U_I_slice;
   m_UpdateVector.clear();
   m_CoordinatesVector.clear();
 }

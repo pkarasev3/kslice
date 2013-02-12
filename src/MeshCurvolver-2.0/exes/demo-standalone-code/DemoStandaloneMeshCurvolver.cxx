@@ -238,37 +238,17 @@ void userio_callback( vtkObject* caller, unsigned long eventID, void* ClientData
 
 vtkPoints* createSyntheticPoints()
 {
-    vtkPoints* points = vtkPoints::New();
+  vtkPoints* points = vtkPoints::New();
 
-    float x, y, z,u,v;
-    // generate random points on bumpy surface
-  int ii,jj;
-  ii = 100;
-  jj = 100;
-    int Npts = 15000;
-
-  bool bHarderExample = false;
-  if( bHarderExample) {
-    for(int i=0; i<ii; i++) {
-      for( int j = 0; j < jj; j++ ) {
-            u     = vtkMath::Random(-5.0,5.0);
-            v     = vtkMath::Random(-5.0,5.0);
-            z     = std::sin(x) * std::sin(y);
-        x     = u;
-        y     = v;
-            points->InsertNextPoint(x, y, z);
-      }
-      }
+  // generate random points on bumpy surface
+  const int Npts = 15000;
+  for(int i=0; i<Npts; i++) {
+    const float x = vtkMath::Random(-10.0,10.0);
+    const float y = vtkMath::Random(-10.0,10.0);
+    const float z = std::sin(x) * std::sin(y);
+    points->InsertNextPoint(x, y, z);
   }
-  else {
-   for(int i=0; i<Npts; i++) {
-        x = vtkMath::Random(-10.0,10.0);
-        y = vtkMath::Random(-10.0,10.0);
-        z = std::sin(x) * std::sin(y);
-        points->InsertNextPoint(x, y, z);
-   }
-  }
-    return points;
+  return points;
 }
 
 void displaySyntheticSurface()

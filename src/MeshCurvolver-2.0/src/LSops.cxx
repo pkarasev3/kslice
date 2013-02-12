@@ -134,14 +134,14 @@ vector<int> SparseFieldLS::Evolve(int its )
       for( ::size_t k = 0; k < Ln1N; k++ ) {
         L_n1.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ Ln1[k] ].myNeighbs);
-        int maxid     = -1; int maxlabel  = -1; int maxphiid  = -1; double phimax = 0.0;
+        int maxlabel  = -1;  double phimax = 0.0;
         for( ::size_t i = 0 ; i < neigh->size(); i++ ) {
           if( this->point_type[ (*neigh)[i] ] > maxlabel ) {
             maxlabel = this->point_type[ (*neigh)[i] ];
-            maxid    = (*neigh)[i]; }
+             }
           if( this->phi[ (*neigh)[i] ] > phimax ) {
             phimax   = this->phi[ (*neigh)[i] ];
-            maxphiid = (*neigh)[i]; }
+            }
         }
         if( maxlabel < 0 ) {
           Sn2.push_back( Ln1[k] );
@@ -164,14 +164,14 @@ vector<int> SparseFieldLS::Evolve(int its )
       for( ::size_t k = 0; k < Lp1N; k++ ) {
         L_p1.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ Lp1[k] ].myNeighbs);
-       int minid     = 4; int minlabel  = 4; int minphiid  = -1; double phimin = 4.0;
+       int minlabel  = 4; double phimin = 4.0;
         for( ::size_t i = 0 ; i < neigh->size(); i++ ) {
           if( this->point_type[ (*neigh)[i] ] < minlabel ) {
             minlabel = this->point_type[ (*neigh)[i] ];
-            minid    = (*neigh)[i]; }
+            }
           if( this->phi[ (*neigh)[i] ] < phimin ) {
             phimin   = this->phi[ (*neigh)[i] ];
-            minphiid = (*neigh)[i]; }
+            }
         }
         if( minlabel > 0 )
           Sp2.push_back( Lp1[k] );
@@ -197,14 +197,14 @@ vector<int> SparseFieldLS::Evolve(int its )
      for( ::size_t k = 0; k < Ln2N; k++ ) {
         L_n2.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ Ln2[k] ].myNeighbs);
-        int maxid     = -4; int maxlabel  = -4; int maxphiid  = -4; double phimax = -4.0;
+        int maxlabel  = -4; double phimax = -4.0;
         for( ::size_t i = 0 ; i < neigh->size(); i++ ) {
           if( this->point_type[ (*neigh)[i] ] > maxlabel ) {
             maxlabel = this->point_type[ (*neigh)[i] ];
-            maxid    = (*neigh)[i]; }
+            }
           if( this->phi[ (*neigh)[i] ] > phimax ) {
             phimax   = this->phi[ (*neigh)[i] ];
-            maxphiid = (*neigh)[i]; }
+            }
         }
         if( maxlabel < -1 ) {
           phi[ Ln2[k] ] = -3.0;
@@ -227,14 +227,14 @@ vector<int> SparseFieldLS::Evolve(int its )
      for( ::size_t k = 0; k < Lp2N; k++ ) {
         L_p2.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ Lp2[k] ].myNeighbs);
-        int minid     = 4; int minlabel  = 4; int minphiid  = -1; double phimin = 4.0;
+        int minlabel  = 4; double phimin = 4.0;
         for( ::size_t i = 0 ; i < neigh->size(); i++ ) {
           if( this->point_type[ (*neigh)[i] ] < minlabel ) {
             minlabel = this->point_type[ (*neigh)[i] ];
-            minid    = (*neigh)[i]; }
+            }
           if( this->phi[ (*neigh)[i] ] < phimin ) {
             phimin   = this->phi[ (*neigh)[i] ];
-            minphiid = (*neigh)[i]; }
+            }
         }
         if( minlabel > 1 ) {
           phi[ Lp2[k] ] = 3.0;
@@ -265,8 +265,8 @@ vector<int> SparseFieldLS::Evolve(int its )
      
       if( its_%50 == 0 )
         cout<<"LZ state: "<<Sz.size()<<","<<L_z.size()<<"\n";
-      while( Sz.size() > 0 ) {
-        int idx = Sz.front();
+      while( ! Sz.empty() ) {
+        const int idx = Sz.front();
         L_z.push_back( idx );
         Sz.pop_front();
         point_type[idx] = 0;
@@ -274,7 +274,7 @@ vector<int> SparseFieldLS::Evolve(int its )
       
      // cout<<Sp1.size()<<","<<L_p1.size()<<"\n";
       //cout<<Sn1.size()<<","<<L_n1.size()<<"\n";
-      while( Sn1.size() > 0 ) {
+      while( ! Sn1.empty() ) {
         int idx = Sn1.front();
         Sn1.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ idx ].myNeighbs);
@@ -287,7 +287,7 @@ vector<int> SparseFieldLS::Evolve(int its )
         L_n1.push_back(idx);
         point_type[idx] = -1;
       }
-      while( Sp1.size() > 0 ) {
+      while( ! Sp1.empty() ) {
         int idx = Sp1.front();
         Sp1.pop_front( );
         std::vector<int>* neigh = &(meshdata->adjimm[ idx ].myNeighbs);
@@ -306,13 +306,13 @@ vector<int> SparseFieldLS::Evolve(int its )
 
      // cout<<Sp2.size()<<","<<L_p2.size()<<"\n";
      // cout<<Sn2.size()<<","<<L_n2.size()<<"\n";
-      while( Sn2.size() > 0 ) {
+      while( ! Sn2.empty() ) {
         int idx = Sn2.front();
         Sn2.pop_front( );
         L_n2.push_back(idx);
         point_type[idx] = -2;
       }
-      while( Sp2.size() > 0 ) {
+      while( ! Sp2.empty() ) {
         int idx = Sp2.front();
         Sp2.pop_front( );
         L_p2.push_back(idx);

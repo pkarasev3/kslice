@@ -304,7 +304,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
 {
 
   int cache_idx1 = kwidget_2d_left->cacheSliceIndex;
-  int id=  kwidget_2d_left->activeLabelMapIndex;
 
   if ( cache_idx1 >= 0 ) // if a copy-from is stored
   {
@@ -442,7 +441,6 @@ void KViewer::handleGenericEvent( vtkObject* obj, unsigned long event )
     {
         kwidget_2d_left->UpdateTransform();
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
-        id=  kwidget_2d_left->activeLabelMapIndex;
         for (size_t k=0;k<kwidget_2d_left-> multiLabelMaps.size(); k++ )
         {
             kwidget_2d_left->SelectActiveLabelMap( k);

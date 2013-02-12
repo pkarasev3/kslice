@@ -53,8 +53,8 @@ public:
 
 private:
     //no copying!
-    KInteractiveLabelMap(const KInteractiveLabelMap&)   {  }
-    void operator=(const KInteractiveLabelMap&)         {  }
+    KInteractiveLabelMap(const KInteractiveLabelMap&); //purposfully not implemented
+    void operator=(const KInteractiveLabelMap&); //purposfully not implemented
     
     KWidget_2D_left*    sourceWidget;  // reverse handle on my source
 

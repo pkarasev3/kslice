@@ -36,12 +36,11 @@ bool UseInitContour=1;
 
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
-    double *F, *kappa;
     double a,Fmax,u,v,I;
 
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
+    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
+    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
 
     ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
     while(Lz->curr != NULL){          //loop through list
@@ -177,12 +176,11 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
 
 double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
-    double *F, *kappa;
     double a,Fmax,u,v,I;
 
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
+    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
+    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
 
     ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
     while(Lz->curr != NULL){          //loop through list
@@ -530,7 +528,7 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
-    double a,I;
+    double a;
     // allocate space for F
     double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
     double *kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
@@ -544,7 +542,6 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
         y = Lz->curr->y;
         z = Lz->curr->z;
         idx = Lz->curr->idx;
-        I = img[idx];
 
         double block_img[3][3][3];
         double block_phi[3][3][3];
@@ -707,7 +704,7 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
     int idx,n,j;
     double *F, *kappa;
     double a,Fmax,u,v,I;
-    double Gamuu, Gamuv, Gamvv, gamu, gamv, du, dv;
+    double Gamuu, Gamuv, Gamvv, gamu, gamv, du;
     double sumuu, sumvv, sumuv, Ibar, I2bar;
     bool ubad, vbad;
     // allocate space for F & kappa
@@ -736,8 +733,6 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
     Gamvv =  1/(aout*aout)*sumvv;
     gamu = sumuv/sumuu;
     gamv = sumuv/sumvv;
-    du = (u-v)*(Gamuu-Gamuv);
-    dv = (u-v)*(Gamuv-Gamvv);
 
     ubad = vbad = 0;
     if((Gamuv*(Gamuu+Gamvv))>(Gamuu*Gamvv+Gamuv*Gamuv)){
@@ -835,11 +830,10 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
 }
 
 double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam, double dthresh){
-    double *F,*kappa;
     int n = 0;
-    F = (double*)malloc(Lz->length*sizeof(double));
+    double *F = (double*)malloc(Lz->length*sizeof(double));
     if(F == NULL) return NULL;
-    kappa = (double*)malloc(Lz->length*sizeof(double));
+    double * kappa = (double*)malloc(Lz->length*sizeof(double));
     if(kappa == NULL) return NULL;
     ll_init(Lz); n=0;         //begining of list;
     while(Lz->curr != NULL){  //loop through list
@@ -860,8 +854,8 @@ double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam
 
 double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad, double lam, double *scale){
     double *F, *kappa;
-    double dx,dy,dz,kmax,fmax;
-    int x,y,z,idx,n,idxN;
+    double dx,dy,dz,fmax;
+    int x,y,z,idx,n;
     double MIN_INTERIOR;
 
     F = (double*)malloc(Lz->length*sizeof(double));
@@ -874,7 +868,7 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
     else
         MIN_INTERIOR = 0.25;
 
-    kmax = 0; fmax=0.0001;
+    fmax=0.0001;
     ll_init(Lz); n=0;         //begining of list;
     while(Lz->curr != NULL){  //loop through list
         x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
@@ -883,8 +877,6 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
         if(Ain[idx]<0){
             en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
         }
-
-        idxN = idx;
         F[n] = Ain[idx]-MIN_INTERIOR;
         if(fabs(F[n])>fmax) fmax = fabs(F[n]);
         ll_step(Lz); n++;    //  next point
@@ -1709,11 +1701,6 @@ void smoothHist(double *pdfRough, double *pdfSmooth ){
     int kerSize=7;
     int kerSide=3;
     int currInd;
-
-    double testSumBefore=0;
-    for(int l=0;l<nbins;l++){
-        testSumBefore+=pdfRough[l];
-    }
 
     double kernel[7]={0.0044,0.0540, 0.2420, 0.3989, 0.2420, 0.0540,0.0044};
     for(int i=0;i<nbins; i++){
