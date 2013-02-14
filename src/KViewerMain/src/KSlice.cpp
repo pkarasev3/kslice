@@ -58,7 +58,7 @@ void KSlice::runUpdate(){
 
 void KSlice::PrintSelf(ostream &os, vtkIndent indent)
 {
-    os << "Fill in the print function!" << std::endl;
+    os << "I've been called!" << std::endl;
 }
 
 
