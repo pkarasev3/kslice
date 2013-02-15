@@ -74,7 +74,7 @@ int main(int argc, char** argv)
    labVol->GetScalarRange(range);
 
   //set up the black box
-  vtkSmartPointer<KSlice> bbKSlice = vtkSmartPointer<KSlice>::New();  //created the data, options structures empty for now
+  vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
   //KSlice* bbKSlice=new KSlice();
   bbKSlice->SetImageVol(imgVol);
   bbKSlice->SetLabelVol(labVol);

@@ -19,6 +19,9 @@ find_package(OpenCV  REQUIRED)
 message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
                    you also want to have had libgtk2.0-dev *Before* building opencv!" )
 
+
+SET(BUILD_SHARED_LIBS ON)
+
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 

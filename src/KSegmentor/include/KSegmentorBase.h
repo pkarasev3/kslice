@@ -5,7 +5,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkImageReslice.h"
 #include "KViewerOptions.h"
-
+#include <iostream>
 
 #include <opencv2/core/core.hpp>
 

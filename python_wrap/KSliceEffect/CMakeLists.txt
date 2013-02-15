@@ -45,3 +45,18 @@ endif()
 if(NOT Slicer_SOURCE_DIR)
   include(${Slicer_EXTENSION_CPACK})
 endif()
+
+
+#-----------------------------------------------------------------------------
+#build the module python will include
+find_package(VTK)
+IF(NOT VTK_DIR)
+  message(FATAL_ERROR "Please set VTK_DIR.")
+ENDIF(NOT VTK_DIR)
+include(${VTK_USE_FILE})
+
+execute_process(COMMAND echo ${VTK_INCLUDE_DIRS})
+
+include_directories(../../src/KViewerMain/include/ ../../src/KSegmentor/include/)
+add_library(vtkKSlicePy kslice_TryWrap.cpp ../../src/KViewerMain/include/KSlice.h)
+target_link_libraries( vtkKSlicePy /u4/home/ikolesov3/KSlice_slicerCont/kslice/python_wrap/KSliceEffect/../../build/lib/libKSlice.so)

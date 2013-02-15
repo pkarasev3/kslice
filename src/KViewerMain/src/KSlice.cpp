@@ -10,12 +10,12 @@
 
 
 //vtkCxxRevisionMacro(KSlice, "$Revision$"); //necessary?
-vtkStandardNewMacro(KSlice); //for the new() macro
+vtkStandardNewMacro(vtkKSlice); //for the new() macro
 
 //----------------------------------------------------------------------------
 
 
-KSlice::KSlice( ) {
+vtkKSlice::vtkKSlice( ) {
     dataWarehouse= new KDataWarehouse();
 
     BrushRad=7;
@@ -28,19 +28,19 @@ KSlice::KSlice( ) {
 }
 
 
-KSlice::~KSlice() {
+vtkKSlice::~vtkKSlice() {
   delete dataWarehouse;
 
 }
 
 
 
-void KSlice::PasteSlice(int toSlice){
+void vtkKSlice::PasteSlice(int toSlice){
     ToSlice=toSlice;
     vrcl::copySliceFromTo( dataWarehouse->LabelVol, FromSlice, ToSlice);
 }
 
-void KSlice::Initialize(){
+void vtkKSlice::Initialize(){
     //set up the segmentor
     dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
     dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
@@ -49,14 +49,14 @@ void KSlice::Initialize(){
 
 }
 
-void KSlice::runUpdate(){
+void vtkKSlice::runUpdate(){
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
         dataWarehouse->ksegmentor->Update2D();
     }
 }
 
-void KSlice::PrintSelf(ostream &os, vtkIndent indent)
+void vtkKSlice::PrintSelf(ostream &os, vtkIndent indent)
 {
     os << "I've been called!" << std::endl;
 }

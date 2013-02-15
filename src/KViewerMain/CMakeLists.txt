@@ -18,6 +18,7 @@ file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )
 message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
 add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
 
+
 TARGET_LINK_LIBRARIES( KViewer
  # QVTK
  # ${QT_LIBRARIES}
@@ -29,6 +30,12 @@ TARGET_LINK_LIBRARIES( KViewer
   KSegmentor
   vrcl
 )
+
+
+#this should really be more closely tied to the python wrapper stuff ... not here
+set(KV_LIBS KViewer ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+add_library( KSlice ./src/KSlice.cpp)
+target_link_libraries( KSlice ${KV_LIBS})
 
 
 add_subdirectory(exes)
