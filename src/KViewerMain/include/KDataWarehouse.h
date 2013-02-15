@@ -12,10 +12,7 @@
 #include <set>
 
 #include <boost/shared_ptr.hpp>
-//#include "KSegmentorBase.h"
 #include "KViewerOptions.h"
-
-//using cv::Ptr;
 
 struct KDataWarehouse
 {
@@ -31,11 +28,12 @@ private:
   {
       std::cout<<"Datawarehouse initialized"<<std::endl;
   }
+  // store handle on initial image reader so metadata can later be saved with labels.
+  vtkSmartPointer<vtkMetaImageReader>  inputImageReader;
 
 public:
   KDataWarehouse( boost::shared_ptr<KViewerOptions> kv_opts_in ) ;
 
-  // smart pointers know to kill themselves
   ~KDataWarehouse( ) { }
 
   vtkSmartPointer<vtkImageData>       imageVolumeRaw;
@@ -46,6 +44,14 @@ public:
 
   // modified label array
   vtkSmartPointer<vtkImageData>       labelDataArray_new;
+
+  vtkMetaImageReader* GetInputImageReader( ) {
+    return inputImageReader;
+  }
+
+  void SetInputImageReader(vtkSmartPointer<vtkMetaImageReader> reader ) {
+    inputImageReader = reader;
+  }
 
   boost::shared_ptr<KViewerOptions> kv_opts;
 

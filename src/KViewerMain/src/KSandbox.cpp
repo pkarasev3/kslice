@@ -27,15 +27,15 @@ using namespace cv;
 namespace vrcl  {
 
 vector<double> get_good_color_0to7( int idx )
-{
+{ /** Copied some "maximally different looking colors" from the web; return one by index. */
   double rgb[3];
   switch( idx )
   {
   case 0:
-    rgb[0]=0; rgb[1]=117; rgb[2]=220;  // ?
+    rgb[0]=255; rgb[1]=0; rgb[2]=16; // red
     break;
   case 1:
-    rgb[0]=255; rgb[1]=0; rgb[2]=16; // red
+    rgb[0]=0; rgb[1]=117; rgb[2]=220;  // blueish
     break;
   case 2:
 //    double rgb[3] = {43,206,72}; // green
@@ -241,10 +241,11 @@ void setup_file_reader(boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_
     imgReader->SetDataScalarTypeToUnsignedShort();
     imgReader->Update();
 
+    kv_data->SetInputImageReader( imgReader );
+
     std::string byteOrderName( imgReader->GetDataByteOrderAsString() );
     std::cout << "byte orderness of " << kv_opts->ImageArrayFilename << ": " << byteOrderName << endl;
 
-    //?????
     // read the image file into the label array to force correct type & meta-data
     std::string fakeLabelFileName = kv_opts->ImageArrayFilename;
     labelFileReader->SetFileName( fakeLabelFileName.c_str() );
@@ -286,7 +287,6 @@ void setup_file_reader(boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_
   oz = 0;
   image2D->SetOrigin( ox, oy, oz );
   label2D->SetOrigin( ox, oy, oz );
-
 
   //kv_opts stores parameters from data for persistent scope
   std::vector<double> dataSpacing(3);

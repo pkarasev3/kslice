@@ -51,16 +51,6 @@ void SetupSaturationLUT( vtkLookupTable* satLUT, KViewerOptions* kv_opts, KDataW
     * Needs to be adjusted if all you see is black & white.
     */
 
-
-  //IKChange
-  //  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
-  //    cout << "no min,max passed; setting default window: min,max of image." << endl;
-  //    double minMaxImage[2];
-  //    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
-  //    kv_opts->minIntensity = minMaxImage[0];
-  //    kv_opts->maxIntensity = minMaxImage[1];
-  //  }
-
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
   satLUT->SetTableRange (kv_opts->minIntensity * 0.9, kv_opts->maxIntensity * 1.1);
@@ -345,7 +335,6 @@ void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_inpu
 
   UpdateMultiLabelMapDisplay( );
 
-  // TODO: only if a verbose mode is on! wastes memory and time
   if( kv_opts->m_bVerboseSave ) {
     uk_recorder.initialize( this->GetActiveLabelMap() );
   }
@@ -413,8 +402,13 @@ void KWidget_2D_left::SaveLabelsInternal( const std::stringstream& ss,
     labelWriter->SetInput( multiLabelMaps[label_idx]->labelDataArray );
     labelWriter->SetFileName( labelmap_filename.c_str() );
     labelWriter->SetCompression( kv_opts->writeCompressed );
+
+    /** D'oh, the writer class doesn't let you set all of the Get()-able properties of reader! */
+    std::string  orientationTag( kv_data->GetInputImageReader()->GetAnatomicalOrientation() );
+
+
     labelWriter->Write();
-    IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelmap_filename << endl );
+    IFLOG(VERBOSE, cout << "orientation: " << orientationTag <<", wrote label map to file: " << labelmap_filename << endl );
 
     if( bSaveUserInput_U ) {
       vtkImageData* U_of_t = multiLabelMaps[label_idx]->ksegmentor->U_Integral_image;
