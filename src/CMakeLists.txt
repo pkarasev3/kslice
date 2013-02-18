@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 project(KSlice3D-slicer)
+cmake_policy(SET CMP0012 NEW)
 
-find_package(VTK)
-IF(NOT VTK_DIR)
-  message(FATAL_ERROR "Please set VTK_DIR.")
-ENDIF(NOT VTK_DIR)
-include(${VTK_USE_FILE})
 
-find_package(ITK)
-if(NOT ITK_DIR)
-  message(STATUS "If you need ITK, Please set ITK_DIR to build stuff that needs ITK.")
-else(NOT ITK_DIR)
-  # include(${ITK_USE_FILE}) # only gao3d should need this ...
-endif(NOT ITK_DIR)
+
+
+
+
 
 
 find_package(OpenCV  REQUIRED)
@@ -52,17 +46,17 @@ endif(${FORCE_CLEAN_SH})
 
 
 # use what QVTK built with!
-SET(QT_QMAKE_EXECUTABLE ${VTK_QT_QMAKE_EXECUTABLE} CACHE FILEPATH "")
-SET(QT_MOC_EXECUTABLE ${VTK_QT_MOC_EXECUTABLE} CACHE FILEPATH "")
-SET(QT_UIC_EXECUTABLE ${VTK_QT_UIC_EXECUTABLE} CACHE FILEPATH "")
-SET(DESIRED_QT_VERSION 4 CACHE FILEPATH "")
+#SET(QT_QMAKE_EXECUTABLE ${VTK_QT_QMAKE_EXECUTABLE} CACHE FILEPATH "")
+#SET(QT_MOC_EXECUTABLE ${VTK_QT_MOC_EXECUTABLE} CACHE FILEPATH "")
+#SET(QT_UIC_EXECUTABLE ${VTK_QT_UIC_EXECUTABLE} CACHE FILEPATH "")
+#SET(DESIRED_QT_VERSION 4 CACHE FILEPATH "")
 
-find_package(Qt)
-IF(QT_USE_FILE)
-  include(${QT_USE_FILE})
-ELSE(QT_USE_FILE)
-  SET(QT_LIBRARIES   ${QT_QT_LIBRARY})
-ENDIF(QT_USE_FILE)
+#find_package(Qt)
+#IF(QT_USE_FILE)
+#  include(${QT_USE_FILE})
+#ELSE(QT_USE_FILE)
+#  SET(QT_LIBRARIES   ${QT_QT_LIBRARY})
+#ENDIF(QT_USE_FILE)
 
 
 
@@ -116,15 +110,15 @@ add_subdirectory(KViewerMain)
 #add_subdirectory(SampleApplications)
 add_subdirectory(KSegmentor)
 
-set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)
-if(${BUILD_ITK_DEPENDENT_STUFF})
-  message(STATUS "   found ITK, building with it! " )
-  add_subdirectory(SampleApplications/Make3DModel)
+#set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)
+#if(${BUILD_ITK_DEPENDENT_STUFF})
+#  message(STATUS "   found ITK, building with it! " )
+#  add_subdirectory(SampleApplications/Make3DModel)
   #add_subdirectory(Gao3DRSS)
   #add_subdirectory(SampleApplications/MHADecompressor)
-else(${BUILD_ITK_DEPENDENT_STUFF})
-  message(STATUS "   no ITK for you " )
-endif(${BUILD_ITK_DEPENDENT_STUFF})
+#else(${BUILD_ITK_DEPENDENT_STUFF})
+#  message(STATUS "   no ITK for you " )
+#endif(${BUILD_ITK_DEPENDENT_STUFF})
 
 add_subdirectory(sfm_local_chanvese)
 #add_subdirectory(MeshCurvolver-2.0)

@@ -178,6 +178,11 @@ void test_KSlice( )
 {
   test_KSlice_impl( );
 }
+int test_Args(int Arr)
+{
+    int result = Arr *2 - 5;
+    return result;
+}
 
 BOOST_PYTHON_MODULE(KSlice) /* must generate KSlice.so and "import KSlice" in python */
 {
@@ -185,6 +190,7 @@ BOOST_PYTHON_MODULE(KSlice) /* must generate KSlice.so and "import KSlice" in py
    *     \link http://www.vtk.org/Wiki/Example_from_and_to_python_converters
    */
   boost::python::def("razstrel",test_KSlice);
+  boost::python::def("tfj",test_Args);
 }
 
 
