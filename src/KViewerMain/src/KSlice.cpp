@@ -185,10 +185,6 @@ BOOST_PYTHON_MODULE(KSlice) /* must generate KSlice.so and "import KSlice" in py
    *     \link http://www.vtk.org/Wiki/Example_from_and_to_python_converters
    */
   boost::python::def("razstrel",test_KSlice);
-  
-  // # python shell:
-  // import KSlice
-  // KSlice.razstrel()
 }
 
 
