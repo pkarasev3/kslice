@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(KSlice3D)
+project(KSlice3D-slicer)
 
 find_package(VTK)
 IF(NOT VTK_DIR)

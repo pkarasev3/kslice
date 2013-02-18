@@ -6,6 +6,7 @@
 #include "KDataWarehouse.h"
 #include "KViewerOptions.h"
 
+void test_KSlice(); /** standalone test function */
 
 class vtkKSlice : public vtkObject
 {
