@@ -1,4 +1,7 @@
-set(KV_LIBS KViewer QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics  vtkIO  vtkCommon  ${OpenCV_LIBS} ${Boost_LIBRARIES} )
+
+
+set(KV_LIBS XKSlice QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics
+         vtkIO  vtkCommon  ${OpenCV_LIBS} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} )
 
 
 add_executable( KViewer_desktop KViewer_desktop.cpp)

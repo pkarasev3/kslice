@@ -5,37 +5,39 @@ include_DIRECTORIES(
 )
 
 
-file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )
+find_package(Boost COMPONENTS filesystem system python REQUIRED)
+message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
+message("Libs of boost: " ${Boost_LIBRARIES} )
 
-#TODO: BAD, VTKtoITK is a reusable chunk, are we sure this is where it goes?
-# e.g. sounds more like a util perhaps
-# Anyway this seems broken/deprecated, revisit with VTK 5.8+ and ITK later than 3.2
-#file( GLOB VTKITKConnection ../VTKtoITKConnection/src/*.cxx ../VTKtoITKConnection/src/*.txx ../VTKtoITKConnection/include/*.h)
-#if(${BUILD_ITK_DEPENDENT_STUFF}) # only build if we have ITK
-#  set(KVIEWER_SRCS  ${KVIEWER_SRCS}  ${VTKITKConnection})
-#endif(${BUILD_ITK_DEPENDENT_STUFF})
+find_package(PythonLibs REQUIRED)
+message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
+message("Libs of Python: " ${PYTHON_LIBRARIES} )
 
-message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
-add_library( KViewer  ${KVIEWER_SRCS} ${UI_SRCS}  )
-
-
-TARGET_LINK_LIBRARIES( KViewer
- # QVTK
- # ${QT_LIBRARIES}
-  vtkRendering
-  vtkGraphics
-  vtkIO
-  vtkCommon
-  vtkVolumeRendering
-  KSegmentor
-  vrcl
+include_directories(
+    ${Boost_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 
-#this should really be more closely tied to the python wrapper stuff ... not here
-set(KV_LIBS KViewer ${OpenCV_LIBS} ${Boost_LIBRARIES} )
-add_library( KSlice ./src/KSlice.cpp)
+set(KV_LIBS vtkRendering  vtkGraphics  vtkIO  vtkCommon  vtkVolumeRendering
+     KSegmentor  vrcl  ${OpenCV_LIBS} # should not need opencv now, see pk's branch
+                       ${Boost_LIBRARIES}
+                       ${PYTHON_LIBRARIES} )
+set(KV_SRC                 ./src/KSandbox.cpp
+                           ./src/KSlice.cpp
+                           ./include/KSlice.h
+                           ./include/KViewerOptions.h
+                           ./include/KDataWarehouse.h
+                           ./include/KSandbox.h)
+# STANDALONE; makes libXKSlice.so
+add_library( XKSlice SHARED ${KV_SRC})
+target_link_libraries( XKSlice ${KV_LIBS})
+
+# FOR WRAPPING; makes KSlice.so (explicitly set, must equal the PythonModule name)
+add_library( KSlice SHARED  ./src/KSlice.cpp )
 target_link_libraries( KSlice ${KV_LIBS})
+set_target_properties( KSlice PROPERTIES PREFIX "" ) # want KSlice.so, not libKSlice.so
 
 
+# STANDALONE
 add_subdirectory(exes)
