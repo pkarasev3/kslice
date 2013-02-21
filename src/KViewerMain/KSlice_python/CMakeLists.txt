@@ -60,7 +60,7 @@ execute_process(COMMAND echo ${CMAKE_MODULE_PATH})
 execute_process(COMMAND echo "simple print")
 execute_process(COMMAND echo ${Slicer_SOURCE_DIR})
 include(vtkWrapPython)
-set(KitPython_SRCS ../include/KSlice.h)
+set(KitPython_SRCS )
 set(WRAP_LIST ../src/KSlice.cpp)  #the files for which we want to create a python wrapping
 set(Kit_PYTHON_EXTRA_SRCS ) #no extra sources at this time
 VTK_WRAP_PYTHON3(${EXTENSION_NAME}Python KitPython_SRCS "${WRAP_LIST}")
