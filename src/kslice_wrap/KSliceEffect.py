@@ -5,6 +5,7 @@ from EditorLib.EditOptions import HelpButton
 from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
+#import ../qt-loadable-modules/vtkSlicerKSliceModuleLogicPython
 
 #
 # The Editor Extension itself.
@@ -71,6 +72,11 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def onApply(self):
     print('This is just an example - nothing here yet')
+    
+    #logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice() #IKDebug
+    #print(logic)
+    #logic.PrintEmpty()
+
 
   def updateMRMLFromGUI(self):
     if self.updatingGUI:
