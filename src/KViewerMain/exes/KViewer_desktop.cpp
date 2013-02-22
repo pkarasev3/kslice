@@ -1,4 +1,4 @@
-#include "KSlice.h"
+#include "vtkKSlice.h"
 #include <vtkSmartPointer.h>
 
 

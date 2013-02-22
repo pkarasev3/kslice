@@ -1,7 +1,7 @@
 #include <iostream>
 //#include <boost/python.hpp>
 
-#include "KSlice.h"
+#include "vtkKSlice.h"
 
 #include "KSandbox.h"
 #include "KDataWarehouse.h"

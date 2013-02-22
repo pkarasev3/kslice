@@ -28,8 +28,8 @@ set(KV_LIBS vtkRendering  vtkGraphics  vtkIO  vtkCommon  vtkVolumeRendering
                        ${PYTHON_LIBRARIES} )
 
 set(KV_SRC                 ./src/KSandbox.cpp
-                           ./src/KSlice.cpp
-                           ./include/KSlice.h
+                           ./src/vtkKSlice.cpp
+                           ./include/vtkKSlice.h
                            ./include/KViewerOptions.h
                            ./include/KDataWarehouse.h
                            ./include/KSandbox.h)
