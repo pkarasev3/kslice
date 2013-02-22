@@ -555,7 +555,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
                                 (j-event_PixCoord[1])*(j-event_PixCoord[1])*1.0 , 0.5 ) + 1e-3;
           if( distance <= kv_opts->paintBrushRad ) {
-            float dRatio = pow( ( kv_opts->paintBrushRad / (1.0+distance) ), 2.0f );
+            float dRatio = pow( (double)( kv_opts->paintBrushRad / (1.0+distance) ), (double)2.0 );
             short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
