@@ -58,6 +58,8 @@ public:
   int    segmentor_iters; // # of curve evolution update iterations
   int    multilabel_paste_mode; // copy/paste, do all labels, or only active, or ?
   int    multilabel_sgmnt_mode; // run segmentor, do all labels, or only active, or ?
+  int    rad; //radius used for active contour, default 5 pixels")
+  float  lambda; //"lambda, penalty for curvature of contour, default 0")
 
 //////////////////////
 
