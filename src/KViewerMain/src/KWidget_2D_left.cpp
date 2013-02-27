@@ -328,8 +328,9 @@ void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_inpu
   {
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray; assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
     KSegmentorBase* raw_ptr       = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
+    raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
+    raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
     multiLabelMaps[k]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
-
     multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
     multiLabelMaps[k]->ksegmentor->SetUmax( 3.0 /* whew... */ );
@@ -626,6 +627,8 @@ void KWidget_2D_left::AddNewLabelMap( )
 
   if (!bIsInitialization) {
     KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
+    //raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
+    //raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);

@@ -572,19 +572,16 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
-              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax)
-                                                       && (ptrImage[elemNum] > imgMin) ) {
+              bool drawInImgRange=
+                       ( ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ;
+
+              if( image_callback->Erase() || drawInImgRange ) {
                   coord[0]=(i);
                   coord[1]=(j);
                   coord[2]=(kk);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
 
-                //if(kk==k) //User integration only in current slice or not?
-                         // PK opinion: drawing period really should be in "this" slice only ...
-                         // off-view-slice updates make sense for automated part. But it doesn't make sense to
-                         // manually draw edits if we're editing things we can't see! Rather, we go to a slice where automated
-                         // part is making mistakes and edit it there.
                 double w_Ves = 0.5 + std::max( 0.5f, 1.0f - distance );
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateCurrentUserInput(Label_Fill_Value,elemNum,w_Ves);
                 ptrLabel[elemNum] = Label_Fill_Value;

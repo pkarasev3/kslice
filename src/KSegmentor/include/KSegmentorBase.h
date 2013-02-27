@@ -79,6 +79,8 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        void SetLambda(float lambda);
+        void SetContRad(int rad);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet3D();
@@ -251,6 +253,7 @@ public:
         double m_Spacing_mm[3];
         double m_SatRange[2];
         bool   m_bUseEdgeBased; // do we use edge-based energy?
+
 
 // Bogus/Deprecated !
 //        unsigned short *seg; //seg result from last run of the segmentor

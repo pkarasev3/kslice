@@ -38,8 +38,15 @@ void test_OpenMP()
   }
 }
 
-/** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.35;
+
+
+void KSegmentorBase::SetLambda(float lambda){ //set the curvature penalty
+    this->lambda=lambda;
+}
+
+void KSegmentorBase::SetContRad(int rad){ //set the radius used in active contour
+    this->rad = rad;
+}
 
 
 void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image,
@@ -61,7 +68,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->iter=500;
     segPointer->m_DistWeight=0;
     segPointer->m_ThreshWeight=0;
-    segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
+    segPointer->lambda=0;
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
 
@@ -80,9 +87,10 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.
-    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+//    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
+//    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+//    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    segPointer->rad = rad; //IKDebug
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
