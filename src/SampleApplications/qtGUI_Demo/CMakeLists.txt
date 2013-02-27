@@ -11,7 +11,7 @@ execute_process(COMMAND "sh" ${CMAKE_CURRENT_SOURCE_DIR}/build.sh
 set( VTK_LIBS    vtkCommon vtksys QVTK  vtkViews vtkWidgets
 vtkInfovis vtkRendering vtkGraphics vtkImaging vtkIO vtkFiltering
 vtkDICOMParser vtksqlite   vtkexoIIc  vtkNetCDF  vtkmetaio  vtkftgl # vtkfreetype
-vtkHybrid  vtkalglib vtkexpat vtkverdict vtkParallel VPIC Cosmo )
+vtkHybrid  vtkalglib vtkexpat vtkverdict  )
 
 file( GLOB   sources *.h *.cpp *.cxx  )
 message(STATUS "grabbed qmake files:  ${sources}, linking to qt libs: ${QT_LIBRARIES} " )
