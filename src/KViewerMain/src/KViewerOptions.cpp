@@ -89,6 +89,8 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   GetOpt_pp ops(argc, argv); // parse the command line string into chunks
 
   // set default values if they weren't passed as command line args
+  rad=5;
+  lambda=0;
   paintBrushRad       = 7; // size of brush (radius)
   paintBrushThreshold = 0.05; // only draw if within X times image range of click point
   modelOpacity3D      = 0.5;
@@ -134,6 +136,8 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
+      ("ContRad,r",po::value<int>(&rad)->default_value(5),"radius used for active contour, default 5 pixels")
+      ("Lambda,l",po::value<float>(&lambda)->default_value(0),"lambda, penalty for curvature of contour, default 0")
       ("help","print help");
 
   po::variables_map vm;

@@ -27,6 +27,7 @@ extern double *Ain, *Aout, *Sin, *Sout; //local means
 namespace vrcl
 {
 
+
 KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
 {
   KSegmentor3D* seg3DPointer = new KSegmentor3D;
