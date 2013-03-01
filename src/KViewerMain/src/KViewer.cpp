@@ -568,7 +568,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
 
-              if( (distance < 1.1 ) && kv_opts->m_bVerboseSave ) {
+              if( (distance < 1.0 ) && kv_opts->m_bVerboseSave ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
