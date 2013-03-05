@@ -60,3 +60,11 @@ s = qt.QShortcut(k, mainWindow())
 s.connect('activated()', updateKSlice)
 s.connect('activatedAmbiguously()', updateKSlice)
 
+
+#get slider information, a.__dict__ and a.children() are useful commands
+a=lm.sliceWidget('Red')
+d=a.mrmlSliceNode()
+d.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
+e=imgNode.GetSpacing() 
+e[2]
+f=imgNode.GetOrigin()
