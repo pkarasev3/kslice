@@ -35,6 +35,8 @@ public:
   void Initialize();
   void runUpdate();
   void PrintEmpty();
+//void PrintImage(ostream &os, vtkIndent indent);
+  void PrintImage();
 protected:
  vtkKSlice();
   virtual ~vtkKSlice();

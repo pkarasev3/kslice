@@ -55,6 +55,8 @@ void vtkKSlice::runUpdate(){
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
         dataWarehouse->ksegmentor->Update2D();
+        std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
+        LabelVol->Modified();
     }
 }
 
@@ -69,3 +71,16 @@ void vtkKSlice::PrintEmpty()
 }
 //void vtkKSlice::CollectRevisions(std::ostream&){
 //}
+
+//void vtkKSlice::PrintImage(ostream &os, vtkIndent indent)
+//{
+//    this->ImageVol->PrintSelf(os, indent);
+//}
+
+void vtkKSlice::PrintImage()
+{
+    double imgRange[2];
+    std::cout<<this->ImageVol->GetScalarTypeMax()<<std::endl;
+    this->ImageVol->GetScalarRange(imgRange);
+    std::cout<<imgRange[0]<<"-"<<imgRange[1]<<std::endl;
+}

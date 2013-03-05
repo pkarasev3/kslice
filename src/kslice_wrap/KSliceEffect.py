@@ -5,7 +5,7 @@ from EditorLib.EditOptions import HelpButton
 from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
-#import ../qt-loadable-modules/vtkSlicerKSliceModuleLogicPython
+import vtkSlicerKSliceModuleLogicPython
 
 #
 # The Editor Extension itself.
@@ -72,10 +72,11 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def onApply(self):
     print('This is just an example - nothing here yet')
-    
-    #logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice() #IKDebug
-    #print(logic)
-    #logic.PrintEmpty()
+  
+    import vtkSlicerKSliceModuleLogicPython  
+    logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice() #IKDebug
+    print(logic)
+    logic.PrintEmpty()
 
 
   def updateMRMLFromGUI(self):
@@ -160,6 +161,7 @@ class KSliceEffectExtension(LabelEffect.LabelEffect):
     self.name = "KSliceEffect"
     # tool tip is displayed on mouse hover
     self.toolTip = "Paint: circular paint brush for label map editing"
+
 
     self.options = KSliceEffectOptions
     self.tool = KSliceEffectTool

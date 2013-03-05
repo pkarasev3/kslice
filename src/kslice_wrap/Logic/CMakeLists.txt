@@ -13,12 +13,10 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../KViewerMain/src/KSlice.cpp #IKChange
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../KViewerMain/include/KSlice.h #IKChange
+ # ${CMAKE_CURRENT_SOURCE_DIR}/../../KViewerMain/src/KSlice.cpp #IKChange
+ # ${CMAKE_CURRENT_SOURCE_DIR}/../../KViewerMain/include/KSlice.h #IKChange
   vtkKSlice.cpp #IKChange
   vtkKSlice.h #IKChange
-  #vtkSysInfo.cxx
-  #vtkSysInfo.h
 )
 
 set(${KIT}_TARGET_LIBRARIES

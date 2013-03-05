@@ -95,6 +95,9 @@ int main(int argc, char** argv) {
   bbKSlice->SetCurrSlice(currSlice-3);
   bbKSlice->runUpdate();
 
+  //bbKSlice->PrintImage(std::cout, vtkIndent());
+  bbKSlice->PrintImage();
+
   //record the output (FOR TESTING ONLY)
   vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
   writer->SetInput(labVol);
