@@ -116,9 +116,6 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     cout << "I think the # of rows is: " << segPointer->mdims[1]
          << ", # of cols is: " << segPointer->mdims[0] << endl;
 
-//    segPointer->iList=NULL;
-//    segPointer->jList=NULL;
-
     //Set dimensions
     segPointer->dimz = (int)segPointer->mdims[2];
     segPointer->dimy = (int)segPointer->mdims[1];

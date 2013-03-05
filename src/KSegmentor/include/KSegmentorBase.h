@@ -115,7 +115,7 @@ class KSegmentorBase
           rad = radNew;
         }
 
-        void setCurrIndex(int sliceIndex){
+        void setCurrIndex(int sliceIndex){ // does this get called twice?? can't save "prevSlice" here ...
             this->currSlice=sliceIndex;
         }
 
