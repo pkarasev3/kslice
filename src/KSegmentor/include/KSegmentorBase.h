@@ -232,6 +232,7 @@ public:
 /** Might (??) own anything else below */
         int currSlice;       //the slice we are segmenting
         int prevSlice;
+
         long numberdims;     //for images =2, for volumes =3
         int *mdims;          //dimensions of "image" we are segmenting (ex.512x512x212)
         double *imgRange;    //[minImageVal, maxImageVal]

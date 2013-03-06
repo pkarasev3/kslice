@@ -152,11 +152,9 @@ void KSegmentor3D::initializeData()
 }
 
 namespace {
-//  int prev_mdim0;
-//  int prev_mdim1;
-  int cache_slice=-1;
+
   std::vector<double> cache_phi(0);
-  int ran_on_currSlice=0;
+
 }
 
 void KSegmentor3D::Update2D()
@@ -209,19 +207,15 @@ void KSegmentor3D::Update2D()
   ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
                 LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
-//  if( prevSlice != currSlice ) {
-//     ran_on_currSlice = 0;
-//  }
   cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
   if( (prevSlice == this->currSlice) ) {
     cout <<  "\033[01;32m\033]"
          << "using cached phi " << "\033[00m\033]" << endl;
     std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*mdims[0]*mdims[1] );
-  } else { /*(prevSlice == currSlice) {*/
+  } else {
     cout <<  "\033[01;42m\033]"
          << "first time on slice! " << "\033[00m\033]" << endl;
   }
-  //ran_on_currSlice++;
   prevSlice=currSlice;
 
 

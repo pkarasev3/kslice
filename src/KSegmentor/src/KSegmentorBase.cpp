@@ -56,7 +56,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imageVol=image;
     segPointer->labelVol=label;
 
-    segPointer->numberdims=3;
+    //segPointer->numberdims=3;
 
     segPointer->m_bUseEdgeBased = false;
     segPointer->penaltyAlpha=0;
