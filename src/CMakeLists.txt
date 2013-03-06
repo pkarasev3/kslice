@@ -6,9 +6,22 @@ cmake_policy(SET CMP0012 NEW)
 #-----------------------------------------------------------------------------
 set(MODULE_NAME KSlice)
 #-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
+
+set(KSlice_Build_SlicerWrap  CACHE  bool true)
+
+if(KSlice_Build_SlicerWrap)
+  if(NOT Slicer_SOURCE_DIR)
+    find_package(Slicer REQUIRED)
+    include(${Slicer_USE_FILE})
+  endif()
+endif()
+
+if(NOT KSlice_Build_SlicerWrap)
+  find_package(VTK REQUIRED)
+  if(NOT VTK_DIR)
+    message(FATAL_ERROR "Please set VTK_DIR, or build with Slicer.")
+  endif(NOT VTK_DIR)
+  include(${VTK_USE_FILE})
 endif()
 
 

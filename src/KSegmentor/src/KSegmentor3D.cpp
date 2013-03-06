@@ -7,14 +7,14 @@
 #include <omp.h>
 #include <string>
 #include <sstream>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include "vtkImageGaussianSmooth.h"
-
-
+#include <cstring>
+#include <cstdlib>
 #include <ctime>
 
 using std::string;
-using cv::Mat;
+//using cv::Mat;
 
 //these global variables are no good, need to fix later
 extern double ain, aout, auser; // means
@@ -26,7 +26,8 @@ extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
-                           bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
+                           bool contInit, int currSlice, int numIts,
+                           float distWeight, int brushRad)
 {
 
 
@@ -67,7 +68,7 @@ void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsi
 
 }
 
-void KSegmentor3D::integrateUserInputInUserInputImage()
+void KSegmentor3D::integrateUserInput()
 {
     ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
     ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
@@ -144,15 +145,22 @@ void KSegmentor3D::initializeData()
 }
 
 
+namespace {
+  std::vector<double> cache_phi(0);
+}
 
 void KSegmentor3D::Update2D()
 {
-    this->integrateUserInputInUserInputImage();
+    this->integrateUserInput();
     this->CreateLLs(LL2D);
 
     ptrCurrImage        = static_cast<unsigned short*>(imageVol->GetScalarPointer());
     ptrCurrLabel        = static_cast<unsigned short*>(labelVol->GetScalarPointer());
     ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+
+    size_t sz = mdims[0]*mdims[1];
+    if( cache_phi.size() != (size_t)sz )
+      cache_phi.resize(sz);
 
     double* imgSlice          = new double[  mdims[0]*mdims[1] ];
     double* maskSlice       = new double[ mdims[0]*mdims[1] ];
@@ -185,6 +193,20 @@ void KSegmentor3D::Update2D()
     ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
                   LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
+
+    cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
+    if( (prevSlice == this->currSlice) ) {
+      cout <<  "\033[01;32m\033]"
+           << "using cached phi " << "\033[00m\033]" << endl;
+      std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*mdims[0]*mdims[1] );
+    } else {
+      cout <<  "\033[01;42m\033]"
+           << "first time on slice! " << "\033[00m\033]" << endl;
+    }
+    prevSlice=currSlice;
+
+
+
     interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                            iter,rad,lambda*0.5,display);
@@ -207,21 +229,13 @@ void KSegmentor3D::Update2D()
             elemNum++;
         }
     }
-
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
 
-    bool bSavePNG = false;
-    if( bSavePNG ) {
-        std::stringstream ss;
-        ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-        saveMatToPNG( imgSlice, ss.str() ); //saveMatToPNG( U_I_slice, ss.str() );
-    }
     delete imgSlice;
     delete labelSlice;
     delete maskSlice;
     delete phiSlice;
     delete U_I_slice;
-
 
     m_UpdateVector.clear();
     m_CoordinatesVector.clear();
@@ -245,7 +259,7 @@ void KSegmentor3D::Update3D()
 
 
     cout << "integrating mask 3D " << endl;
-    this->integrateUserInputInUserInputImage();
+    this->integrateUserInput();
 
     // The bug is as follows: the level-set evolution modifies Lchanged indices,
     // but afterwards they are not appearing in the list of modified coordinates!
