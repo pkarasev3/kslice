@@ -195,7 +195,7 @@ class KSegmentorBase
 
         virtual void initializeData()=0;
 
-        virtual void integrateUserInputInUserInputImage()=0;
+        virtual void integrateUserInput()=0;
 
         virtual void UpdateArraysAfterTransform()=0;
 

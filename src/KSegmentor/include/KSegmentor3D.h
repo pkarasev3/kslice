@@ -32,7 +32,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 
     private:
         /** internal 'update from input' function */
-        void integrateUserInputInUserInputImage();
+        void integrateUserInput();
         void UpdateArraysAfterTransform();
 };
 

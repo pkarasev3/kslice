@@ -252,7 +252,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
         }
      }
   }
-  this->integrateUserInputInUserInputImage();
+  this->integrateUserInput();
     double spc[3];
     this->U_Integral_image->GetSpacing(spc);
 
