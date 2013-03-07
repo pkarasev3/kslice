@@ -23,12 +23,16 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def __init__(self, parent=0):
     super(KSliceEffectOptions,self).__init__(parent)
+    print("Made a KSliceEffectOptions")
+
+    #save a layout manager, get just the red slice
+    editUtil = EditorLib.EditUtil.EditUtil()
+    parameterNode = editUtil.getParameterNode()
+    lm = slicer.app.layoutManager()
+    redSliceWidget = lm.sliceWidget('Red')
+    self.parameterNode=parameterNode
+    self.logic=KSliceEffectLogic( redSliceWidget.sliceLogic() )
     
-    sliceLogic = self.sliceWidget.sliceLogic()   
-    self.logic=KSliceEffectLogic(sliceLogic)
-
-
-
   def __del__(self):
     super(KSliceEffectOptions,self).__del__()
 
@@ -40,7 +44,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     ###add the apply button to layout, widgets list
     self.frame.layout().addWidget(self.apply)
     self.widgets.append(self.apply)
-    self.apply.connect('clicked()', self.onApply)
+    self.apply.connect('clicked()', self.logic.apply)
 
     #make radius option
 
@@ -66,13 +70,6 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
 
 
-
-
-
-
-
-
-
     # Add vertical spacer
     self.frame.layout().addStretch(1)
 
@@ -93,14 +90,40 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
   def setMRMLDefaults(self):
     super(KSliceEffectOptions,self).setMRMLDefaults()
 
+    disableState = self.parameterNode.GetDisableModifiedEvent()
+    self.parameterNode.SetDisableModifiedEvent(1)
+    defaults = (
+      ("radius", "5"),
+    )
+    for d in defaults:
+      param = "KSliceEffect,"+d[0]
+      pvalue = self.parameterNode.GetParameter(param)
+      if pvalue == '':
+        self.parameterNode.SetParameter(param, d[1])
+    self.parameterNode.SetDisableModifiedEvent(disableState)
+
   def updateGUIFromMRML(self,caller,event):
+    print("making the connections")
+    #params = ("radius",)
+    #for p in params:
+    #  if self.parameterNode.GetParameter("KSliceEffect,"+p) == '':
+    #    # don't update if the parameter node has not got all values yet
+    #    return
+
+    
     self.updatingGUI = True
     super(KSliceEffectOptions,self).updateGUIFromMRML(caller,event)
+    self.disconnectWidgets()
+    self.locRadSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,radius")) )
+    self.connectWidgets()
     self.updatingGUI = False
+
+    print("made the connections")
 
   def onApply(self):
     print('Processing image')
-    self.logic.apply() #the XY is missing!!! 
+    
+    self.logic.apply()
 
 
 
@@ -141,9 +164,9 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
     """
     if event == "LeftButtonPressEvent":
       xy = self.interactor.GetEventPosition()
-      sliceLogic = self.sliceWidget.sliceLogic()
-      logic = KSliceEffectLogic(sliceLogic)
-      logic.apply(xy)
+      #sliceLogic = self.sliceWidget.sliceLogic()
+      #logic = KSliceEffectLogic(sliceLogic)
+      #logic.apply(xy)
       print("Got a %s at %s in %s", (event,str(xy),self.sliceWidget.sliceLogic().GetSliceNode().GetName()))
       self.abortEvent(event)
     else:
@@ -167,7 +190,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
   def __init__(self,sliceLogic):
     self.sliceLogic = sliceLogic
-
+    #print(self.sliceLogic)
+    print("Made a KSliceEffectLogic")
 
     # self.attributes should be tuple of options:
     # 'MouseTool' - grabs the cursor
@@ -179,39 +203,45 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #create a key shortcut
     k = qt.QKeySequence(qt.Qt.Key_E)
     s = qt.QShortcut(k, mainWindow())
-    s.connect('activated()', self.onApply)
-    s.connect('activatedAmbiguously()', self.onApply)
+    s.connect('activated()', self.apply)
+    s.connect('activatedAmbiguously()', self.apply)
 
-    #save a layout manager, get just the red slice
-    editUtil = EditorLib.EditUtil.EditUtil()
-    parameterNode = editUtil.getParameterNode()
-    lm = slicer.app.layoutManager()
-    redSliceWidget = lm.sliceWidget('Red')
-    self.redSliceWidget=redSliceWidget
-
-    #make KSlice class
-    import vtkSlicerKSliceModuleLogicPython  
-    logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
-    logic.PrintEmpty()
-    self.logic=logic;
 
     #set the image, label nodes (this will not change although the user can alter what is bgrnd/frgrnd in editor)
     labelLogic = self.sliceLogic.GetLabelLayer()
     labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
     backgroundNode = backgroundLogic.GetVolumeNode()
-    s.logic.SetImageVol( backgroundNode.GetImageData() )
-    s.logic.SetLabelVol( labelNode.GetImageData() )
-    s.logic.SetUIVol( labelNode.GetImageData() ) #this is WRONG!!!
+    #print(backgroundNode.GetImageData())
+    #print(labelNode.GetImageData())
+
+
+    #make KSlice class
+    print("making a kslice")
+    import vtkSlicerKSliceModuleLogicPython  
+    ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
+    ksliceMod.SetImageVol(backgroundNode.GetImageData())
+    ksliceMod.SetLabelVol( labelNode.GetImageData() )
+    ksliceMod.SetUIVol( labelNode.GetImageData() )          #this is WRONG!!!
+    ksliceMod.Initialize() #this should not be done every time!!
+    self.ksliceMod=ksliceMod;
+
+    print("were here")
+    ksliceMod.PrintEmpty()
+ 
 
 
 
-  def apply(self,xy):
+
+  def apply(self):
     #get slider information, a.__dict__ and a.children() are useful commands
-    sliceNode=self.redSliceWidget.mrmlSliceNode()
-    sliceOffset = sliceNode.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
-    spacingVec  = imgNode.GetSpacing()
-    originVec=imgNode.GetOrigin()
+    #imgLayer= self.sliceLogic.GetBackgroundLayer();
+    #imgNode= imgLayer.GetVolumeNode();
+    labelLogic = self.sliceLogic.GetLabelLayer()
+    labelNode = labelLogic.GetVolumeNode()    
+    sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
+    spacingVec  = labelNode.GetSpacing()
+    originVec   = labelNode.GetOrigin()
 
     currSlice=round( (sliceOffset - originVec[2] + spacingVec[2]/2)/spacingVec[2]) #slider picks coordinate midway between slices, so need to add 1/2*spacing  
 
@@ -219,12 +249,12 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
-    currRad = int(node.GetParameter("KSliceEffect,Radius"))
+    currRad = float(node.GetParameter("KSliceEffect,radius"))
 
     #make connections, parameter settings
-    self.logic.SetCurrSlice(currSlice)
-    self.logic.SetBrushRad(currRad)
-    self.logic.SetNumIts(50)
+    self.ksliceMod.SetCurrSlice(currSlice)
+    self.ksliceMod.SetBrushRad(currRad)
+    self.ksliceMod.SetNumIts(50)
     
     #debug prints: lets see how this went ...
     print(currSlice)  
@@ -232,15 +262,15 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
     #execute a run
-    self.logic.Initialize() #this should not be done every time!!
-    self.runUpdate()
+    self.ksliceMod.runUpdate()
 
     #signal to slicer that the label needs to be updated
+    labelImage=labelNode.GetImageData()
+
     labelImage.Modified()
-    labelNode.SetModifiedSinceRead(1)
+    #labelNode.SetModifiedSinceRead(1)
     labelNode.Modified()
-    
-#pass
+
 
 
 #
