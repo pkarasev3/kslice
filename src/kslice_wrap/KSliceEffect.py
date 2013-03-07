@@ -31,19 +31,69 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.attributes = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
 
+    #create a key shortcut
+    k = qt.QKeySequence(qt.Qt.Key_E)
+    s = qt.QShortcut(k, mainWindow())
+    s.connect('activated()', self.onApply)
+    s.connect('activatedAmbiguously()', self.onApply)
+
+    #save a layout manager, get just the red slice
+    editUtil = EditorLib.EditUtil.EditUtil()
+    parameterNode = editUtil.getParameterNode()
+    lm = slicer.app.layoutManager()
+    redSliceWidget = lm.sliceWidget('Red')
+    self.redSliceWidget=redSliceWidget
+
+    #make me a KSlice class
+    import vtkSlicerKSliceModuleLogicPython  
+    logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
+    logic.PrintEmpty()
+    self.logic=logic;
+
   def __del__(self):
     super(KSliceEffectOptions,self).__del__()
 
   def create(self):
     super(KSliceEffectOptions,self).create()
+    #make an "Apply" button
     self.apply = qt.QPushButton("Apply", self.frame)
     self.apply.setToolTip("Apply the extension operation")
+    ###add the apply button to layout, widgets list
     self.frame.layout().addWidget(self.apply)
     self.widgets.append(self.apply)
-
-    HelpButton(self.frame, "This is a sample with no real functionality.")
-
     self.apply.connect('clicked()', self.onApply)
+
+    #make radius option
+
+    self.locRadFrame = qt.QFrame(self.frame)
+    self.locRadFrame.setLayout(qt.QHBoxLayout())
+    self.frame.layout().addWidget(self.locRadFrame)
+    self.widgets.append(self.locRadFrame)
+
+    self.locRadLabel = qt.QLabel("Radius:", self.locRadFrame)
+    self.locRadLabel.setToolTip("Set the radius used to compute local energy.")
+    self.locRadFrame.layout().addWidget(self.locRadLabel)
+    self.widgets.append(self.locRadLabel)
+
+    self.locRadSpinBox = qt.QDoubleSpinBox(self.locRadFrame)
+    self.locRadSpinBox.setToolTip("Set the radius used to compute local energy.")
+    self.locRadSpinBox.minimum = 0
+    self.locRadSpinBox.maximum = 50
+    self.locRadSpinBox.suffix = ""
+    self.locRadFrame.layout().addWidget(self.locRadSpinBox)
+    self.widgets.append(self.locRadSpinBox)
+
+
+    HelpButton(self.frame, "This is an interactive segmentation tool.")
+
+
+
+
+
+
+
+
+
 
     # Add vertical spacer
     self.frame.layout().addStretch(1)
@@ -71,12 +121,25 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.updatingGUI = False
 
   def onApply(self):
-    print('This is just an example - nothing here yet')
+    print('Processing image')
   
-    import vtkSlicerKSliceModuleLogicPython  
-    logic=vtkSlicerKSliceModuleLogicPython.vtkKSlice() #IKDebug
-    print(logic)
-    logic.PrintEmpty()
+    #get slider information, a.__dict__ and a.children() are useful commands
+    sliceNode=self.redSliceWidget.mrmlSliceNode()
+    sliceOffset = sliceNode.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
+    spacingVec  = imgNode.GetSpacing()
+    originVec=imgNode.GetOrigin()
+
+    currSlice=round( (sliceOffset - originVec[2])/spacingVec[2])
+    print(currSlice)    
+
+    self.logic.SetCurrSlice(1)
+    self.logic.SetCurrSlice(0)
+    self.logic.SetBrushRad(5)
+    self.logic.SetNumIts(5)
+    self.logic.SetNumIts(5)
+
+
+
 
 
   def updateMRMLFromGUI(self):
@@ -160,7 +223,7 @@ class KSliceEffectExtension(LabelEffect.LabelEffect):
     # name is used to define the name of the icon image resource (e.g. KSliceEffect.png)
     self.name = "KSliceEffect"
     # tool tip is displayed on mouse hover
-    self.toolTip = "Paint: circular paint brush for label map editing"
+    self.toolTip = "Interactive Segmentation Tool"
 
 
     self.options = KSliceEffectOptions
@@ -214,6 +277,9 @@ class KSliceEffect:
       slicer.modules.editorExtensions = {}
     slicer.modules.editorExtensions['KSliceEffect'] = KSliceEffectExtension
 
+
+
+
 #
 # KSliceEffectWidget
 #
@@ -223,6 +289,7 @@ class KSliceEffectWidget:
     self.parent = parent
 
   def setup(self):
+
     # don't display anything for this widget - it will be hidden anyway
     pass
 
