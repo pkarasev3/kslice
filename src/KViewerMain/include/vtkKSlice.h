@@ -33,7 +33,7 @@ public:
   //implemented functionality
   void PasteSlice(int toSlice);
   void Initialize();
-  void runUpdate();
+  void runUpdate(bool reInitFromMask);
   void PrintEmpty();
 //void PrintImage(ostream &os, vtkIndent indent);
   void PrintImage();

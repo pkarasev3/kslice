@@ -26,7 +26,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
         virtual ~KSegmentor3D();
         void initializeData();
         virtual void Update3D();
-        virtual void Update2D();
+        virtual void Update2D(bool reInitFromMask);
         /** external interface to update at a voxel */
         void accumulateUserInputInUserInputImages( double value,const unsigned int element);
 

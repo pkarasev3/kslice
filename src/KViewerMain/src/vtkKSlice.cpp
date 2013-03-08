@@ -51,12 +51,12 @@ void vtkKSlice::Initialize(){
 
 }
 
-void vtkKSlice::runUpdate(){
+void vtkKSlice::runUpdate(bool reInitFromMask){
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
-        dataWarehouse->ksegmentor->Update2D();
+        dataWarehouse->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
-        LabelVol->Modified();
+        //LabelVol->Modified(); //why do we need this??
     }
 }
 

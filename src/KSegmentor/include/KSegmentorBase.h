@@ -85,7 +85,7 @@ class KSegmentorBase
         void intializeLevelSet3D();
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
-        virtual void Update2D()=0;
+        virtual void Update2D(bool reInitFromMask)=0;
         virtual void Update3D()=0;
 
         /** Compute Chan-Vese (mean difference) Energy LL2D.*/

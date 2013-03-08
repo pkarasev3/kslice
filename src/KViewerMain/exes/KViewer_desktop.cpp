@@ -87,13 +87,13 @@ int main(int argc, char** argv) {
   bbKSlice->Initialize();
 
   //evolve (simulated user)
-  bbKSlice->runUpdate();
+  bbKSlice->runUpdate(1);
   bbKSlice->SetCurrSlice(currSlice-1);
-  bbKSlice->runUpdate();
+  bbKSlice->runUpdate(1);
   bbKSlice->SetCurrSlice(currSlice-2);
-  bbKSlice->runUpdate();
+  bbKSlice->runUpdate(1);
   bbKSlice->SetCurrSlice(currSlice-3);
-  bbKSlice->runUpdate();
+  bbKSlice->runUpdate(1);
 
   //bbKSlice->PrintImage(std::cout, vtkIndent());
   bbKSlice->PrintImage();

@@ -120,6 +120,8 @@ void KSegmentor3D::UpdateArraysAfterTransform()
 
 void KSegmentor3D::initializeData()
 {
+    currSlice=0;
+    prevSlice=-1; //this will never be true
     imageVol->GetScalarRange( imgRange );
     labelVol->GetScalarRange( labelRange );
     if( abs(labelRange[1]) < 1e-3 )
@@ -149,7 +151,7 @@ namespace {
   std::vector<double> cache_phi(0);
 }
 
-void KSegmentor3D::Update2D()
+void KSegmentor3D::Update2D(bool reInitFromMask)
 {
     this->integrateUserInput();
     this->CreateLLs(LL2D);
@@ -159,7 +161,7 @@ void KSegmentor3D::Update2D()
     ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     size_t sz = mdims[0]*mdims[1];
-    if( cache_phi.size() != (size_t)sz )
+    if( cache_phi.size() != sz )
       cache_phi.resize(sz);
 
     double* imgSlice          = new double[  mdims[0]*mdims[1] ];
@@ -195,7 +197,7 @@ void KSegmentor3D::Update2D()
 
 
     cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
-    if( (prevSlice == this->currSlice) ) {
+    if( (prevSlice == this->currSlice) && !reInitFromMask ) {
       cout <<  "\033[01;32m\033]"
            << "using cached phi " << "\033[00m\033]" << endl;
       std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*mdims[0]*mdims[1] );
@@ -230,6 +232,9 @@ void KSegmentor3D::Update2D()
         }
     }
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
+
+    // store cached \phi level set func
+    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*sz );
 
     delete imgSlice;
     delete labelSlice;

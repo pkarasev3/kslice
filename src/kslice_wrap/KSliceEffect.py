@@ -200,6 +200,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.attributes = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
 
+
+    #create variables to keep track of how the label changed (automatic part or user input)
+    self.acMod   = 0
+    self.userMod = 0
+
     #create a key shortcut
     k = qt.QKeySequence(qt.Qt.Key_E)
     s = qt.QShortcut(k, mainWindow())
@@ -212,8 +217,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
     backgroundNode = backgroundLogic.GetVolumeNode()
-    #print(backgroundNode.GetImageData())
-    #print(labelNode.GetImageData())
+
+    #put a listener on label, so we know when user has drawn
+    labelImg=labelNode.GetImageData()
+    labelImg.AddObserver("ModifiedEvent", self.labModByUser)
 
 
     #make KSlice class
@@ -230,7 +237,19 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ksliceMod.PrintEmpty()
  
 
-
+  def labModByUser(self,caller,event):
+    #print(caller)
+    #print(event)
+    #print("2")
+    #print(self.acMod)
+    #print(self.userMod)
+    if self.acMod==0 :  
+      self.userMod=1
+      print("modified by user")
+    else:
+      self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
+      print("modified by active contour")
+      pass
 
 
   def apply(self):
@@ -262,11 +281,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
     #execute a run
-    self.ksliceMod.runUpdate()
+    self.ksliceMod.runUpdate(self.userMod)
+    print("1")    
 
     #signal to slicer that the label needs to be updated
     labelImage=labelNode.GetImageData()
-
+    
+    self.acMod=1  
     labelImage.Modified()
     #labelNode.SetModifiedSinceRead(1)
     labelNode.Modified()
