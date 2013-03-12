@@ -9,7 +9,9 @@
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
 #include "vtkImageGaussianSmooth.h"
+#include <cstdlib>
 #include <ctime>
+#include <cstring>
 
 using std::string;
 using cv::Mat;
@@ -138,7 +140,11 @@ void KSegmentor3D::initializeData()
   }
 }
 
+namespace {
 
+  std::vector<double> cache_phi(0);
+
+}
 
 void KSegmentor3D::Update2D()
 {
@@ -149,11 +155,15 @@ void KSegmentor3D::Update2D()
   ptrCurrLabel        = static_cast<unsigned short*>(labelVol->GetScalarPointer());
   ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
-  double* imgSlice          = new double[ mdims[0]*mdims[1] ];
-  double* maskSlice         = new double[ mdims[0]*mdims[1] ];
-  double* U_I_slice         = new double[ mdims[0]*mdims[1] ];
-  double* phiSlice          = new double[ mdims[0]*mdims[1] ];
-  double* labelSlice        = new double[ mdims[0]*mdims[1] ];
+  size_t sz = mdims[0]*mdims[1];
+  if( cache_phi.size() != (size_t)sz )
+    cache_phi.resize(sz);
+
+  double* phiSlice         = new double[ mdims[0]*mdims[1] ];
+  double* imgSlice         = new double[  mdims[0]*mdims[1] ];
+  double* maskSlice        = new double[ mdims[0]*mdims[1] ];
+  double* U_I_slice        = new double[ mdims[0]*mdims[1] ];
+  double* labelSlice       = new double[ mdims[0]*mdims[1] ];
 
   unsigned int element3D;
   long elemNum=0;
@@ -177,21 +187,6 @@ void KSegmentor3D::Update2D()
   }
   cout << "minU = " << maxU << ", " << "maxU = " << maxU << endl;
 
-
-  bool writePhi=false;
-  if ( writePhi ){
-    //IKDebug
-    std::ofstream maskRec("maskRec.txt",std::ios_base::out);
-    for(int i=0;i< elemNum; i++){
-      maskRec<<maskSlice[i]<<' ';
-    }
-    maskRec.close();
-  }
-
-
-
-
-
   std::vector<long> dimsSlice(5);
   dimsSlice[0] = mdims[0];
   dimsSlice[1] = mdims[1];
@@ -199,18 +194,19 @@ void KSegmentor3D::Update2D()
   dimsSlice[3] = dimsSlice[0]*dimsSlice[1];
   dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
 
-
   ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
                 LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
-  if ( writePhi ){
-    //IKDebug
-    std::ofstream phiSliceRec("phiSlice.txt",std::ios_base::out);
-    for(int i=0;i< elemNum; i++){
-      phiSliceRec<<phiSlice[i]<<' ';
-    }
-    phiSliceRec.close();
+  cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
+  if( (prevSlice == this->currSlice) ) {
+    cout <<  "\033[01;32m\033]"
+         << "using cached phi " << "\033[00m\033]" << endl;
+    std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*mdims[0]*mdims[1] );
+  } else {
+    cout <<  "\033[01;42m\033]"
+         << "first time on slice! " << "\033[00m\033]" << endl;
   }
+  prevSlice=currSlice;
 
 
   interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
@@ -242,20 +238,9 @@ void KSegmentor3D::Update2D()
 
   cout <<  ", KSegmentor3D.cpp :   Lz size: "       << LL2D.Lz->length << endl;
 
-  if ( writePhi ){
-    std::ofstream phiRec("phiRec.txt",std::ios_base::out);
-    for(int i=0;i< elemNum; i++){
-      phiRec<<ptrCurrLabel[element3D=this->currSlice*mdims[1]*mdims[0] + i]<<' ';
-    }
-    phiRec.close();
-  }
+  // store cached \phi level set func
+  std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*sz );
 
-  bool bSavePNG = false;
-  if( bSavePNG ) {
-    std::stringstream ss;
-    ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
-    saveMatToPNG( U_I_slice, ss.str() );
-  }
   delete [] imgSlice;
   delete [] labelSlice;
   delete [] maskSlice;
@@ -408,12 +393,6 @@ KSegmentor3D::~KSegmentor3D(){
   delete [] this->phi;
   delete [] this->label;
 
-  // argh, these don't exist!
-//  delete [] this->seg;
-//  delete [] this->iList;
-//  delete [] this->jList;
-
-
   LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
   LL *Lin2out, *Lout2in,*Lchanged;
 
@@ -496,4 +475,18 @@ labelWriter->SetFileName( "0-U_t-image.mhd");
 labelWriter->Write();*/
 
 
+if ( writePhi ){
+  std::ofstream phiRec("phiRec.txt",std::ios_base::out);
+  for(int i=0;i< elemNum; i++){
+    phiRec<<ptrCurrLabel[element3D=this->currSlice*mdims[1]*mdims[0] + i]<<' ';
+  }
+  phiRec.close();
+}
+
+bool bSavePNG = false;
+if( bSavePNG ) {
+  std::stringstream ss;
+  ss << "U_integral_ " << std::setw(3) << std::setfill('0') << currSlice << ".png";
+  saveMatToPNG( U_I_slice, ss.str() );
+}
 #endif

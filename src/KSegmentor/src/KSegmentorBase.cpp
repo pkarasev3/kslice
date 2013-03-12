@@ -41,6 +41,7 @@ struct KSegmentorBase::SFM_vars
   double *Ain, *Aout, *Sin, *Sout; //local means
 };
 
+
 void KSegmentorBase::SetLambda(float lambda){ //set the curvature penalty
     this->lambda=lambda;
 }
@@ -57,7 +58,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imageVol=image;
     segPointer->labelVol=label;
 
-    segPointer->numberdims=3;
+    //segPointer->numberdims=3;
 
     segPointer->m_bUseEdgeBased = false;
     segPointer->penaltyAlpha=0;
