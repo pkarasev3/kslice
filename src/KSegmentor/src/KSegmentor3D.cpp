@@ -171,8 +171,8 @@ void KSegmentor3D::Update2D()
     cache_phi.resize(sz);
 
   double* phiSlice         = new double[ mdims[0]*mdims[1] ];
-  double* imgSlice          = new double[  mdims[0]*mdims[1] ];
-  double* maskSlice       = new double[ mdims[0]*mdims[1] ];
+  double* imgSlice         = new double[  mdims[0]*mdims[1] ];
+  double* maskSlice        = new double[ mdims[0]*mdims[1] ];
   double* U_I_slice        = new double[ mdims[0]*mdims[1] ];
   double* labelSlice       = new double[ mdims[0]*mdims[1] ];
 
