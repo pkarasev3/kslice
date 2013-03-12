@@ -41,7 +41,6 @@ class KSegmentor3D : public KSegmentorBase
         typedef KSegmentor3D Self;
 
         /** internal 'update from input' function */
-
         virtual void integrateUserInput();
 
         virtual void UpdateArraysAfterTransform();

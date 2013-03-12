@@ -8,7 +8,7 @@
 //For testing
 #include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
-
+#include <boost/shared_ptr.hpp>
 
 class vtkImageData;
 
@@ -69,6 +69,8 @@ class KSegmentorBase
                 Lout2in=NULL ;
             }
         };
+
+        struct sfm_vars_internal;
 
         static std::vector<std::string> GetSupportedEnergyNames()
         {
@@ -186,6 +188,8 @@ class KSegmentorBase
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
 
+        void OnUserPaintsLabel()=0;
+
         vtkSmartPointer<vtkImageData> U_Integral_image;
 
     protected:
@@ -209,7 +213,6 @@ class KSegmentorBase
 
         void CreateLLs(LLset& ll);
 
-
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );
 
@@ -221,15 +224,20 @@ class KSegmentorBase
         double m_Umax;
         std::string m_EnergyName;
 
+        /** struct containing formerly global low-level crap in sfm_local library */
+        boost::shared_ptr<sfm_vars_internal>  m_SFM_vars;
+
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
 
-/** Might (??) own anything else below */
+
         int currSlice;       //the slice we are segmenting
         int prevSlice;
+
+    /** Might (??) own anything else below */
         long numberdims;     //for images =2, for volumes =3
         int *mdims;          //dimensions of "image" we are segmenting (ex.512x512x212)
         double *imgRange;    //[minImageVal, maxImageVal]
@@ -250,25 +258,24 @@ public:
 
         double m_Spacing_mm[3];
         double m_SatRange[2];
-        bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-// Bogus/Deprecated !
-//        unsigned short *seg; //seg result from last run of the segmentor
-//        short *iList;        //row indices of points on zero level set from last run
-//        short *jList;        //column indices of points on zero level set from last run
-//        long lengthZLS;      //number of point on the zero level set from last run
+        //     bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-        double *B, *phi, *C, *label;
+        // stupid duplication?
+        double *B;
+        double *phi;
+        double *C;
+        double *label;
         double *F;
+
+
         double usum, vsum;
         int    countdown;
         long    dims[5];
         long dimz,dimy,dimx;
-        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        //LL *Lin2out, *Lout2in,*Lchanged;
 
-         LLset LL2D,LL3D;
+        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
+        LLset LL2D,LL3D;
 };
 
 
@@ -281,3 +288,19 @@ public:
 
 
 #endif
+
+#if 0    // Lyublyanka Dungeon
+
+
+//        unsigned short *seg; //seg result from last run of the segmentor
+//        short *iList;        //row indices of points on zero level set from last run
+//        short *jList;        //column indices of points on zero level set from last run
+//        long lengthZLS;      //number of point on the zero level set from last run
+//LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+//LL *Lin2out, *Lout2in,*Lchanged;
+
+
+#endif
+
+
+

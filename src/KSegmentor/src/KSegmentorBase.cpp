@@ -12,14 +12,6 @@
 using std::string;
 using cv::Mat;
 
-//these global variables are no good, need to fix later
-extern double ain, aout, auser; // means
-extern double *pdfin, *pdfout, *pdfuser;
-extern long numdims;
-extern double engEval;
-extern bool UseInitContour;
-extern double *Ain, *Aout, *Sin, *Sout; //local means
-
 namespace vrcl
 {
 
@@ -105,11 +97,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imgRange   = new double[2];
     segPointer->labelRange = new double[2];
 
-    cout << "I think the # of rows is: " << segPointer->mdims[1]
-         << ", # of cols is: " << segPointer->mdims[0] << endl;
-
-//    segPointer->iList=NULL;
-//    segPointer->jList=NULL;
+    cout << "# rows is: "   << segPointer->mdims[1]
+         << ", # cols is: " << segPointer->mdims[0] << endl;
 
     //Set dimensions
     segPointer->dimz = (int)segPointer->mdims[2];
