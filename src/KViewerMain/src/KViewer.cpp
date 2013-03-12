@@ -555,7 +555,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
           float distance = pow( (i-event_PixCoord[0])*(i-event_PixCoord[0])*1.0 +
                                 (j-event_PixCoord[1])*(j-event_PixCoord[1])*1.0 , 0.5 ) + 1e-3;
           if( distance <= kv_opts->paintBrushRad ) {
-            float dRatio = pow( ( kv_opts->paintBrushRad / (1.0+distance) ), 2.0f );
+            float dRatio = pow( (double)( kv_opts->paintBrushRad / (1.0+distance) ), (double)2.0 );
             short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
             short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
 
@@ -568,23 +568,20 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               long elemNum = kk * kv_opts->imgHeight * kv_opts->imgWidth + j * kv_opts->imgWidth + i;
 
-              if( (distance < 1.1 ) && kv_opts->m_bVerboseSave ) {
+              if( (distance < 1.0 ) && kv_opts->m_bVerboseSave ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
               }
 
-              if( (ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax)
-                                                       && (ptrImage[elemNum] > imgMin) ) {
+              bool drawInImgRange=
+                       ( ptrImage[elemNum] > image_range[0]) && (ptrImage[elemNum] < imgMax) && (ptrImage[elemNum] > imgMin) ;
+
+              if( image_callback->Erase() || drawInImgRange ) {
                   coord[0]=(i);
                   coord[1]=(j);
                   coord[2]=(kk);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToUpdateVector(elemNum);
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->AddPointToCoordinatesVector(coord);
 
-                //if(kk==k) //User integration only in current slice or not?
-                         // PK opinion: drawing period really should be in "this" slice only ...
-                         // off-view-slice updates make sense for automated part. But it doesn't make sense to
-                         // manually draw edits if we're editing things we can't see! Rather, we go to a slice where automated
-                         // part is making mistakes and edit it there.
                 double w_Ves = 0.5 + std::max( 0.5f, 1.0f - distance );
                 kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->accumulateCurrentUserInput(Label_Fill_Value,elemNum,w_Ves);
                 ptrLabel[elemNum] = Label_Fill_Value;

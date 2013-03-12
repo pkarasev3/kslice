@@ -30,8 +30,24 @@ void test_OpenMP()
   }
 }
 
-/** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.35;
+struct KSegmentorBase::SFM_vars
+{
+  //formerly global variables, for energy3c.cpp
+  double ain, aout, auser; // means
+  double *pdfin, *pdfout, *pdfuser;
+  long numdims;
+  double engEval;
+  bool UseInitContour;
+  double *Ain, *Aout, *Sin, *Sout; //local means
+};
+
+void KSegmentorBase::SetLambda(float lambda){ //set the curvature penalty
+    this->lambda=lambda;
+}
+
+void KSegmentorBase::SetContRad(int rad){ //set the radius used in active contour
+    this->rad = rad;
+}
 
 
 void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image,
@@ -53,7 +69,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->iter=500;
     segPointer->m_DistWeight=0;
     segPointer->m_ThreshWeight=0;
-    segPointer->lambda=defaultKappaParam; // this could/should be user togglable!
+    segPointer->lambda=0;
     segPointer->mdims = new int[3];
     image->GetDimensions( segPointer->mdims );
 
@@ -70,11 +86,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     image->GetSpacing( segPointer->m_Spacing_mm );
 
-    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
-    // "10" pixels is 3mm in this context.
-    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+    segPointer->rad = rad;
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -166,13 +178,14 @@ double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
     mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
     mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
 
-//    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
-//    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
-//    {
-//        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
-//    }
-
-    return (E/2.0);
+    cout << "getting chanvese E; mu_i=" << mu_i << ", mu_o=" << mu_o ;
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ ) {
+        E +=  Heavi(phi[voxel_idx])*pow((img[voxel_idx]-mu_i),2.0)
+             + (1.0-Heavi(phi[voxel_idx]))*pow((img[voxel_idx]-mu_o),2.0);
+    }
+    E = E/2.0;
+    cout << ", E_cv=" << E;
+    return E;
 }
 
 
@@ -254,14 +267,6 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
   double spc[3];
   this->U_Integral_image->GetSpacing(spc);
 
-    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
-    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
-    labelWriter->SetFileName( "0-Integral0.mhd");
-    labelWriter->Write();
-
-    labelWriter->SetInput(this->U_Integral_image );
-    labelWriter->SetFileName( "0-IntegralImage0.mhd");
-    labelWriter->Write();*/
   this->m_UpdateVector.clear();
   this->m_CoordinatesVector.clear();
 }
@@ -293,7 +298,9 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     double spacing_mm[3];
     this->U_Integral_image->GetSpacing( spacing_mm );
     this->m_Reslicer->SetInput(this->U_Integral_image);
-    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,
+                                                     0,1,0,
+                                                     0,0,1);
     this->m_Reslicer->AutoCropOutputOn();
     this->m_Reslicer->SetOutputOrigin(0,0,0);
     this->m_Reslicer->SetOutputSpacing(m_Spacing_mm);
@@ -309,9 +316,10 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     this->m_Reslicer->GetOutput()->UpdateInformation();
 
     this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
-    this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+    this->ptrIntegral_Image = static_cast<double*>(
+                                 this->U_Integral_image->GetScalarPointer());
 
-     this->U_Integral_image->GetSpacing( spacing_mm );
+    this->U_Integral_image->GetSpacing( spacing_mm );
 
     this->m_Reslicer->SetInput(this->U_t_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
@@ -394,3 +402,23 @@ KSegmentorBase::~KSegmentorBase()
 
 
 }
+
+/**        Blyat'
+
+    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+    labelWriter->SetFileName( "0-Integral0.mhd");
+    labelWriter->Write();
+
+    labelWriter->SetInput(this->U_Integral_image );
+    labelWriter->SetFileName( "0-IntegralImage0.mhd");
+    labelWriter->Write();*/
+
+    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
+    // "10" pixels is 3mm in this context.
+//    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
+//    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+//    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+
+
+  */

@@ -10,6 +10,7 @@
 #include <opencv2/core/core.hpp>
 #include <boost/shared_ptr.hpp>
 
+
 class vtkImageData;
 
 class vtkTransform;
@@ -70,7 +71,7 @@ class KSegmentorBase
             }
         };
 
-        struct sfm_vars_internal;
+        struct SFM_vars;
 
         static std::vector<std::string> GetSupportedEnergyNames()
         {
@@ -81,6 +82,8 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        void SetLambda(float lambda);
+        void SetContRad(int rad);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
         void intializeLevelSet3D();
@@ -213,6 +216,7 @@ class KSegmentorBase
 
         void CreateLLs(LLset& ll);
 
+
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );
 
@@ -225,7 +229,7 @@ class KSegmentorBase
         std::string m_EnergyName;
 
         /** struct containing formerly global low-level crap in sfm_local library */
-        boost::shared_ptr<sfm_vars_internal>  m_SFM_vars;
+        boost::shared_ptr<SFM_vars>  m_SFM_vars;
 
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
@@ -246,18 +250,20 @@ public:
         double *img;         // single slice!
         double *mask;        // single slice!
 
-         double* m_CustomSpeedImgPointer;
+        double* m_CustomSpeedImgPointer; // not used, delete or use!
 
-        double penaltyAlpha; //regularizer for "user constraints" experiments
-        double *seed;        //again, only used in functions for "user constraints" experiments
-        bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
-        int iter;            //number of iterations to execute
+         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
         double rad;          //radius of ball used in local-global energies
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];
         double m_SatRange[2];
+
+        // Ivan: these are bogus !? Plz delete if so
+        double penaltyAlpha; //regularizer for "user constraints" experiments
+        double *seed;        //again, only used in functions for "user constraints" experiments
+        bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
 
         //     bool   m_bUseEdgeBased; // do we use edge-based energy?
 
@@ -273,6 +279,9 @@ public:
         int    countdown;
         long    dims[5];
         long dimz,dimy,dimx;
+        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
+        //LL *Lin2out, *Lout2in,*Lchanged;
 
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
         LLset LL2D,LL3D;

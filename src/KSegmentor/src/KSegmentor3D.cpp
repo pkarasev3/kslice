@@ -17,6 +17,7 @@ using cv::Mat;
 namespace vrcl
 {
 
+
 KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
 {
   KSegmentor3D* seg3DPointer = new KSegmentor3D;
@@ -24,13 +25,13 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
   seg3DPointer->InitializeVariables(seg3DPointer,image,label, contInit);
 
   if(contInit)
-  { /** an input label was provided; assume intent is for U initially strong then */
+  { /** an input label was provided;
+                 then, assume intent is for U initially large then */
     std::cout<<"Initializing user input using label data"<<std::endl;
     seg3DPointer->initializeUserInputImageWithContour();
   }
-
   assert( 0 < seg3DPointer->GetUmax() );
-
+  seg3DPointer->m_SFM_vars = boost::shared_ptr<SFM_vars>(new SFM_vars);
   seg3DPointer->initializeData();
   seg3DPointer->CreateLLs(seg3DPointer->LL3D);
 
@@ -41,16 +42,14 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
 void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
                                                             double weight /*=1.0 default */)
 {
-  double Umax            = 1.0;   // It is bizarre that having this at 10.0 works,
-  // technically it shouldn't because we're using inside the  tanh() function
-  // comparing it with \phi() which is between -3 and +3 . If we can't get
-  // values between -3 and +3 the smoothness breaks down.
-
-  Umax         = this->GetUmax();
+  double Umax  = 1.0;
+  Umax         = this->GetUmax(); assert(Umax>0);
   double Ustep = weight * (Umax)/2.0;
-  if( fabs(Ustep) < 0.01 ) { /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1); }
+  if( fabs(Ustep) < 0.01 ) {
+    /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1); }
 
-  double user_input      = -Ustep * ( value > 0.5 ) + Ustep * ( value <= 0.5 );
+  double user_input      = -Ustep * ( value > 0.5 ) +
+                            Ustep * ( value <= 0.5 );
 
   this->ptrU_t_Image[element] = user_input;
 
@@ -75,9 +74,8 @@ void KSegmentor3D::integrateUserInput()
   for (int element=0;element<Nelements;element++)
   {
     pos=this->m_UpdateVector[element];
-
     this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
-    this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
+    this->ptrU_t_Image[pos]       = 0;
   }
 }
 
@@ -149,13 +147,13 @@ void KSegmentor3D::Update2D()
 
   ptrCurrImage        = static_cast<unsigned short*>(imageVol->GetScalarPointer());
   ptrCurrLabel        = static_cast<unsigned short*>(labelVol->GetScalarPointer());
-  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+  ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
-  double* imgSlice          = new double[  mdims[0]*mdims[1] ];
-  double* maskSlice       = new double[ mdims[0]*mdims[1] ];
-  double* U_I_slice        = new double[ mdims[0]*mdims[1] ];
+  double* imgSlice          = new double[ mdims[0]*mdims[1] ];
+  double* maskSlice         = new double[ mdims[0]*mdims[1] ];
+  double* U_I_slice         = new double[ mdims[0]*mdims[1] ];
   double* phiSlice          = new double[ mdims[0]*mdims[1] ];
-  double* labelSlice       = new double[ mdims[0]*mdims[1] ];
+  double* labelSlice        = new double[ mdims[0]*mdims[1] ];
 
   unsigned int element3D;
   long elemNum=0;
@@ -170,13 +168,14 @@ void KSegmentor3D::Update2D()
 
       U_I_slice[elemNum] = (double) ptrIntegral_Image[element3D];
       if ( maxU < U_I_slice[elemNum] ) { //PKDebug
-        maxU = U_I_slice[elemNum]; cout << "maxU = " << maxU << endl;
+        maxU = U_I_slice[elemNum]; //cout << "maxU = " << maxU << endl;
       } else if ( minU > U_I_slice[elemNum] ) { //PKDebug
-        minU = U_I_slice[elemNum]; cout << "minU = " << minU << endl;
+        minU = U_I_slice[elemNum]; //cout << "minU = " << minU << endl;
       }
       elemNum++;
     }
   }
+  cout << "minU = " << maxU << ", " << "maxU = " << maxU << endl;
 
 
   bool writePhi=false;
