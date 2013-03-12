@@ -30,16 +30,7 @@ void test_OpenMP()
   }
 }
 
-struct KSegmentorBase::SFM_vars
-{
-  //formerly global variables, for energy3c.cpp
-  double ain, aout, auser; // means
-  double *pdfin, *pdfout, *pdfuser;
-  long numdims;
-  double engEval;
-  bool UseInitContour;
-  double *Ain, *Aout, *Sin, *Sout; //local means
-};
+
 
 
 void KSegmentorBase::SetLambda(float lambda){ //set the curvature penalty
@@ -60,7 +51,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     //segPointer->numberdims=3;
 
-    segPointer->m_bUseEdgeBased = false;
+    //segPointer->m_bUseEdgeBased = false;
     segPointer->penaltyAlpha=0;
     segPointer->seed=0;
     segPointer->useContInit=contInit;
@@ -138,7 +129,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     this->m_Umax = 3.0;
 
-    cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
+    cout << "initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
 
 }
@@ -406,14 +397,14 @@ KSegmentorBase::~KSegmentorBase()
 
 /**        Blyat'
 
-    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+    vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
     labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
     labelWriter->SetFileName( "0-Integral0.mhd");
     labelWriter->Write();
 
     labelWriter->SetInput(this->U_Integral_image );
     labelWriter->SetFileName( "0-IntegralImage0.mhd");
-    labelWriter->Write();*/
+    labelWriter->Write();
 
     // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
     // "10" pixels is 3mm in this context.

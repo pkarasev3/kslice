@@ -64,6 +64,10 @@ bool UseInitContour=1;
 
 
 
+
+
+
+
 double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double a,Fmax,u,v,I;

@@ -35,6 +35,7 @@ class KSegmentor3D : public KSegmentorBase
         /** external interface to update at a voxel */
         virtual void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0);
 
+        virtual void OnUserPaintsLabel();
 
     private:
 

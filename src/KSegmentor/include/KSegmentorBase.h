@@ -138,15 +138,15 @@ class KSegmentorBase
                 spacing[i]=m_Spacing_mm[i];
         }
 
-       void SetUseEdgeBasedEnergy( bool useEdgeBased )
-        {
-            m_bUseEdgeBased = useEdgeBased;
-        }
+//       void SetUseEdgeBasedEnergy( bool useEdgeBased )
+//        {
+//            m_bUseEdgeBased = useEdgeBased;
+//        }
 
-        bool GetUseEdgeBasedEnergy( )
-        {
-            return m_bUseEdgeBased;
-        }
+//        bool GetUseEdgeBasedEnergy( )
+//        {
+//            return m_bUseEdgeBased;
+//        }
 
         void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {
@@ -191,7 +191,7 @@ class KSegmentorBase
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
 
-        void OnUserPaintsLabel()=0;
+        virtual void OnUserPaintsLabel()=0;
 
         vtkSmartPointer<vtkImageData> U_Integral_image;
 
@@ -274,14 +274,11 @@ public:
         double *label;
         double *F;
 
+        // argh, what are these ??
+        double usum, vsum; int    countdown;
 
-        double usum, vsum;
-        int    countdown;
         long    dims[5];
         long dimz,dimy,dimx;
-        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        //LL *Lin2out, *Lout2in,*Lchanged;
 
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
         LLset LL2D,LL3D;
@@ -307,8 +304,9 @@ public:
 //        long lengthZLS;      //number of point on the zero level set from last run
 //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
 //LL *Lin2out, *Lout2in,*Lchanged;
+  //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
 
-
+  //LL *Lin2out, *Lout2in,*Lchanged;
 #endif
 
 

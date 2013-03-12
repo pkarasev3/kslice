@@ -19,6 +19,16 @@ using cv::Mat;
 namespace vrcl
 {
 
+struct KSegmentorBase::SFM_vars
+{
+  //formerly global variables, for energy3c.cpp
+  double ain, aout, auser; // means
+  double *pdfin, *pdfout, *pdfuser;
+  long numdims;
+  double engEval;
+  bool UseInitContour;
+  double *Ain, *Aout, *Sin, *Sout; //local means
+};
 
 KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
 {
@@ -61,7 +71,7 @@ void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int e
     ptrIntegral_Image[element] = Umax;
   }
 
-
+  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
 }
 
 void KSegmentor3D::integrateUserInput()
@@ -100,9 +110,10 @@ void KSegmentor3D::UpdateArraysAfterTransform()
 
   this->U_Integral_image->GetSpacing( m_Spacing_mm );
 
-  cout << "num dims = " << numdims << "; updated KSegmentor3D with dims[0,1,2] = "
+  cout << "UpdateArraysAfterTransform of KSegmentor3D with dims[0,1,2] = "
        << dimx << "," << dimy << "," << dimz << endl;
 
+  // TODO: Ivan, does this need to change and read the input args?
   this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
   this->rad = std::min(7.0,this->rad); // force non-huge radius if the spacing is retarded
   this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
@@ -140,6 +151,10 @@ void KSegmentor3D::initializeData()
   }
 }
 
+void KSegmentor3D::OnUserPaintsLabel() {
+  this->prevSlice = -1;
+}
+
 namespace {
 
   std::vector<double> cache_phi(0);
@@ -160,7 +175,7 @@ void KSegmentor3D::Update2D()
     cache_phi.resize(sz);
 
   double* phiSlice         = new double[ mdims[0]*mdims[1] ];
-  double* imgSlice         = new double[  mdims[0]*mdims[1] ];
+  double* imgSlice         = new double[ mdims[0]*mdims[1] ];
   double* maskSlice        = new double[ mdims[0]*mdims[1] ];
   double* U_I_slice        = new double[ mdims[0]*mdims[1] ];
   double* labelSlice       = new double[ mdims[0]*mdims[1] ];
