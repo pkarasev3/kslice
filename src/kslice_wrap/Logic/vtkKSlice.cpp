@@ -45,7 +45,7 @@ void vtkKSlice::PasteSlice(int toSlice){
 void vtkKSlice::Initialize(){
     //set up the segmentor
     dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
-    dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
+    //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 

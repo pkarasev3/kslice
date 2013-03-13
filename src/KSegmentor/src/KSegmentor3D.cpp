@@ -16,13 +16,7 @@
 using std::string;
 //using cv::Mat;
 
-//these global variables are no good, need to fix later
-extern double ain, aout, auser; // means
-extern double *pdfin, *pdfout, *pdfuser;
-extern long numdims;
-extern double engEval;
-extern bool UseInitContour;
-extern double *Ain, *Aout, *Sin, *Sout; //local means
+
 
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
@@ -53,35 +47,44 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
 
 
 
-void KSegmentor3D::accumulateUserInputInUserInputImages( double value,const unsigned int element)
+void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
+                                                            double weight /*=1.0 default */)
 {
-    double Umax            = 1.0;   // It is bizarre that having this at 10.0 works,
-    // technically it shouldn't because we're using inside the  tanh() function
-    // comparing it with \phi() which is between -3 and +3 . If we can't get
-    // values between -3 and +3 the smoothness breaks down.
-    double user_input      = -Umax * ( value > 0.5 ) + Umax * ( value <= 0.5 );
+  double Umax  = 1.0;
+  Umax         = this->GetUmax(); assert(Umax>0);
+  double Ustep = weight * (Umax)/2.0;
+  if( fabs(Ustep) < 0.01 ) {
+    /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1); }
 
-    //Changed accumulation! (+=) instead of (=)
-    //this->ptrU_t_Image[element]+=user_input; // I think this leads to crazily high/disparate values ...
-    // at least, smoothness needs to be enforced somewhere else ...
-    this->ptrU_t_Image[element] = user_input;
+  double user_input      = -Ustep * ( value > 0.5 ) +
+                            Ustep * ( value <= 0.5 );
 
+  this->ptrU_t_Image[element] = user_input;
+
+  if( ptrIntegral_Image[element] < -Umax ) {
+    ptrIntegral_Image[element] = -Umax;
+  } else if( ptrIntegral_Image[element] > Umax ) {
+    ptrIntegral_Image[element] = Umax;
+  }
+
+  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
 }
 
 void KSegmentor3D::integrateUserInput()
 {
-    ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-    ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
+  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+  ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-    int pos=0;
-    int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-    for (int element=0;element<Nelements;element++)
-    {
-        pos=this->m_UpdateVector[element];
-
-        this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
-        this->ptrU_t_Image[pos]= 0; // this->ptrU_t_Image[pos]*0.5;
-    }
+  int pos=0;
+  int Nelements=this->m_UpdateVector.size();
+  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N= "
+       << Nelements << endl;
+  for (int element=0;element<Nelements;element++)
+  {
+    pos=this->m_UpdateVector[element];
+    this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
+    this->ptrU_t_Image[pos]       = 0;
+  }
 }
 
 
@@ -103,7 +106,7 @@ void KSegmentor3D::UpdateArraysAfterTransform()
 
     this->U_Integral_image->GetSpacing( m_Spacing_mm );
 
-    cout << "num dims = " << numdims << "; updated KSegmentor3D with dims[0,1,2] = "
+    cout <<  "; updated KSegmentor3D with dims[0,1,2] = "
             << dimx << "," << dimy << "," << dimz << endl;
 
     this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
@@ -146,6 +149,10 @@ void KSegmentor3D::initializeData()
     }
 }
 
+
+void KSegmentor3D::OnUserPaintsLabel() {
+  this->prevSlice = -1;
+}
 
 namespace {
   std::vector<double> cache_phi(0);
@@ -416,9 +423,7 @@ KSegmentor3D::~KSegmentor3D(){
     delete [] this->labelRange;
     delete [] this->phi;
     delete [] this->label;
-    delete [] this->seg;
-    delete [] this->iList;
-    delete [] this->jList;
+
 
 
     LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;

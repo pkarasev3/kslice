@@ -13,15 +13,27 @@ using std::string;
 using cv::Mat;
 
 //these global variables are no good, need to fix later
-extern double ain, aout, auser; // means
-extern double *pdfin, *pdfout, *pdfuser;
-extern long numdims;
-extern double engEval;
-extern bool UseInitContour;
-extern double *Ain, *Aout, *Sin, *Sout; //local means
+//extern double ain, aout, auser; // means
+//extern double *pdfin, *pdfout, *pdfuser;
+//extern long numdims;
+//extern double engEval;
+//extern bool UseInitContour;
+//extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 namespace vrcl
 {
+    struct KSegmentorBase::SFM_vars
+    {
+      //formerly global variables, for energy3c.cpp
+      double ain, aout, auser; // means
+      double *pdfin, *pdfout, *pdfuser;
+      long numdims;
+      double engEval;
+      bool UseInitContour;
+      double *Ain, *Aout, *Sin, *Sout; //local means
+    };
+
+
 
 void test_OpenMP()
 {
@@ -108,8 +120,6 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     cout << "I think the # of rows is: " << mdims[1] << ", # of cols is: " << mdims[0] << endl;
 
-    iList=NULL;
-    jList=NULL;
 
     //Set dimensions
     dimz = (int) mdims[2];
@@ -134,7 +144,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     dims[3] = dims[0]*dims[1];
     dims[4] = dims[0]*dims[1]*dims[2];
 
-    cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
+    cout << "; initialized KSegmentor3D with dims[0,1,2] = "
          << dims[0] << "," << dims[1] << "," << dims[2] << endl;
 
 }

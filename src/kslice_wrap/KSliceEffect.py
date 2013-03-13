@@ -38,6 +38,16 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def create(self):
     super(KSliceEffectOptions,self).create()
+
+    #create a "Start Bot" button
+    self.botButton = qt.QPushButton(self.frame)
+    if hasattr(slicer.modules, 'editorBot'):
+      self.botButton.text = "Stop Bot"
+    else:
+      self.botButton.text = "Start Bot"
+    self.frame.layout().addWidget(self.botButton)
+    self.botButton.connect('clicked()', self.onStartBot)
+
     #make an "Apply" button
     self.apply = qt.QPushButton("Apply", self.frame)
     self.apply.setToolTip("Apply the extension operation")
@@ -125,6 +135,15 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     
     self.logic.apply()
 
+  def onStartBot(self):
+    """create the bot for background editing"""
+    if hasattr(slicer.modules, 'editorBot'):
+      slicer.modules.editorBot.stop()
+      del(slicer.modules.editorBot)
+      self.botButton.text = "Start Bot"
+    else:
+      KSliceCLBot(self)  
+      self.botButton.text = "Stop Bot"
 
 
   def updateMRMLFromGUI(self):
@@ -136,6 +155,55 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.parameterNode.SetDisableModifiedEvent(disableState)
     if not disableState:
       self.parameterNode.InvokePendingModifiedEvent()
+
+
+
+# TODO: move the concept of a Bot into the Effect class
+# to manage timer.  Also put Bot status indicator and controls into
+# an Editor interface.  For now, use slicer.modules.editorBot
+# to enforce singleton instance for now.
+#class GrowCutCLBot(EditorLib.LabelEffectBot):
+
+class KSliceCLBot(object): #stays active even when running the other editor effects
+  """
+  Task to run in the background for this effect.
+  Receives a reference to the currently active options
+  so it can access tools if needed.
+  """
+  def __init__(self,options):
+    self.editUtil = EditUtil.EditUtil()
+    self.sliceWidget = options.tools[0].sliceWidget
+    if hasattr(slicer.modules, 'editorBot'):
+      slicer.modules.editorBot.active = False
+      del(slicer.modules.editorBot)
+    slicer.modules.editorBot = self
+    self.interval = 100
+    self.active = False
+    self.start()
+
+  def start(self):
+    self.active = True
+    self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
+    sliceLogic = self.sliceWidget.sliceLogic()
+    #self.logic = GrowCutCLLogic(sliceLogic)
+    print("Starting")
+    qt.QTimer.singleShot(self.interval, self.iteration)
+
+  def stop(self):
+    self.active = False
+
+  def iteration(self):
+    """Perform an iteration of the GrowCutCL algorithm"""
+    if not self.active:
+      return
+    labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
+    if labelMTime > self.labelMTimeAtStart:
+      sliceLogic = self.sliceWidget.sliceLogic()
+      #self.logic = GrowCutCLLogic(sliceLogic)
+      print("Should be performing seg")
+      self.labelMTimeAtStart = labelMTime
+    #self.logic.step(1)
+    qt.QTimer.singleShot(self.interval, self.iteration)
 
 
 #

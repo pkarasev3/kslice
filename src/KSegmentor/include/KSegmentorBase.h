@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <opencv2/core/core.hpp>
-
+#include <boost/shared_ptr.hpp>
 
 class vtkImageData;
 
@@ -18,6 +18,8 @@ struct LL;
 
 namespace vrcl
 {
+
+
 
 //Should these methods be in here??   (Note by PK:  they should be "not in the GUI app" ... maybe in a separate utils folder?
 // they get implemented in "KegmentorUtils.cpp"
@@ -69,6 +71,7 @@ class KSegmentorBase
                 Lout2in=NULL ;
             }
         };
+        struct SFM_vars;
 
         static std::vector<std::string> GetSupportedEnergyNames()
         {
@@ -87,6 +90,7 @@ class KSegmentorBase
         void initializeUserInputImageWithContour(bool accumulate=true);
         virtual void Update2D(bool reInitFromMask)=0;
         virtual void Update3D()=0;
+        double GetUmax() { if( m_Umax <= 0 ) { std::cout << "Warning, m_Umax seems wrong!\n"; } return m_Umax; }
 
         /** Compute Chan-Vese (mean difference) Energy LL2D.*/
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
@@ -129,16 +133,6 @@ class KSegmentorBase
                 spacing[i]=m_Spacing_mm[i];
         }
 
-       void SetUseEdgeBasedEnergy( bool useEdgeBased )
-        {
-            m_bUseEdgeBased = useEdgeBased;
-        }
-
-        bool GetUseEdgeBasedEnergy( )
-        {
-            return m_bUseEdgeBased;
-        }
-
         void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {
                 m_SatRange[0] = dmin;
@@ -179,6 +173,7 @@ class KSegmentorBase
 
         vtkSmartPointer<vtkImageData> U_Integral_image;
 
+        virtual void OnUserPaintsLabel()=0;
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,;
 
@@ -213,6 +208,11 @@ class KSegmentorBase
 
         std::string m_EnergyName;
 
+        double m_Umax;
+
+        /** struct containing formerly global low-level crap in sfm_local library */
+        boost::shared_ptr<SFM_vars>  m_SFM_vars;
+
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
@@ -245,31 +245,18 @@ public:
         double m_SatRange[2];
         bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-        unsigned short *seg; //seg result from last run of the segmentor
-        short *iList;        //row indices of points on zero level set from last run
-        short *jList;        //column indices of points on zero level set from last run
-        long lengthZLS;      //number of point on the zero level set from last run
-
-
-        //Level Set Variables Stay persistent
-// TODO: delete these, no longer used
-//        /** time-integrated user inputs */
-//        std::vector< cv::Mat >  U_integral;
-
-//        /** instantaneous user input (stuff that was drawn between running 's') */
-//        std::vector< cv::Mat >  U_t;
-
         double *B, *phi, *C, *label;
         double *F;
         double usum, vsum;
         int    countdown;
         long    dims[5];
         long dimz,dimy,dimx;
-        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
         LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        //LL *Lin2out, *Lout2in,*Lchanged;
+
 
         LLset LL2D,LL3D;
+
+
 };
 
 
