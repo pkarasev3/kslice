@@ -10,3 +10,7 @@ target_link_libraries( savepng_test ${KSEGM_LIBS} )
 add_executable(coupled_levelset_test1 coupled_levelset_test1.cpp)
 target_link_libraries(coupled_levelset_test1 ${Boost_LIBRARIES} KSegmentor  sfm_local_chanvese  vrcl ${KSEGM_LIBS} )
 
+add_executable(test_KSeg3D  ksegmentor_test_KSegmentor3D.cpp)
+target_link_libraries(test_KSeg3D ${Boost_LIBRARIES} KSegmentor vrcl ${KSEGM_LIBS} )
+
+
