@@ -12,14 +12,6 @@
 using std::string;
 using cv::Mat;
 
-//these global variables are no good, need to fix later
-extern double ain, aout, auser; // means
-extern double *pdfin, *pdfout, *pdfuser;
-extern long numdims;
-extern double engEval;
-extern bool UseInitContour;
-extern double *Ain, *Aout, *Sin, *Sout; //local means
-
 namespace vrcl
 {
 
@@ -37,6 +29,7 @@ void test_OpenMP()
 
   }
 }
+
 
 
 
@@ -58,7 +51,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     //segPointer->numberdims=3;
 
-    segPointer->m_bUseEdgeBased = false;
+    //segPointer->m_bUseEdgeBased = false;
     segPointer->penaltyAlpha=0;
     segPointer->seed=0;
     segPointer->useContInit=contInit;
@@ -85,12 +78,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     image->GetSpacing( segPointer->m_Spacing_mm );
 
-    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
-    // "10" pixels is 3mm in this context.
-//    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-//    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-//    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
-    segPointer->rad = rad; //IKDebug
+    segPointer->rad = rad;
     cout << "segmentor using ROI size: " << segPointer->rad << endl;
 
     segPointer->U_Integral_image = vtkSmartPointer<vtkImageData>::New();
@@ -113,8 +101,8 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->imgRange   = new double[2];
     segPointer->labelRange = new double[2];
 
-    cout << "I think the # of rows is: " << segPointer->mdims[1]
-         << ", # of cols is: " << segPointer->mdims[0] << endl;
+    cout << "# rows is: "   << segPointer->mdims[1]
+         << ", # cols is: " << segPointer->mdims[0] << endl;
 
     //Set dimensions
     segPointer->dimz = (int)segPointer->mdims[2];
@@ -141,7 +129,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
 
     this->m_Umax = 3.0;
 
-    cout << "num dims = " << numdims << "; initialized KSegmentor3D with dims[0,1,2] = "
+    cout << "initialized KSegmentor3D with dims[0,1,2] = "
          << segPointer->dims[0] << "," << segPointer->dims[1] << "," << segPointer->dims[2] << endl;
 
 }
@@ -182,13 +170,14 @@ double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
     mu_i = integral_I_omH / (integral_one_minus_H +1e-12);
     mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
 
-//    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
-//    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
-//    {
-//        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
-//    }
-
-    return (E/2.0);
+    cout << "getting chanvese E; mu_i=" << mu_i << ", mu_o=" << mu_o ;
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ ) {
+        E +=  Heavi(phi[voxel_idx])*pow((img[voxel_idx]-mu_i),2.0)
+             + (1.0-Heavi(phi[voxel_idx]))*pow((img[voxel_idx]-mu_o),2.0);
+    }
+    E = E/2.0;
+    cout << ", E_cv=" << E;
+    return E;
 }
 
 
@@ -270,14 +259,6 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
   double spc[3];
   this->U_Integral_image->GetSpacing(spc);
 
-    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
-    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
-    labelWriter->SetFileName( "0-Integral0.mhd");
-    labelWriter->Write();
-
-    labelWriter->SetInput(this->U_Integral_image );
-    labelWriter->SetFileName( "0-IntegralImage0.mhd");
-    labelWriter->Write();*/
   this->m_UpdateVector.clear();
   this->m_CoordinatesVector.clear();
 }
@@ -309,7 +290,9 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     double spacing_mm[3];
     this->U_Integral_image->GetSpacing( spacing_mm );
     this->m_Reslicer->SetInput(this->U_Integral_image);
-    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,
+                                                     0,1,0,
+                                                     0,0,1);
     this->m_Reslicer->AutoCropOutputOn();
     this->m_Reslicer->SetOutputOrigin(0,0,0);
     this->m_Reslicer->SetOutputSpacing(m_Spacing_mm);
@@ -325,9 +308,10 @@ void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool inve
     this->m_Reslicer->GetOutput()->UpdateInformation();
 
     this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
-    this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+    this->ptrIntegral_Image = static_cast<double*>(
+                                 this->U_Integral_image->GetScalarPointer());
 
-     this->U_Integral_image->GetSpacing( spacing_mm );
+    this->U_Integral_image->GetSpacing( spacing_mm );
 
     this->m_Reslicer->SetInput(this->U_t_image);
     this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
@@ -410,3 +394,23 @@ KSegmentorBase::~KSegmentorBase()
 
 
 }
+
+/**        Blyat'
+
+    vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+    labelWriter->SetFileName( "0-Integral0.mhd");
+    labelWriter->Write();
+
+    labelWriter->SetInput(this->U_Integral_image );
+    labelWriter->SetFileName( "0-IntegralImage0.mhd");
+    labelWriter->Write();
+
+    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
+    // "10" pixels is 3mm in this context.
+//    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
+//    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
+//    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
+
+
+  */

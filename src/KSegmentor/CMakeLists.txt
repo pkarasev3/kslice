@@ -4,7 +4,7 @@ file( GLOB ksegm_headers include/*.h  )
 # MACOSX_BUNDLE
 
 set( KSEGM_LIBS
-  ${OpenCV_LIBS}
+  ${OpenCV_LIBS}  ${Boost_LIBRARIES}
   vtkRendering  vtkGraphics
   vtkHybrid vtkImaging vtkIO
   vtkFiltering vtkCommon

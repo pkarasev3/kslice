@@ -8,6 +8,7 @@
 //For testing
 #include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 class vtkImageData;
@@ -69,6 +70,8 @@ class KSegmentorBase
                 Lout2in=NULL ;
             }
         };
+
+        struct SFM_vars;
 
         static std::vector<std::string> GetSupportedEnergyNames()
         {
@@ -135,15 +138,15 @@ class KSegmentorBase
                 spacing[i]=m_Spacing_mm[i];
         }
 
-       void SetUseEdgeBasedEnergy( bool useEdgeBased )
-        {
-            m_bUseEdgeBased = useEdgeBased;
-        }
+//       void SetUseEdgeBasedEnergy( bool useEdgeBased )
+//        {
+//            m_bUseEdgeBased = useEdgeBased;
+//        }
 
-        bool GetUseEdgeBasedEnergy( )
-        {
-            return m_bUseEdgeBased;
-        }
+//        bool GetUseEdgeBasedEnergy( )
+//        {
+//            return m_bUseEdgeBased;
+//        }
 
         void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {
@@ -188,6 +191,8 @@ class KSegmentorBase
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
 
+        virtual void OnUserPaintsLabel()=0;
+
         vtkSmartPointer<vtkImageData> U_Integral_image;
 
     protected:
@@ -223,16 +228,20 @@ class KSegmentorBase
         double m_Umax;
         std::string m_EnergyName;
 
+        /** struct containing formerly global low-level crap in sfm_local library */
+        boost::shared_ptr<SFM_vars>  m_SFM_vars;
+
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice
         unsigned short *ptrCurrLabel; //ptr to current label slice
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
 
-/** Might (??) own anything else below */
+
         int currSlice;       //the slice we are segmenting
         int prevSlice;
 
+    /** Might (??) own anything else below */
         long numberdims;     //for images =2, for volumes =3
         int *mdims;          //dimensions of "image" we are segmenting (ex.512x512x212)
         double *imgRange;    //[minImageVal, maxImageVal]
@@ -241,38 +250,38 @@ public:
         double *img;         // single slice!
         double *mask;        // single slice!
 
-         double* m_CustomSpeedImgPointer;
+        double* m_CustomSpeedImgPointer; // not used, delete or use!
 
-        double penaltyAlpha; //regularizer for "user constraints" experiments
-        double *seed;        //again, only used in functions for "user constraints" experiments
-        bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
-        int iter;            //number of iterations to execute
+         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
         double rad;          //radius of ball used in local-global energies
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];
         double m_SatRange[2];
-        bool   m_bUseEdgeBased; // do we use edge-based energy?
 
+        // Ivan: these are bogus !? Plz delete if so
+        double penaltyAlpha; //regularizer for "user constraints" experiments
+        double *seed;        //again, only used in functions for "user constraints" experiments
+        bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
 
-// Bogus/Deprecated !
-//        unsigned short *seg; //seg result from last run of the segmentor
-//        short *iList;        //row indices of points on zero level set from last run
-//        short *jList;        //column indices of points on zero level set from last run
-//        long lengthZLS;      //number of point on the zero level set from last run
+        //     bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-        double *B, *phi, *C, *label;
+        // stupid duplication?
+        double *B;
+        double *phi;
+        double *C;
+        double *label;
         double *F;
-        double usum, vsum;
-        int    countdown;
+
+        // argh, what are these ??
+        double usum, vsum; int    countdown;
+
         long    dims[5];
         long dimz,dimy,dimx;
-        //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
-        //LL *Lin2out, *Lout2in,*Lchanged;
 
-         LLset LL2D,LL3D;
+        LL *Sz, *Sn1, *Sn2, *Sp1, *Sp2;
+        LLset LL2D,LL3D;
 };
 
 
@@ -285,3 +294,20 @@ public:
 
 
 #endif
+
+#if 0    // Lyublyanka Dungeon
+
+
+//        unsigned short *seg; //seg result from last run of the segmentor
+//        short *iList;        //row indices of points on zero level set from last run
+//        short *jList;        //column indices of points on zero level set from last run
+//        long lengthZLS;      //number of point on the zero level set from last run
+//LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+//LL *Lin2out, *Lout2in,*Lchanged;
+  //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
+
+  //LL *Lin2out, *Lout2in,*Lchanged;
+#endif
+
+
+

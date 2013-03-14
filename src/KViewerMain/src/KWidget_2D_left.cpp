@@ -314,16 +314,7 @@ void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_inpu
   }
 
 
-  //else
-  // this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
-  //not used at the moment
-  /*vtkMetaImageReader*reader = vtkMetaImageReader::New();
-  if( !kv_opts_input->m_SpeedImageFileName.empty() )
-  {
-      reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
-      reader->SetDataScalarTypeToDouble();
-      reader->Update();
-  }*/
+
   for( int k = 0; k < (int) multiLabelMaps.size(); k++ )
   {
     vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray; assert(kthLabel->GetNumberOfPoints() == kv_data->imageVolumeRaw->GetNumberOfPoints() );
@@ -331,7 +322,7 @@ void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_inpu
     raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
     raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
     multiLabelMaps[k]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
-    multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
+    //multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
     multiLabelMaps[k]->ksegmentor->SetUmax( 3.0 /* whew... */ );
   }
@@ -627,10 +618,10 @@ void KWidget_2D_left::AddNewLabelMap( )
 
   if (!bIsInitialization) {
     KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
-    //raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
-    //raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
+    raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
+    raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
-    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
+    //this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
     double UmaxInit = this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->GetUmax(); cout << "Umax Init = " << UmaxInit << endl;
@@ -797,5 +788,16 @@ void KWidget_2D_left::SetupLabelDisplay()  {
 
 //  qVTK_widget_left->update( );
 //}
+
+//else
+// this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+//not used at the moment
+/*vtkMetaImageReader*reader = vtkMetaImageReader::New();
+if( !kv_opts_input->m_SpeedImageFileName.empty() )
+{
+    reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
+    reader->SetDataScalarTypeToDouble();
+    reader->Update();
+}*/
 
 #endif
