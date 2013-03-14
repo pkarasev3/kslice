@@ -32,7 +32,7 @@ vtkKSlice::vtkKSlice( ) {
 
 vtkKSlice::~vtkKSlice() {
   delete dataWarehouse;
-
+  std::cout<<"KSlice destroyed"<<std::endl;
 }
 
 

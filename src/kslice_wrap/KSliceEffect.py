@@ -29,9 +29,8 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     editUtil = EditorLib.EditUtil.EditUtil()
     parameterNode = editUtil.getParameterNode()
     lm = slicer.app.layoutManager()
-    redSliceWidget = lm.sliceWidget('Red')
+    self.redSliceWidget = lm.sliceWidget('Red')
     self.parameterNode=parameterNode
-    self.logic=KSliceEffectLogic( redSliceWidget.sliceLogic() )
     
   def __del__(self):
     super(KSliceEffectOptions,self).__del__()
@@ -49,12 +48,12 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.botButton.connect('clicked()', self.onStartBot)
 
     #make an "Apply" button
-    self.apply = qt.QPushButton("Apply", self.frame)
-    self.apply.setToolTip("Apply the extension operation")
+    #self.apply = qt.QPushButton("Apply", self.frame)
+    #self.apply.setToolTip("Apply the extension operation")
     ###add the apply button to layout, widgets list
-    self.frame.layout().addWidget(self.apply)
-    self.widgets.append(self.apply)
-    self.apply.connect('clicked()', self.logic.apply)
+    #self.frame.layout().addWidget(self.apply)
+    #self.widgets.append(self.apply)
+    #self.apply.connect('clicked()', self.logic.apply)
 
     #make radius option
 
@@ -75,9 +74,8 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.locRadSpinBox.suffix = ""
     self.locRadFrame.layout().addWidget(self.locRadSpinBox)
     self.widgets.append(self.locRadSpinBox)
-
+   
     HelpButton(self.frame, "This is an interactive segmentation tool.")
-
 
 
     # Add vertical spacer
@@ -85,7 +83,8 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def destroy(self):
     super(KSliceEffectOptions,self).destroy()
-
+    print("Destroy in KSliceOptions has been called")
+    
   # note: this method needs to be implemented exactly as-is
   # in each leaf subclass so that "self" in the observer
   # is of the correct type
@@ -130,21 +129,15 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
     print("made the connections")
 
-  def onApply(self):
-    print('Processing image')
-    
-    self.logic.apply()
-
   def onStartBot(self):
     """create the bot for background editing"""
-    if hasattr(slicer.modules, 'editorBot'):
+    if hasattr(slicer.modules, 'editorBot'): 
       slicer.modules.editorBot.stop()
       del(slicer.modules.editorBot)
-      self.botButton.text = "Start Bot"
+      self.botButton.text = "Start Segmentation"
     else:
-      KSliceCLBot(self)  
-      self.botButton.text = "Stop Bot"
-
+      KSliceCLBot(self)
+      self.botButton.text = "Stop Segmentation"
 
   def updateMRMLFromGUI(self):
     if self.updatingGUI:
@@ -179,19 +172,21 @@ class KSliceCLBot(object): #stays active even when running the other editor effe
     slicer.modules.editorBot = self
     self.interval = 100
     self.active = False
+    self.redSliceWidget=options.redSliceWidget
     self.start()
 
   def start(self):
     self.active = True
     self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     sliceLogic = self.sliceWidget.sliceLogic()
-    #self.logic = GrowCutCLLogic(sliceLogic)
+    self.logic=KSliceEffectLogic( self.redSliceWidget.sliceLogic() )  
+
     print("Starting")
     qt.QTimer.singleShot(self.interval, self.iteration)
 
   def stop(self):
     self.active = False
-
+    self.logic.destroy()
   def iteration(self):
     """Perform an iteration of the GrowCutCL algorithm"""
     if not self.active:
@@ -256,7 +251,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   by other code without the need for a view context.
   """
 
-  def __init__(self,sliceLogic):
+  def __init__(self,sliceLogic):   
     self.sliceLogic = sliceLogic
     #print(self.sliceLogic)
     print("Made a KSliceEffectLogic")
@@ -359,6 +354,18 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelImage.Modified()
     #labelNode.SetModifiedSinceRead(1)
     labelNode.Modified()
+
+  def destroy(self):
+    #super(KSliceEffectLogic,self).destroy()    
+
+    #disconnect key shortcut
+    k = qt.QKeySequence(qt.Qt.Key_E)
+    s = qt.QShortcut(k, mainWindow())
+    s.disconnect('activated()', self.apply)
+    s.disconnect('activatedAmbiguously()', self.apply)
+
+    self.ksliceMod.FastDelete()	
+    print("Destroy in KSliceLogic has been called")
 
 
 
