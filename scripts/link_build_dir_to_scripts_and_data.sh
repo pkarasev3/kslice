@@ -13,7 +13,7 @@ if [ ! -n "$4" ]; then # -n tests to see if the argument is non empty
  exit 1
 fi
 
-# step 1, ***copy*** scripts folder to build... 
+# step 1, ***copy*** scripts folder to build...
 # yuck, but this way the temp files dumped here can be scrubbed easily
 if [ ! -d "$2/scripts" ]; then
     echo "creating script copy in $2/scripts"
@@ -22,21 +22,21 @@ if [ ! -d "$2/scripts" ]; then
 fi
 
 
-# step 2. ***symbolic link / shortcut*** data folder to build, 
+# step 2. ***symbolic link / shortcut*** data folder to build,
 # so that relative paths always work from inside build folder. not so yuck...
 if [ ! -d "$2/data" ]; then
     echo "creating symbolic link (shortcut) in $2/data"
-    ln -s $4  "$2/data"
+    ln -sf $4  "$2/data"
 fi
 
 if [ -d "/u4/public/karasev/data_medical/mha_grantmuller_kslice" ]; then
     echo "creating symbolic link to grant's image files in $2/data/images"
-    ln -s "/u4/public/karasev/data_medical/mha_grantmuller_kslice"  "$2/data/images"
+    ln -sf "/u4/public/karasev/data_medical/mha_grantmuller_kslice"  "$2/data/images"
 fi
 
 if [ -d "/u4/public/karasev/data_medical/kslice_data" ]; then
     echo "creating symbolic link to PK's test image files in $2/data/kslice_test"
-    ln -s "/u4/public/karasev/data_medical/kslice_data"  "$2/data/kslice_test"
+    ln -sf "/u4/public/karasev/data_medical/kslice_data"  "$2/data/kslice_test"
 fi
 
 exit 0

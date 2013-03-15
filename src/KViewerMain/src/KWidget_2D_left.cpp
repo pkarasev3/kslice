@@ -52,14 +52,6 @@ void SetupSaturationLUT( vtkLookupTable* satLUT, KViewerOptions* kv_opts, KDataW
     */
 
 
-  //IKChange
-  //  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
-  //    cout << "no min,max passed; setting default window: min,max of image." << endl;
-  //    double minMaxImage[2];
-  //    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
-  //    kv_opts->minIntensity = minMaxImage[0];
-  //    kv_opts->maxIntensity = minMaxImage[1];
-  //  }
 
   cout << "attempting to use Image Range: "
        << kv_opts->minIntensity << ", " << kv_opts->maxIntensity << endl;
@@ -587,12 +579,11 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
     multiLabelMaps.push_back(labelMap);     // bag it in the array
     activeLabelMapIndex = multiLabelMaps.size()-1; // increment active index
 
-    //Update label data
     this->kv_data->UpdateLabelDataArray(multiLabelMaps[activeLabelMapIndex]->labelDataArray);
 
     vtkRenderer* iren = kvImageRenderer; // for debug
     cout << "rendering # props = " << iren->GetNumberOfPropsRendered() << endl;
-    //Add new actor
+
     kvImageRenderer->AddActor( multiLabelMaps[activeLabelMapIndex]->labelActor2D );
 
   }
@@ -676,6 +667,14 @@ SP(vtkImageData) KWidget_2D_left::GetActiveLabelMap( )
 #if 0        // Guillotine
 
 
+//IKChange
+//  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
+//    cout << "no min,max passed; setting default window: min,max of image." << endl;
+//    double minMaxImage[2];
+//    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
+//    kv_opts->minIntensity = minMaxImage[0];
+//    kv_opts->maxIntensity = minMaxImage[1];
+//  }
 
 //New Prisoner
 //Currently not used

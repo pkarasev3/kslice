@@ -30,6 +30,8 @@ class KSegmentor3D : public KSegmentorBase
         virtual ~KSegmentor3D();
         virtual void initializeData();
         virtual void Update3D();
+
+        /** run 2D seg */
         virtual void Update2D();
 
         /** external interface to update at a voxel */
