@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(KSlice3D)
+
+enable_testing()
 
 find_package(VTK)
 if(NOT VTK_DIR)
@@ -69,7 +71,7 @@ if(WIN32)
 else(WIN32)
   set(CMAKE_C_FLAGS_DEBUG "-g3 -pedantic -Werror" CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS "-Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -fopenmp" CACHE STRING "compiler flags always used" FORCE)
-  set(CMAKE_CXX_FLAGS "-Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -fopenmp" CACHE STRING "compiler flags always used" FORCE)
+  set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 -Wall " CACHE STRING "extra compiler flags for debug" FORCE )
   find_package( Boost COMPONENTS filesystem program_options )
   find_package( OpenMP )

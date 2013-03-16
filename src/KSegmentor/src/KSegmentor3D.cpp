@@ -329,6 +329,8 @@ void KSegmentor3D::Update3D()
       <<  ", Lchanged size: " << LL3D.Lchanged->length
        <<  ", Lz size: "       << LL3D.Lz->length << endl;
 
+  assert( m_PlaneNormalVector && m_PlaneCenter );
+
   if( 0 == m_EnergyName.compare("ChanVese") ) {
     interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                              LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
