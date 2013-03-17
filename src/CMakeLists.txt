@@ -63,8 +63,6 @@ else(QT_USE_FILE)
   set(QT_LIBRARIES   ${QT_QT_LIBRARY})
 endif(QT_USE_FILE)
 
-
-
 if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
@@ -79,16 +77,12 @@ else(WIN32)
   include_directories ( ${Boost_INCLUDE_DIRS} )
 endif(WIN32)
 
-
-
 set(TOTENKOPF_WERROR  CACHE bool false)
 if(${TOTENKOPF_WERROR})
   set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} "-Werror")
   set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} "-Werror")
   message(STATUS  "using 'errors are warnings!' flag in gcc..." )
 endif(${TOTENKOPF_WERROR})
-
-
 
 message(STATUS "CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
 
