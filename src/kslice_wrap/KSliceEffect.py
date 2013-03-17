@@ -269,35 +269,52 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.userMod = 0
 
     #create a key shortcut
-    k = qt.QKeySequence(qt.Qt.Key_E)
-    s = qt.QShortcut(k, mainWindow())
-    s.connect('activated()', self.apply)
-    s.connect('activatedAmbiguously()', self.apply)
+    k = qt.QKeySequence(qt.Qt.Key_E)   # Press e/E to run segmentor
+    cp= qt.QKeySequence(qt.Qt.Key_C)  # copy
+    ps= qt.QKeySequence(qt.Qt.Key_V)  # paste
 
+    self.qtkeyconnections = []
+    self.qtkeydefs = [ [k,self.apply],
+                           [cp,self.copyslice],
+                           [ps,self.pasteslice] ] # like a cell array in matlab
+    for i in [0,1,2]:
+        keydef = self.qtkeydefs[i]
+        s = qt.QShortcut(keydef[0], mainWindow())  # connect this qt event to mainWindow focus
+        s.connect('activated()', keydef[1])
+        s.connect('activatedAmbiguously()', self.apply)
+        self.qtkeyconnections.append(s)
+
+    #self.e_connection= self.qtkeyconnections[0]
 
     #set the image, label nodes (this will not change although the user can alter what is bgrnd/frgrnd in editor)
     labelLogic = self.sliceLogic.GetLabelLayer()
-    labelNode = labelLogic.GetVolumeNode()
+    self.labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
-    backgroundNode = backgroundLogic.GetVolumeNode()
+    self.backgroundNode = backgroundLogic.GetVolumeNode()
 
     #put a listener on label, so we know when user has drawn
-    labelImg=labelNode.GetImageData()
-    labelImg.AddObserver("ModifiedEvent", self.labModByUser)
-
+    labelImg=self.labelNode.GetImageData()
+    self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
+    self.labelImg=labelImg
 
     #make KSlice class
     print("making a kslice")
     import vtkSlicerKSliceModuleLogicPython  
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
-    ksliceMod.SetImageVol(backgroundNode.GetImageData())
-    ksliceMod.SetLabelVol( labelNode.GetImageData() )
-    ksliceMod.SetUIVol( labelNode.GetImageData() )          #this is WRONG!!!
+    ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
+    ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
+
+    steeredName = self.backgroundNode.GetName() + '-steered'
+    steeredVolume = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
+    steeredArray = slicer.util.array(steeredName) #get the numpy array
+    steeredArray[:]=0 #initialize user input
+    ksliceMod.SetUIVol( steeredVolume.GetImageData() )
     ksliceMod.Initialize() #this should not be done every time!!
     self.ksliceMod=ksliceMod;
 
-    print("were here")
-    ksliceMod.PrintEmpty()
+    self.computeCurrSlice() #initialize the current slice to something meaningful
+    #print("were here")
+    #ksliceMod.PrintEmpty()
  
 
   def labModByUser(self,caller,event):
@@ -311,35 +328,52 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       print("modified by user")
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
+      self.userMod=0 
       print("modified by active contour")
       pass
 
+  def copyslice(self):
+    self.computeCurrSlice()
+    self.ksliceMod.SetFromSlice(self.currSlice)
+    print('copyslice')
+
+  def pasteslice(self): 
+    self.computeCurrSlice()
+    self.ksliceMod.PasteSlice(self.currSlice)
+    labelImage=self.labelNode.GetImageData()
+    self.labelNode.Modified()
+    labelImage.Modified()
+    print('pasteslice')
+
+  def computeCurrSlice(self):
+    sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
+    spacingVec  = self.labelNode.GetSpacing()
+    originVec   = self.labelNode.GetOrigin()
+    self.currSlice=int( round( (sliceOffset - originVec[2] + spacingVec[2]/2)/spacingVec[2])) #slider picks coordinate midway between slices, so need to add 1/2*spacing  
 
   def apply(self):
+    # TODO: clarify this function's name, RunSegment2D
     #get slider information, a.__dict__ and a.children() are useful commands
     #imgLayer= self.sliceLogic.GetBackgroundLayer();
     #imgNode= imgLayer.GetVolumeNode();
-    labelLogic = self.sliceLogic.GetLabelLayer()
-    labelNode = labelLogic.GetVolumeNode()    
-    sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
-    spacingVec  = labelNode.GetSpacing()
-    originVec   = labelNode.GetOrigin()
+    #labelLogic = self.sliceLogic.GetLabelLayer()
+    #labelNode = labelLogic.GetVolumeNode()    
 
-    currSlice=round( (sliceOffset - originVec[2] + spacingVec[2]/2)/spacingVec[2]) #slider picks coordinate midway between slices, so need to add 1/2*spacing  
+    self.computeCurrSlice()
 
 
     
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
-    currRad = float(node.GetParameter("KSliceEffect,radius"))
+    currRad = int(node.GetParameter("KSliceEffect,radius"))
 
     #make connections, parameter settings
-    self.ksliceMod.SetCurrSlice(currSlice)
+    self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(50)
     
     #debug prints: lets see how this went ...
-    print(currSlice)  
+    print(self.currSlice)  
     print(currRad)
 
 
@@ -348,24 +382,32 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     print("1")    
 
     #signal to slicer that the label needs to be updated
-    labelImage=labelNode.GetImageData()
+    labelImage=self.labelNode.GetImageData()
     
     self.acMod=1  
+
     labelImage.Modified()
     #labelNode.SetModifiedSinceRead(1)
-    labelNode.Modified()
+    self.labelNode.Modified()
 
   def destroy(self):
     #super(KSliceEffectLogic,self).destroy()    
 
+    print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    k = qt.QKeySequence(qt.Qt.Key_E)
-    s = qt.QShortcut(k, mainWindow())
-    s.disconnect('activated()', self.apply)
-    s.disconnect('activatedAmbiguously()', self.apply)
+    for i in [0,1,2]:
+        keyfun = self.qtkeydefs[i]
+        keydef = self.qtkeyconnections[i]
+        print('disconnecting keydef:  ')
+        print(keyfun)
+        keydef.disconnect('activated()', keyfun[1])
+        keydef.disconnect('activatedAmbiguously()', keyfun[1])
+
+    #remove label observer
+    self.labelImg.RemoveObserver(self.ladMod_tag)
 
     self.ksliceMod.FastDelete()	
-    print("Destroy in KSliceLogic has been called")
+
 
 
 

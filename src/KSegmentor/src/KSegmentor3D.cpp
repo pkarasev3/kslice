@@ -134,8 +134,8 @@ void KSegmentor3D::initializeData()
     //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
     this->imgRange=imgRange;
-    ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+    ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
+    ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
 
 
     long elemNum=0;
@@ -163,8 +163,13 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     this->integrateUserInput();
     this->CreateLLs(LL2D);
 
-    ptrCurrImage        = static_cast<unsigned short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel        = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+    const char *imgType=imageVol->GetScalarTypeAsString(); //IKDebug
+
+    std::cout<<sizeof(unsigned short*)<<std::endl;
+    std::cout<<sizeof(short*)<<std::endl;
+
+    ptrCurrImage        = static_cast< short*>(imageVol->GetScalarPointer());
+    ptrCurrLabel        = static_cast< short*>(labelVol->GetScalarPointer());
     ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     size_t sz = mdims[0]*mdims[1];
@@ -198,6 +203,23 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     dimsSlice[3] = dimsSlice[0]*dimsSlice[1];
     dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
 
+
+//    this->saveMatToPNG(imgSlice,"img.png");
+//    this->saveMatToPNG(maskSlice,"lab.png");
+//
+//    std::ofstream imgFile("img.txt",std::ios_base::out);
+//    for(int i=0;i< mdims[0]*mdims[1]; i++){
+//        imgFile<<imgSlice[i]<<' ';
+//    }
+//    imgFile.close();
+//
+//    std::ofstream labFile("lab.txt",std::ios_base::out);
+//    for(int i=0;i< mdims[0]*mdims[1]; i++){
+//        labFile<<maskSlice[i]<<' ';
+//    }
+//    labFile.close();
+//
+//    std::cout<<"Writing test images"<<std::endl;
 
     ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]),
                   LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
@@ -303,8 +325,8 @@ void KSegmentor3D::Update3D()
             <<  ", Lchanged size BEGIN: " << LL3D.Lchanged->length
             <<  ", Lz size BEGIN: "       << LL3D.Lz->length << endl;
 
-    ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel = static_cast<unsigned short*>(labelVol->GetScalarPointer());
+    ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
+    ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
     ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
     double u_in, u_out;
     // Crap, the linked lists will accumulate zillions of repeating entries ...

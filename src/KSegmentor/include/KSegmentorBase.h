@@ -214,8 +214,8 @@ class KSegmentorBase
         boost::shared_ptr<SFM_vars>  m_SFM_vars;
 
 public:
-        unsigned short *ptrCurrImage; //ptr to current image slice
-        unsigned short *ptrCurrLabel; //ptr to current label slice
+        short *ptrCurrImage; //ptr to current image slice
+        short *ptrCurrLabel; //ptr to current label slice
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
 

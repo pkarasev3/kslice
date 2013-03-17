@@ -39,7 +39,7 @@ vtkKSlice::~vtkKSlice() {
 
 void vtkKSlice::PasteSlice(int toSlice){
     ToSlice=toSlice;
-    vrcl::copySliceFromTo( dataWarehouse->LabelVol, FromSlice, ToSlice);
+    vrcl::copySliceFromTo(LabelVol, FromSlice, ToSlice);
 }
 
 void vtkKSlice::Initialize(){
