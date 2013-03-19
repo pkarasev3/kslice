@@ -297,6 +297,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
 
+
+    #put test listener on the whole window
+    self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
+
     #make KSlice class
     print("making a kslice")
     import vtkSlicerKSliceModuleLogicPython  
@@ -316,20 +320,17 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #print("were here")
     #ksliceMod.PrintEmpty()
  
+  def testWindowListener(self, caller, event):
+     print("window modified")
 
   def labModByUser(self,caller,event):
-    #print(caller)
-    #print(event)
-    #print("2")
-    #print(self.acMod)
-    #print(self.userMod)
     if self.acMod==0 :  
       self.userMod=1
-      print("modified by user")
+      #print("modified by user")
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0 
-      print("modified by active contour")
+      #print("modified by active contour")
       pass
 
   def copyslice(self):
@@ -403,8 +404,12 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         keydef.disconnect('activated()', keyfun[1])
         keydef.disconnect('activatedAmbiguously()', keyfun[1])
 
+    #***delete steeredArray
+
     #remove label observer
     self.labelImg.RemoveObserver(self.ladMod_tag)
+    #remove logic observer
+    self.sliceLogic.RemoveObserver(self.logMod_tag)
 
     self.ksliceMod.FastDelete()	
 
