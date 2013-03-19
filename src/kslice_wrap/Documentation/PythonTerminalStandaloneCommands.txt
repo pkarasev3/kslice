@@ -1,0 +1,11 @@
+editUtil = EditorLib.EditUtil.EditUtil()
+parameterNode = editUtil.getParameterNode()
+lm = slicer.app.layoutManager()
+redSliceWidget = lm.sliceWidget('Red')
+sliceLogic=redSliceWidget.sliceLogic()
+labelLogic = sliceLogic.GetLabelLayer()
+labelNode = labelLogic.GetVolumeNode()    
+labelImg=labelNode.GetImageData()
+def labModByUser():
+   print("you touched label")
+labelImg.AddObserver("ModifiedEvent", labModByUser)

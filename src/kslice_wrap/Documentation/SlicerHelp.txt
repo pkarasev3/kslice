@@ -1,0 +1,7 @@
+Ex.1) https://github.com/pieper/SlicerRC/blob/master/slicerrc.py
+
+Ex.2) http://slicer.org/doc/html/classEditorLib_1_1Effect_1_1Effect.html
+
+Ex.3) steve will put on github 
+
+

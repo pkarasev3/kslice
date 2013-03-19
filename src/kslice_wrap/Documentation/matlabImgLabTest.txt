@@ -1,0 +1,2 @@
+a=reshape(dlmread('lab.txt'), [512 512]);figure(1);imagesc(a);axis image
+b=reshape(dlmread('img.txt'), [512 512]);figure(2);image(b);hold on;contour(a,[0 0], 'color','green');axis image; hold off;

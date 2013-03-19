@@ -1,0 +1,9 @@
+http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers/Python_scripting
+
+http://slicer-devel.65872.n3.nabble.com/using-the-editor-from-python-td4026125.html
+
+Modules/Scripted/EditorLib/Testing
+
+press 'sd' to launch slicer debug window
+
+in python type "KSlice ..." tab
