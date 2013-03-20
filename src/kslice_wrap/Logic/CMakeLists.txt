@@ -19,6 +19,8 @@ set(${KIT}_SRCS
   vtkKSlice.h #IKChange
 )
 
+message(STATUS "Slicer_SOURCE_DIR is:  ${Slicer_SOURCE_DIR}")
+
 set(${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/lib/libvrcl.so

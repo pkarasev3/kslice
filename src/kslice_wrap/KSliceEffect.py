@@ -350,7 +350,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
     spacingVec  = self.labelNode.GetSpacing()
     originVec   = self.labelNode.GetOrigin()
-    self.currSlice=int( round( (sliceOffset - originVec[2] + spacingVec[2]/2)/spacingVec[2])) #slider picks coordinate midway between slices, so need to add 1/2*spacing  
+    self.currSlice=int( round( (sliceOffset - originVec[2])/spacingVec[2])) 
+   # [Bogus comment?]slider picks coordinate midway between slices, so need to add 1/2*spacing  
 
   def apply(self):
     # TODO: clarify this function's name, RunSegment2D
