@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(KSlice3D-slicer)
 cmake_policy(SET CMP0012 NEW)
 
+enable_testing()
 
 #-----------------------------------------------------------------------------
 set(MODULE_NAME KSlice)
