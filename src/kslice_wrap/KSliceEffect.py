@@ -41,9 +41,9 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     #create a "Start Bot" button
     self.botButton = qt.QPushButton(self.frame)
     if hasattr(slicer.modules, 'editorBot'):
-      self.botButton.text = "Stop Bot"
+      self.botButton.text = "Stop Interactive Segmentor"
     else:
-      self.botButton.text = "Start Bot"
+      self.botButton.text = "Start Interactive Segmentor"
     self.frame.layout().addWidget(self.botButton)
     self.botButton.connect('clicked()', self.onStartBot)
 
@@ -188,7 +188,7 @@ class KSliceCLBot(object): #stays active even when running the other editor effe
     self.active = False
     self.logic.destroy()
   def iteration(self):
-    """Perform an iteration of the GrowCutCL algorithm"""
+    """Perform an iteration of the algorithm"""
     if not self.active:
       return
     labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
@@ -225,6 +225,9 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
     """
     handle events from the render window interactor
     """
+    #print(self)
+    #print "caller= " + caller + "\n"
+    print(event)
     if event == "LeftButtonPressEvent":
       xy = self.interactor.GetEventPosition()
       #sliceLogic = self.sliceWidget.sliceLogic()
@@ -260,10 +263,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # 'MouseTool' - grabs the cursor
     # 'Nonmodal' - can be applied while another is active
     # 'Disabled' - not available
-    self.attributes = ('MouseTool')
+    self.attributes  = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
-
-
+  
     #create variables to keep track of how the label changed (automatic part or user input)
     self.acMod   = 0
     self.userMod = 0
@@ -321,7 +323,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #ksliceMod.PrintEmpty()
  
   def testWindowListener(self, caller, event):
-     print("window modified")
+     print("window modified => processEvent(...)")
+     #self.tool.processEvent(caller,event)
+     #print(self)
+     #print(caller)
+     print(event)
 
   def labModByUser(self,caller,event):
     if self.acMod==0 :  
@@ -362,9 +368,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #labelNode = labelLogic.GetVolumeNode()    
 
     self.computeCurrSlice()
-
-
-    
+   
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
