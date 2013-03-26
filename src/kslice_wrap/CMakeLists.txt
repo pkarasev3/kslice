@@ -82,7 +82,7 @@ slicerMacroBuildQtModule(
 ##Set up the Editor module
 
 set(MODULE_PYTHON_SCRIPTS
-  KSliceEffect.py
+  KSliceEffect.py 
   )
 
 set(MODULE_PYTHON_RESOURCES
