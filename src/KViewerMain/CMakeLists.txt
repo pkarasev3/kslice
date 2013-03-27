@@ -6,8 +6,8 @@ include_DIRECTORIES(
 
 
 find_package(Boost COMPONENTS filesystem system python REQUIRED)
-message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
-message("Libs of boost: " ${Boost_LIBRARIES} )
+message(STATUS "Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
+message(STATUS "Libs of boost: " ${Boost_LIBRARIES} )
 
 #find_package(PythonLibs REQUIRED) #this is now done by find_package(Slicer)
 #message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )

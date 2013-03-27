@@ -77,7 +77,7 @@ QString qSlicerKSliceModule::acknowledgementText()const
 QStringList qSlicerKSliceModule::contributors()const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("Jean-Christophe Fillion-Robin (Kitware)");
+  moduleContributors << QString("Ivan Kolesov, Peter Karasev (Georgia Tech)");
   return moduleContributors;
 }
 

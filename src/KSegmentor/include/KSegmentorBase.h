@@ -107,6 +107,11 @@ class KSegmentorBase
             m_CoordinatesVector.push_back(coord);
         }
 
+        void PrintUpdateInfo() const {
+          std::cout << "m_UpdateVector.size()      = " << m_UpdateVector.size() << std::endl;
+          std::cout << "m_CoordinatesVector.size() = " << m_CoordinatesVector.size() << std::endl;
+        }
+
         virtual void copyIntegralDuringPaste( int kFrom, int kTo );
 
         void setRadius( int radNew ) {

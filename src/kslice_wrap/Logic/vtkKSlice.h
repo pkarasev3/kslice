@@ -22,20 +22,23 @@ public:
   vtkSetObjectMacro(LabelVol, vtkImageData); //void SetLabel(vtkImageData* label);
   vtkSetObjectMacro(UIVol, vtkImageData);    //void SetUI(vtkImageData* uiVol);
 
+  vtkGetObjectMacro(UIVol, vtkImageData);
+
   vtkSetMacro(NumIts, int);               //void SetNumIters(int numIts);
   vtkSetMacro(BrushRad, int);             //void SetBrushRad(int rad);
   vtkSetMacro(CurrSlice, int);            //void SetCurrSlice(int currSlice);
   vtkSetMacro(DistWeight, float);         //void SetDistWeight(float distWeight);
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
 
-
+  // needs implementation
+  void SetOrientation(const std::string& orient); // axial,sagittal,coronal,etc
+  void applyUserIncrement(int i, int j, int k, double val);
 
   //implemented functionality
   void PasteSlice(int toSlice);
   void Initialize();
   void runUpdate(bool reInitFromMask);
   void PrintEmpty();
-//void PrintImage(ostream &os, vtkIndent indent);
   void PrintImage();
 protected:
  vtkKSlice();

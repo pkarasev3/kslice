@@ -35,6 +35,17 @@ vtkKSlice::~vtkKSlice() {
   std::cout<<"KSlice destroyed"<<std::endl;
 }
 
+void vtkKSlice::SetOrientation(const std::string& orient) {
+ // axial,sagittal,coronal,etc
+  std::cout<<"set kslice orientation to " << orient << std::endl;
+}
+
+void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
+  std::cout<<"increment U in kslice c++ by " << val << std::endl;
+  double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor! 
+  this->UIVol->SetScalarComponentFromDouble(i,j,k,0,Umod);
+}
 
 
 void vtkKSlice::PasteSlice(int toSlice){
@@ -48,7 +59,6 @@ void vtkKSlice::Initialize(){
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
-
 }
 
 void vtkKSlice::runUpdate(bool reInitFromMask){

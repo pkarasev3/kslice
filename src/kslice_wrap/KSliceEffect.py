@@ -6,6 +6,7 @@ from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
+#import KSliceEffect_GUI
 
 #
 # The Editor Extension itself.
@@ -28,8 +29,10 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     #save a layout manager, get just the red slice
     editUtil = EditorLib.EditUtil.EditUtil()
     parameterNode = editUtil.getParameterNode()
-    lm = slicer.app.layoutManager()
-    self.redSliceWidget = lm.sliceWidget('Red')
+    lm                      = slicer.app.layoutManager()
+    self.redSliceWidget     = lm.sliceWidget('Red')
+    self.yellowSliceWidget  = lm.sliceWidget('Yellow')
+    self.greenSliceWidget   = lm.sliceWidget('Green')
     self.parameterNode=parameterNode
     
   def __del__(self):
@@ -41,9 +44,9 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     #create a "Start Bot" button
     self.botButton = qt.QPushButton(self.frame)
     if hasattr(slicer.modules, 'editorBot'):
-      self.botButton.text = "Stop Bot"
+      self.botButton.text = "Stop Interactive Segmentor"
     else:
-      self.botButton.text = "Start Bot"
+      self.botButton.text = "Start Interactive Segmentor"
     self.frame.layout().addWidget(self.botButton)
     self.botButton.connect('clicked()', self.onStartBot)
 
@@ -54,7 +57,6 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     #self.frame.layout().addWidget(self.apply)
     #self.widgets.append(self.apply)
     #self.apply.connect('clicked()', self.logic.apply)
-
     #make radius option
 
     self.locRadFrame = qt.QFrame(self.frame)
@@ -76,10 +78,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.widgets.append(self.locRadSpinBox)
    
     HelpButton(self.frame, "This is an interactive segmentation tool.")
-
-
-    # Add vertical spacer
-    self.frame.layout().addStretch(1)
+    self.frame.layout().addStretch(1)     # Add vertical spacer
 
   def destroy(self):
     super(KSliceEffectOptions,self).destroy()
@@ -151,12 +150,6 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
 
 
-# TODO: move the concept of a Bot into the Effect class
-# to manage timer.  Also put Bot status indicator and controls into
-# an Editor interface.  For now, use slicer.modules.editorBot
-# to enforce singleton instance for now.
-#class GrowCutCLBot(EditorLib.LabelEffectBot):
-
 class KSliceCLBot(object): #stays active even when running the other editor effects
   """
   Task to run in the background for this effect.
@@ -173,13 +166,15 @@ class KSliceCLBot(object): #stays active even when running the other editor effe
     self.interval = 100
     self.active = False
     self.redSliceWidget=options.redSliceWidget
+    self.greenSliceWidget=options.greenSliceWidget
+    self.yellowSliceWidget=options.yellowSliceWidget
     self.start()
 
   def start(self):
     self.active = True
     self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     sliceLogic = self.sliceWidget.sliceLogic()
-    self.logic=KSliceEffectLogic( self.redSliceWidget.sliceLogic() )  
+    self.logic = KSliceEffectLogic( self.redSliceWidget.sliceLogic() )  
 
     print("Starting")
     qt.QTimer.singleShot(self.interval, self.iteration)
@@ -188,13 +183,12 @@ class KSliceCLBot(object): #stays active even when running the other editor effe
     self.active = False
     self.logic.destroy()
   def iteration(self):
-    """Perform an iteration of the GrowCutCL algorithm"""
+    """Perform an iteration of the algorithm"""
     if not self.active:
       return
     labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     if labelMTime > self.labelMTimeAtStart:
       sliceLogic = self.sliceWidget.sliceLogic()
-      #self.logic = GrowCutCLLogic(sliceLogic)
       print("Should be performing seg")
       self.labelMTimeAtStart = labelMTime
     #self.logic.step(1)
@@ -221,20 +215,94 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
   def cleanup(self):
     super(KSliceEffectTool,self).cleanup()
 
+#print("Got a %s at %s in %s", (event,str(xy),viewName))           
   def processEvent(self, caller=None, event=None):
     """
     handle events from the render window interactor
     """
     if event == "LeftButtonPressEvent":
       xy = self.interactor.GetEventPosition()
-      #sliceLogic = self.sliceWidget.sliceLogic()
-      #logic = KSliceEffectLogic(sliceLogic)
-      #logic.apply(xy)
-      print("Got a %s at %s in %s", (event,str(xy),self.sliceWidget.sliceLogic().GetSliceNode().GetName()))
-      self.abortEvent(event)
+      viewName,orient = get_view_names(self.sliceWidget)
+      ijk= smart_xyToIJK(xy,self.sliceWidget)
+      if not orient:
+        print "Warning, unexpected view orientation!?"
+      values = get_values_at_IJK(ijk,sliceWidget)
+      print(values)     
+    if event == 'EnterEvent':
+      print "EnterEvent in KSliceEffect."
     else:
       pass
 
+def get_view_names( sw ):
+    viewName    = sw.sliceLogic().GetSliceNode().GetName()
+    lm          = slicer.app.layoutManager()
+    orient      = lm.sliceWidget(viewName).sliceOrientation;
+    valid_orient= ('Axial','Sagittal','Coronal','Reformat')
+    viewOrient  = None
+    for vo in valid_orient:      
+      if vo == orient:
+        viewOrient = vo
+        #print str(viewName) + "," + str(vo)
+    return viewName,viewOrient
+
+
+def smart_xyToIJK(xy,sliceWidget):
+  xyz = sliceWidget.sliceView().convertDeviceToXYZ(xy);
+  ll  = sliceWidget.sliceLogic().GetLabelLayer()
+  xyToIJK = ll.GetXYToIJKTransform().GetMatrix()
+  ijkFloat = xyToIJK.MultiplyPoint(xyz+(1,))[:3]
+  print( ijkFloat )
+  ijk = []
+  for element in ijkFloat:
+    try:
+      index = int(round(element))
+    except ValueError:
+      index = 0
+    ijk.append(index)
+  return ijk
+
+
+def get_values_at_IJK( ijk, sliceWidget):
+  labelLogic = sliceWidget.sliceLogic().GetLabelLayer()
+  volumeNode = labelLogic.GetVolumeNode()
+  imageData  = volumeNode.GetImageData()
+  if not imageData:
+    return "No Label Image"
+  dims = imageData.GetDimensions()
+  print "current view dims = " + str(dims)
+  wasOutOfFrame = False
+  values        = {'label':None,'U':None}
+  for ele in xrange(3):
+    ijk
+    if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
+      print "Out of Frame"
+      wasOutOfFrame=True
+  if not wasOutOfFrame and volumeNode.GetLabelMap():
+    labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
+    print "labelIndex = " + str(labelIndex)
+    values['label'] = labelIndex
+  # TODO get the user-integral value too
+  return values
+
+
+def bind_view_observers( handlerFunc ):
+  layoutManager  = slicer.app.layoutManager()
+  sliceNodeCount = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLSliceNode')
+  ObserverTags   = []
+  SliceWidgetLUT = {}   # for  sw = SliceWidget[caller] in handlerFunc
+  for nodeIndex in xrange(sliceNodeCount):
+    sliceNode   = slicer.mrmlScene.GetNthNodeByClass(nodeIndex, 'vtkMRMLSliceNode')
+    sliceWidget = layoutManager.sliceWidget(sliceNode.GetLayoutName())
+    print "did a bind_view_observers for view: " + str(sliceNode.GetLayoutName())
+    if sliceWidget:  # add obserservers and keep track of tags
+      style = sliceWidget.sliceView().interactor()
+      SliceWidgetLUT[style] = sliceWidget      
+      events = ("LeftButtonPressEvent","MouseMoveEvent",
+                    "RightButtonPressEvent","EnterEvent", "LeaveEvent")
+      for event in events: # override active effect w/ priority
+        tag = style.AddObserver(event, handlerFunc, 2.0)
+        ObserverTags.append([style,tag])
+  return ObserverTags,SliceWidgetLUT
 
 #
 # KSliceEffectLogic
@@ -260,10 +328,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # 'MouseTool' - grabs the cursor
     # 'Nonmodal' - can be applied while another is active
     # 'Disabled' - not available
-    self.attributes = ('MouseTool')
+    self.attributes  = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
-
-
+  
     #create variables to keep track of how the label changed (automatic part or user input)
     self.acMod   = 0
     self.userMod = 0
@@ -274,18 +341,16 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ps= qt.QKeySequence(qt.Qt.Key_V)  # paste
 
     self.qtkeyconnections = []
-    self.qtkeydefs = [ [k,self.apply],
+    self.qtkeydefs = [     [k,self.runSegment2D],
                            [cp,self.copyslice],
                            [ps,self.pasteslice] ] # like a cell array in matlab
     for i in [0,1,2]:
         keydef = self.qtkeydefs[i]
         s = qt.QShortcut(keydef[0], mainWindow())  # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
-        s.connect('activatedAmbiguously()', self.apply)
+        s.connect('activatedAmbiguously()', keydef[1])
         self.qtkeyconnections.append(s)
-
-    #self.e_connection= self.qtkeyconnections[0]
-
+    
     #set the image, label nodes (this will not change although the user can alter what is bgrnd/frgrnd in editor)
     labelLogic = self.sliceLogic.GetLabelLayer()
     self.labelNode = labelLogic.GetVolumeNode()
@@ -301,6 +366,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #put test listener on the whole window
     self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
 
+    # a number of observers for mouse events, bound to the interactors
+    self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
+
     #make KSlice class
     print("making a kslice")
     import vtkSlicerKSliceModuleLogicPython  
@@ -313,20 +381,44 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     steeredArray = slicer.util.array(steeredName) #get the numpy array
     steeredArray[:]=0 #initialize user input
     ksliceMod.SetUIVol( steeredVolume.GetImageData() )
-    ksliceMod.Initialize() #this should not be done every time!!
-    self.ksliceMod=ksliceMod;
-
+    ksliceMod.Initialize() # kind of heavy-duty
+    
+    self.UIVol    = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    self.ksliceMod= ksliceMod;
     self.computeCurrSlice() #initialize the current slice to something meaningful
-    #print("were here")
-    #ksliceMod.PrintEmpty()
+  
  
   def testWindowListener(self, caller, event):
-     print("window modified")
+    interactor=caller # should be called by the slice interactor...
+    if event == "MouseMoveEvent":       # this a verbose event, dont print
+      pass
+    else:
+      print "windowListener => processEvent( " + str(event) +" )"
+    if event == "LeftButtonPressEvent":
+      sw = self.swLUT[interactor]
+      if not sw:
+        print "caller (interactor?) not found in lookup table!"
+        pass
+      else:
+        viewName,orient = get_view_names(sw)
+        xy              = interactor.GetEventPosition()
+        ijk             = smart_xyToIJK(xy,sw)
+        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        vals            = get_values_at_IJK(ijk,sw)
+        self.ksliceMod.SetOrientation(str(orient))
+        if vals['label']:
+          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],0,5.0)
+    
 
   def labModByUser(self,caller,event):
     if self.acMod==0 :  
+      if 0==self.userMod:
+        print("modified by user, kslice bot is running")
       self.userMod=1
+<<<<<<< HEAD
       print("modified by user")
+=======
+>>>>>>> 74f49f60818d82314b829f490ea30054d680bf69
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0 
@@ -350,20 +442,20 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on 
     spacingVec  = self.labelNode.GetSpacing()
     originVec   = self.labelNode.GetOrigin()
-    self.currSlice=int( round( (sliceOffset - originVec[2] + spacingVec[2]/2)/spacingVec[2])) #slider picks coordinate midway between slices, so need to add 1/2*spacing  
+    self.currSlice=int( round( (sliceOffset - originVec[2])/spacingVec[2])) 
 
-  def apply(self):
+
+  def runSegment2D(self):
     # TODO: clarify this function's name, RunSegment2D
     #get slider information, a.__dict__ and a.children() are useful commands
     #imgLayer= self.sliceLogic.GetBackgroundLayer();
     #imgNode= imgLayer.GetVolumeNode();
     #labelLogic = self.sliceLogic.GetLabelLayer()
     #labelNode = labelLogic.GetVolumeNode()    
-
+    lm = slicer.app.layoutManager()
+   
     self.computeCurrSlice()
-
-
-    
+   
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
@@ -430,11 +522,9 @@ class KSliceEffectExtension(LabelEffect.LabelEffect):
     self.name = "KSliceEffect"
     # tool tip is displayed on mouse hover
     self.toolTip = "Interactive Segmentation Tool"
-
-
     self.options = KSliceEffectOptions
-    self.tool = KSliceEffectTool
-    self.logic = KSliceEffectLogic
+    self.tool    = KSliceEffectTool
+    self.logic   = KSliceEffectLogic
 
 """ Test:
 
@@ -463,11 +553,6 @@ class KSliceEffect:
     parent.acknowledgementText = """
     This editor extension was developed by
     <Author>, <Institution>
-    based on work by:
-    Steve Pieper, Isomics, Inc.
-    based on work by:
-    Jean-Christophe Fillion-Robin, Kitware Inc.
-    and was partially funded by NIH grant 3P41RR013218.
     """
 
     # TODO:

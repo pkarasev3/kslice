@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 
+enable_testing()
+
 #-----------------------------------------------------------------------------
 if(NOT Slicer_SOURCE_DIR)
   set(EXTENSION_NAME KSlice)
@@ -80,7 +82,7 @@ slicerMacroBuildQtModule(
 ##Set up the Editor module
 
 set(MODULE_PYTHON_SCRIPTS
-  KSliceEffect.py
+  KSliceEffect.py 
   )
 
 set(MODULE_PYTHON_RESOURCES

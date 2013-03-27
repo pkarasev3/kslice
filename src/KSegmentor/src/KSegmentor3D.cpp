@@ -12,37 +12,40 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
+//#include <boost/shared_ptr.hpp>
 
 using std::string;
 //using cv::Mat;
 
 
-
+KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, 
+                                            vtkImageData *label, 
+                                            bool contInit)
+{
+    int currSlice=0;
+    int numIts = 20;
+    float distWeight=0.01;
+    int brushRad = 5;
+    KSegmentor3D* seg3d = 
+          new KSegmentor3D(image,label,contInit,currSlice,numIts,distWeight,brushRad);
+    return seg3d; 
+}
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
                            bool contInit, int currSlice, int numIts,
-                           float distWeight, int brushRad)
-{
-
-
+                           float distWeight, int brushRad) {
     m_EnergyName = GetSupportedEnergyNames()[1];
-    this->InitializeVariables(image,label, contInit, currSlice, numIts, distWeight, brushRad);
+    this->InitializeVariables(image,label, contInit, currSlice, 
+                                       numIts, distWeight, brushRad);
 
-    if(contInit)
-    {
+    if(contInit) {
         std::cout<<"Initializing user input using label data"<<std::endl;
         this->initializeUserInputImageWithContour();
     }
-
-
-
     this->initializeData();
     this->CreateLLs(this->LL3D);
-
-    LL* Lztmp = this->LL3D.Lz;
-
+    LL* Lztmp = this->LL3D.Lz; assert(Lztmp != NULL);
     this->intializeLevelSet3D();
-
 }
 
 
