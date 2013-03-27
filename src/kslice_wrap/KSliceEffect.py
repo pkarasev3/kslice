@@ -326,11 +326,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   def labModByUser(self,caller,event):
     if self.acMod==0 :  
       self.userMod=1
-      #print("modified by user")
+      print("modified by user")
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0 
-      #print("modified by active contour")
+      print("modified by active contour")
       pass
 
   def copyslice(self):
