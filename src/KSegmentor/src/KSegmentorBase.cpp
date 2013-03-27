@@ -55,6 +55,7 @@ double KSegmentorBase::defaultKappaParam = 0.35;
 
 
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label,
+                                         vtkImageData* UIVol,
                                         bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
 {
     m_CustomSpeedImgPointer=NULL;
@@ -98,13 +99,13 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     cout << "segmentor using ROI size: " << rad << endl;
 
-    U_Integral_image = vtkSmartPointer<vtkImageData>::New();
+    U_Integral_image = UIVol; //vtkSmartPointer<vtkImageData>::New();
     U_t_image= vtkSmartPointer<vtkImageData>::New();
 
-    U_Integral_image->SetExtent(image->GetExtent());
-    U_Integral_image->SetScalarTypeToDouble();
-    U_Integral_image->SetSpacing(image->GetSpacing());
-    U_Integral_image->AllocateScalars();
+//    U_Integral_image->SetExtent(image->GetExtent());
+//    U_Integral_image->SetScalarTypeToDouble();
+//    U_Integral_image->SetSpacing(image->GetSpacing());
+//    U_Integral_image->AllocateScalars();
     ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
 
     U_t_image->SetExtent(image->GetExtent());
@@ -285,8 +286,8 @@ void KSegmentorBase::accumulateUserInput( double value,const unsigned int elemen
 }
 
 void KSegmentorBase::accumulateUserInput( double value, int i, int j, int k) {
-    double user_input      = -3.0 * ( value > 0.5 ) + 3.0 * ( value <= 0.5 );
-    //this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
+    double user_input      = -5.0 * ( value > 0.5 ) + 5.0 * ( value <= 0.5 );
+    this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
     std::cout << "KSegmentorBase::accumulateUserInput " << user_input << " at i,j,k =  "
               << i << "," <<j << ", " << k << std::endl;
     this->U_Integral_image->Modified();

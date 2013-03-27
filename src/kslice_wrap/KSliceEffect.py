@@ -378,9 +378,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     steeredName = self.backgroundNode.GetName() + '-steered'
     steeredVolume = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
+    
     steeredArray = slicer.util.array(steeredName) #get the numpy array
     steeredArray[:]=0 #initialize user input
-    ksliceMod.SetUIVol( steeredVolume.GetImageData() )
+    tmpVol         = steeredVolume.GetImageData()
+    tmpVol.SetScalarTypeToDouble()
+    tmpVol.AllocateScalars()
+    ksliceMod.SetUIVol( tmpVol )
     ksliceMod.Initialize() # kind of heavy-duty
     
     self.UIVol    = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
@@ -406,10 +410,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
         vals            = get_values_at_IJK(ijk,sw)
         self.ksliceMod.SetOrientation(str(orient))
-        if 0==vals['label']:
-          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
-        else:
-          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
+        #if 0==vals['label']:
+        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        # right click for negative ?         
+        #else:
+        #  self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
     
 
   def labModByUser(self,caller,event):

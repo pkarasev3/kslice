@@ -99,6 +99,7 @@ int main( int argc, char* argv[] )
 
   SP(image,vtkImageData);
   SP(label,vtkImageData);
+  SP(UIVol,vtkImageData);
   SP(imgReader,vtkMetaImageReader);
   SP(lblReader,vtkMetaImageReader);
 
@@ -120,8 +121,9 @@ int main( int argc, char* argv[] )
 
   image = imgReader->GetOutput();
   label = lblReader->GetOutput();
+  UIVol->DeepCopy(label); // so its not empty
 
-  KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(image,label,true);
+  KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(image,label,UIVol,true);
   kseg = boost::shared_ptr<KSegmentorBase>(raw_ptr);
   kseg->setNumIterations( opts.segmentor_iters );
   kseg->SetEnergyChanVese( );

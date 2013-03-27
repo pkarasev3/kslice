@@ -21,8 +21,9 @@ struct LL;
 
 class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
-        static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit);
-        KSegmentor3D(vtkImageData* image, vtkImageData* label,
+        static KSegmentor3D* CreateSegmentor(vtkImageData *image,
+                                             vtkImageData *label, vtkImageData* UIVol, bool contInit);
+        KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
                      bool contInit, int currSlice, int numIts, 
                      float distWeight, int brushRad);
         virtual ~KSegmentor3D();

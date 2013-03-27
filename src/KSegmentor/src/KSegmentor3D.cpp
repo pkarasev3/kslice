@@ -19,7 +19,7 @@ using std::string;
 
 
 KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, 
-                                            vtkImageData *label, 
+                                            vtkImageData *label, vtkImageData* UIVol,
                                             bool contInit)
 {
     int currSlice=0;
@@ -27,15 +27,15 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image,
     float distWeight=0.01;
     int brushRad = 5;
     KSegmentor3D* seg3d = 
-          new KSegmentor3D(image,label,contInit,currSlice,numIts,distWeight,brushRad);
+          new KSegmentor3D(image,label,UIVol,contInit,currSlice,numIts,distWeight,brushRad);
     return seg3d; 
 }
 
-KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label,
+KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
                            bool contInit, int currSlice, int numIts,
                            float distWeight, int brushRad) {
     m_EnergyName = GetSupportedEnergyNames()[1];
-    this->InitializeVariables(image,label, contInit, currSlice, 
+    this->InitializeVariables(image,label, UIVol, contInit, currSlice,
                                        numIts, distWeight, brushRad);
 
     if(contInit) {

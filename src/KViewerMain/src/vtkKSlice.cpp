@@ -41,15 +41,23 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
-  std::cout<<"increment U in kslice c++ by " << val << std::endl;
+  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
+            << i << "," <<j << ", " << k << std::endl;
+ // UIVol->Print(std::cout);
+  //
+
+
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor!
 
-  // why does this fail??   
+  // works?
   dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
 
-  UIVol =   dataWarehouse->ksegmentor->GetUIVol();
-  UIVol->Print(std::cout);
+  //UIVol->DeepCopy(dataWarehouse->ksegmentor->GetUIVol());
+  cout << "same pointer? " << UIVol << ", " << dataWarehouse->ksegmentor->U_Integral_image << std::endl;
+  double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
+ // UIVol->Print(std::cout);
 }
 
 
@@ -60,7 +68,7 @@ void vtkKSlice::PasteSlice(int toSlice){
 
 void vtkKSlice::Initialize(){
     //set up the segmentor
-    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
+    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete

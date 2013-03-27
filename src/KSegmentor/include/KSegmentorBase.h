@@ -179,7 +179,8 @@ class KSegmentorBase
         }
         vtkImageData* GetUIVol() { return U_Integral_image; }
 
-        vtkSmartPointer<vtkImageData> U_Integral_image;
+        //vtkSmartPointer<vtkImageData>
+        vtkImageData* U_Integral_image;
 
         virtual void OnUserPaintsLabel()=0;
     protected:
@@ -191,7 +192,7 @@ class KSegmentorBase
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
 
-        void InitializeVariables(vtkImageData* image, vtkImageData* label,
+        void InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
                                  bool contInit, int currSlice, int numIts, float distWeight, int brushRad);
         void InitializeMaskAndImage();
         void UpdateMask(bool bForceUpdateAll = false);
