@@ -215,33 +215,35 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
   def cleanup(self):
     super(KSliceEffectTool,self).cleanup()
 
+#print("Got a %s at %s in %s", (event,str(xy),viewName))           
   def processEvent(self, caller=None, event=None):
     """
     handle events from the render window interactor
     """
     if event == "LeftButtonPressEvent":
       xy = self.interactor.GetEventPosition()
-      viewName=sliceWidget.sliceLogic().GetSliceNode().GetName()
-      #print("Got a %s at %s in %s", (event,str(xy),viewName))     
-
+      viewName,orient = get_view_names(self.sliceWidget)
       ijk= smart_xyToIJK(xy,self.sliceWidget)
-
-      lm          = slicer.app.layoutManager()
-      orient      = lm.sliceWidget(viewName).sliceOrientation;
-      valid_orient= ('Axial','Sagittal','Coronal')
-      for vo in valid_orient:      
-        if vo == orient:
-          print str(viewName) + "," + str(vo)
-
-######### TEST/DEBUG
+      if not orient:
+        print "Warning, unexpected view orientation!?"
       values = get_values_at_IJK(ijk,sliceWidget)
-      print(values)
-######### DEBUG/TEST 
-      
+      print(values)     
     if event == 'EnterEvent':
       print "EnterEvent in KSliceEffect."
     else:
       pass
+
+def get_view_names( sw ):
+    viewName    = sw.sliceLogic().GetSliceNode().GetName()
+    lm          = slicer.app.layoutManager()
+    orient      = lm.sliceWidget(viewName).sliceOrientation;
+    valid_orient= ('Axial','Sagittal','Coronal','Reformat')
+    viewOrient  = None
+    for vo in valid_orient:      
+      if vo == orient:
+        viewOrient = vo
+        #print str(viewName) + "," + str(vo)
+    return viewName,viewOrient
 
 
 def smart_xyToIJK(xy,sliceWidget):
@@ -269,7 +271,7 @@ def get_values_at_IJK( ijk, sliceWidget):
   dims = imageData.GetDimensions()
   print "current view dims = " + str(dims)
   wasOutOfFrame = False
-  values        =vals = {'label':None,'U':None}
+  values        = {'label':None,'U':None}
   for ele in xrange(3):
     ijk
     if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
@@ -286,19 +288,21 @@ def get_values_at_IJK( ijk, sliceWidget):
 def bind_view_observers( handlerFunc ):
   layoutManager  = slicer.app.layoutManager()
   sliceNodeCount = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLSliceNode')
-  ObserverTags   = []  
+  ObserverTags   = []
+  SliceWidgetLUT = {}   # for  sw = SliceWidget[caller] in handlerFunc
   for nodeIndex in xrange(sliceNodeCount):
-    sliceNode = slicer.mrmlScene.GetNthNodeByClass(nodeIndex, 'vtkMRMLSliceNode')
+    sliceNode   = slicer.mrmlScene.GetNthNodeByClass(nodeIndex, 'vtkMRMLSliceNode')
     sliceWidget = layoutManager.sliceWidget(sliceNode.GetLayoutName())
     print "did a bind_view_observers for view: " + str(sliceNode.GetLayoutName())
     if sliceWidget:  # add obserservers and keep track of tags
       style = sliceWidget.sliceView().interactor()
+      SliceWidgetLUT[style] = sliceWidget      
       events = ("LeftButtonPressEvent","MouseMoveEvent",
-                                 "EnterEvent", "LeaveEvent")
-      for event in events: # Grr, try to override active effect w/ priority
+                    "RightButtonPressEvent","EnterEvent", "LeaveEvent")
+      for event in events: # override active effect w/ priority
         tag = style.AddObserver(event, handlerFunc, 2.0)
-        ObserverTags.append(tag)
-  return ObserverTags
+        ObserverTags.append([style,tag])
+  return ObserverTags,SliceWidgetLUT
 
 #
 # KSliceEffectLogic
@@ -362,8 +366,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #put test listener on the whole window
     self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
 
-    #self.mouse_obs  = self.labelImg.AddObserver("LeftButtonPressEvent", self.testWindowListener, 5)
-    self.multi_obs = bind_view_observers(self.testWindowListener)
+    # a number of observers for mouse events, bound to the interactors
+    self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
 
     #make KSlice class
     print("making a kslice")
@@ -378,8 +382,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     steeredArray[:]=0 #initialize user input
     ksliceMod.SetUIVol( steeredVolume.GetImageData() )
     ksliceMod.Initialize() # kind of heavy-duty
-
-    self.ksliceMod=ksliceMod;
+    
+    self.UIVol    = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    self.ksliceMod= ksliceMod;
     self.computeCurrSlice() #initialize the current slice to something meaningful
   
  
@@ -390,16 +395,26 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     else:
       print "windowListener => processEvent( " + str(event) +" )"
     if event == "LeftButtonPressEvent":
-      print "Accumulate User Input Now!"
-      pass
-      #xy = interactor.GetEventPosition()
-      # 
-
+      sw = self.swLUT[interactor]
+      if not sw:
+        print "caller (interactor?) not found in lookup table!"
+        pass
+      else:
+        viewName,orient = get_view_names(sw)
+        xy              = interactor.GetEventPosition()
+        ijk             = smart_xyToIJK(xy,sw)
+        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        vals            = get_values_at_IJK(ijk,sw)
+        self.ksliceMod.SetOrientation(str(orient))
+        if vals['label']:
+          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],0,5.0)
+    
 
   def labModByUser(self,caller,event):
     if self.acMod==0 :  
+      if 0==self.userMod:
+        print("modified by user, kslice bot is running")
       self.userMod=1
-      print("modified by user, kslice bot running")
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0 
