@@ -32,6 +32,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
         /** external interface to update at a voxel */
         void accumulateCurrentUserInput( double value,const unsigned int element,
                                          double weight=1.0 );
+
         virtual void OnUserPaintsLabel();
 
     private:

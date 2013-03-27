@@ -96,8 +96,10 @@ class KSegmentorBase
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
+        virtual void accumulateUserInput(double value,const unsigned int element);
 
-        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+        /** for 3D updates that are less frequent */
+        virtual void accumulateUserInput(double value, size_t i, size_t j, size_t k);
 
         void AddPointToUpdateVector(unsigned int element){
             m_UpdateVector.push_back(element);
@@ -175,6 +177,7 @@ class KSegmentorBase
         {
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
+        vtkImageData* GetUIVol() { return U_Integral_image; }
 
         vtkSmartPointer<vtkImageData> U_Integral_image;
 

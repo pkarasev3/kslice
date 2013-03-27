@@ -80,7 +80,7 @@ void KSegmentor3D::integrateUserInput()
 
   int pos=0;
   int Nelements=this->m_UpdateVector.size();
-  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N= "
+  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N = "
        << Nelements << endl;
   for (int element=0;element<Nelements;element++)
   {
@@ -168,12 +168,12 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     const char *imgType=imageVol->GetScalarTypeAsString(); //IKDebug
 
-    std::cout<<sizeof(unsigned short*)<<std::endl;
-    std::cout<<sizeof(short*)<<std::endl;
+    //std::cout<<sizeof(unsigned short*)<<std::endl;
+    //std::cout<<sizeof(short*)<<std::endl;
 
     ptrCurrImage        = static_cast< short*>(imageVol->GetScalarPointer());
     ptrCurrLabel        = static_cast< short*>(labelVol->GetScalarPointer());
-    ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+    ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     size_t sz = mdims[0]*mdims[1];
     if( cache_phi.size() != sz )

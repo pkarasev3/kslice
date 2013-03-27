@@ -43,8 +43,13 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
   std::cout<<"increment U in kslice c++ by " << val << std::endl;
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor! 
-  this->UIVol->SetScalarComponentFromDouble(i,j,k,0,Umod);
+  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor!
+
+  // why does this fail??   
+  //dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
+
+  UIVol =   dataWarehouse->ksegmentor->GetUIVol();
+  UIVol->Print(std::cout);
 }
 
 

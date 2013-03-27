@@ -406,8 +406,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
         vals            = get_values_at_IJK(ijk,sw)
         self.ksliceMod.SetOrientation(str(orient))
-        if vals['label']:
-          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],0,5.0)
+        if 0==vals['label']:
+          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        else:
+          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
     
 
   def labModByUser(self,caller,event):

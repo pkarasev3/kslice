@@ -249,7 +249,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
             for (int k=0; k<=this->dimz-1; k++) {
                 element=k*dimx*dimy +j*dimx+i;
                 if(accumulate)
-                    this->accumulateUserInputInUserInputImages((double)ptrCurrLabel[element],element);
+                    this->accumulateUserInput((double)ptrCurrLabel[element],element);
                 if(ptrCurrLabel[element]>0)
                 {
                     this->AddPointToUpdateVector(element);
@@ -279,11 +279,17 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
 }
 
 
-void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
+void KSegmentorBase::accumulateUserInput( double value,const unsigned int element){
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;
 }
 
+void KSegmentorBase::accumulateUserInput( double value, size_t i, size_t j, size_t k) {
+    double user_input      = -3.0 * ( value > 0.5 ) + 3.0 * ( value <= 0.5 );
+    this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
+    std::cout << "KSegmentorBase::accumulateUserInput done" << std::endl;
+    this->U_Integral_image->Modified();
+}
 
 void KSegmentorBase::setNumIterations(int itersToRun){
     this->iter=itersToRun;
