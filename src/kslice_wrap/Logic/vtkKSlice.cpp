@@ -46,7 +46,7 @@ void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
   double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor!
 
   // why does this fail??   
-  //dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
+  dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
 
   UIVol =   dataWarehouse->ksegmentor->GetUIVol();
   UIVol->Print(std::cout);

@@ -284,10 +284,11 @@ void KSegmentorBase::accumulateUserInput( double value,const unsigned int elemen
     this->ptrU_t_Image[element]=user_input;
 }
 
-void KSegmentorBase::accumulateUserInput( double value, size_t i, size_t j, size_t k) {
+void KSegmentorBase::accumulateUserInput( double value, int i, int j, int k) {
     double user_input      = -3.0 * ( value > 0.5 ) + 3.0 * ( value <= 0.5 );
-    this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
-    std::cout << "KSegmentorBase::accumulateUserInput done" << std::endl;
+    //this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
+    std::cout << "KSegmentorBase::accumulateUserInput " << user_input << " at i,j,k =  "
+              << i << "," <<j << ", " << k << std::endl;
     this->U_Integral_image->Modified();
 }
 

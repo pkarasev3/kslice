@@ -99,7 +99,7 @@ class KSegmentorBase
         virtual void accumulateUserInput(double value,const unsigned int element);
 
         /** for 3D updates that are less frequent */
-        virtual void accumulateUserInput(double value, size_t i, size_t j, size_t k);
+        virtual void accumulateUserInput(double value, int i, int j, int k);
 
         void AddPointToUpdateVector(unsigned int element){
             m_UpdateVector.push_back(element);
