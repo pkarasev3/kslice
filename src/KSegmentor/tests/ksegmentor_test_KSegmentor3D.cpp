@@ -2,23 +2,24 @@
 #include <string>
 #include <list>
 
-#include <unistd.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <string>
+#ifndef WIN32
+    #include <unistd.h>
+#endif
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
 
-#include "boost/shared_ptr.hpp"
-#include "boost/program_options.hpp"
-#include "boost/lexical_cast.hpp"
+//#include "boost/shared_ptr.hpp"
+//#include "boost/program_options.hpp"
+//#include "boost/lexical_cast.hpp"
 #include "vtkMetaImageReader.h"
 #include "vtkMetaImageWriter.h"
-#include "boost/foreach.hpp"
+//#include "boost/foreach.hpp"
 #include "vtkSmartPointer.h"
 #include "vtkImageData.h"
 #include "KSegmentor3D.h"
 
-#include <initializer_list>
+//#include <initializer_list>
 
 namespace po = boost::program_options;
 using namespace std;
@@ -52,7 +53,7 @@ struct KSegTest2_Options
     po::variables_map vm;
     po::store( parse_command_line(argc, argv, commands, po::command_line_style::unix_style ), vm);
     po::notify(vm);
-
+   
     if (vm.count("help")) {
       cout << commands << "\n";
       exit(1);

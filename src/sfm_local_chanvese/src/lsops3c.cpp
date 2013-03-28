@@ -2,7 +2,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 
 namespace
 {

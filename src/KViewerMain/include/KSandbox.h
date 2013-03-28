@@ -9,7 +9,7 @@
 
 class vtkLookupTable;
 class vtkImageData;
-using cv::Ptr;
+//using cv::Ptr;
 
 /**   KSandbox: a place to temporarily place 'compact  stand alone functions' while
   *   developing. Inside of the vrcl namespace so that you must conciously
@@ -26,10 +26,10 @@ namespace vrcl {
   
   void multiplyImageByLabels( vtkImageData* imgData, vtkImageData* lblData );
   
-  void setup_file_reader( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
+  //void setup_file_reader( Ptr<KViewerOptions> kv_opts, Ptr<KDataWarehouse> kv_data );
 
-  vtkSmartPointer<vtkImageData> run_KViewer_Gao3D_interface( Ptr<KViewerOptions> kv_opts,
-                                                             Ptr<KDataWarehouse> kv_data );
+  //vtkSmartPointer<vtkImageData> run_KViewer_Gao3D_interface( Ptr<KViewerOptions> kv_opts,
+   //                                                          Ptr<KDataWarehouse> kv_data );
 
   void compute_intensity_modes( vtkImageData* image, std::vector<double>& intensityModes );
   

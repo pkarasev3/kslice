@@ -20,20 +20,21 @@
 #include "vtkImageContinuousDilate3D.h"
 #include "vtkSmartPointer.h"
 #include "KSandbox.h"
-
+#include <sstream>
 #include "Logger.h"
 #include "algorithm"
 #include "vector"
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "LevelSetCurve.h"
-
+using std::stringstream;
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include "LevelSetCurve.h"
+using std::string;
 using std::vector;
 using std::cout;
 using std::endl;
 using namespace vrcl;
-using namespace cv;
+//using namespace cv;
 
 #define SP( X )  vtkSmartPointer<X>
 
@@ -43,7 +44,7 @@ namespace {
 
 namespace  vrcl  
 {
-
+  /*
   void waterMark(const std::string& text, Mat & img)
   {
     int baseline = 0;
@@ -51,7 +52,7 @@ namespace  vrcl
     Point textOrg((img.cols - textSize.width) / 2, (img.rows + textSize.height) / 2);
     putText(img, text, textOrg, CV_FONT_HERSHEY_PLAIN, 3, Scalar::all(1), 2, 8);
   
-  }
+  }       */
 
 
   void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo )
@@ -166,12 +167,12 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     if( numberOnly ) {
       ss << area_sum ;
     } else {
-      ss << "  Volume: " << area_sum << " mL ";
+      ss << string("  Volume: ") << area_sum << string(" mL ");
     }
     volumeString = ss.str();
     IFLOG( PrintVerbose, cout << "label range: "<<label_range[0]
                               << ","<<label_range[1]<< endl )
-    IFLOG( PrintVerbose, cout << "image spacing: " << cv::Mat( imageSpacing ) )
+   // IFLOG( PrintVerbose, cout << "image spacing: " << cv::Mat( imageSpacing ) )
     IFLOG( PrintVerbose, cout << volumeString )
 }
 

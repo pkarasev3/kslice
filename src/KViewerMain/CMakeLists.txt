@@ -5,16 +5,16 @@ include_DIRECTORIES(
 )
 
 
-find_package(Boost COMPONENTS filesystem system python REQUIRED)
-message(STATUS "Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
-message(STATUS "Libs of boost: " ${Boost_LIBRARIES} )
+#find_package(Boost COMPONENTS filesystem system python REQUIRED)
+#message(STATUS "Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
+#message(STATUS "Libs of boost: " ${Boost_LIBRARIES} )
 
 #find_package(PythonLibs REQUIRED) #this is now done by find_package(Slicer)
 #message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
 
 include_directories(
-    ${Boost_INCLUDE_DIRS}
+    #${Boost_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
 
@@ -23,13 +23,13 @@ include_directories(
 #set(Boost_USE_STATIC_RUNTIME ON)
 
 set(KV_LIBS vtkRendering  vtkGraphics  vtkIO  vtkCommon  vtkVolumeRendering
-     KSegmentor  vrcl  ${OpenCV_LIBS} # should not need opencv now, see pk's branch
+     KSegmentor  vrcl  #${OpenCV_LIBS} # should not need opencv now, see pk's branch
                        #${Boost_LIBRARIES}
                        ${PYTHON_LIBRARIES} )
 
 set(KV_SRC                 ./src/KSandbox.cpp
-                           ./src/vtkKSlice.cpp
-                           ./include/vtkKSlice.h
+                           #./src/vtkKSlice.cpp
+                           #./include/vtkKSlice.h
                            ./include/KViewerOptions.h
                            ./include/KDataWarehouse.h
                            ./include/KSandbox.h)

@@ -8,7 +8,7 @@
 #include "vtkDICOMImageReader.h"
 #include "vtkImageAccumulate.h"
 #include "vtkImageGaussianSmooth.h"
-#include "opencv2/imgproc/imgproc.hpp"
+//#include "opencv2/imgproc/imgproc.hpp"
 
 #define SP( X )  vtkSmartPointer<X>
 
@@ -22,7 +22,7 @@
 #endif
 
 using std::vector;
-using namespace cv;
+//using namespace cv;
 
 namespace vrcl  {
 

@@ -7,10 +7,10 @@
 #include <omp.h>
 #include <string>
 #include <sstream>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 using std::string;
-using cv::Mat;
+//using cv::Mat;
 
 //these global variables are no good, need to fix later
 //extern double ain, aout, auser; // means
@@ -112,8 +112,15 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     U_t_image->SetScalarTypeToDouble();
     U_t_image->SetSpacing(image->GetSpacing());
     U_t_image->AllocateScalars();
+    int npts  = U_t_image->GetNumberOfPoints();
     ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
-
+    double refval=0.0;
+    for( int i=0; i<npts; i++) {
+        refval= ptrIntegral_Image[i]; // seems to initialize as BS, at least in windows
+        ptrIntegral_Image[i] = 0.0;
+        ptrU_t_Image[i] = 0.0;
+    }
+    
     m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
     imgRange   = new double[2];
@@ -153,7 +160,9 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 namespace {
 
 const double epsH = sqrt(2.0);   // epsilon   = sqrt(2);
-
+#ifndef CV_PI
+#define CV_PI  3.1415926535
+#endif
 inline double Heavi( double z )
 {
 
@@ -216,26 +225,26 @@ void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
         }
     }
 }
-
-void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
-{
-    std::stringstream  ss;
-    ss << fileName;
-    bool name_is_png=(0==std::string(".png").compare(fileName.substr(fileName.size()-4,4)) );
-    if( !name_is_png ) {
-      ss << ".png" ;
-    }
-    string png_name = ss.str();
-    cout << " reference png file: " << png_name << endl;
-    cv::Mat source(mdims[1],mdims[0],CV_64F);
-    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
-    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
-    double dmin, dmax;
-    cv::minMaxLoc( source, &dmin, &dmax );
-    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
-    cv::imwrite(png_name, saveImg );
-    cout<<"wrote to " << png_name << endl;
-}
+//                   
+//void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
+//{
+//    std::stringstream  ss;
+//    ss << fileName;
+//    bool name_is_png=(0==std::string(".png").compare(fileName.substr(fileName.size()-4,4)) );
+//    if( !name_is_png ) {
+//      ss << ".png" ;
+//    }
+//    string png_name = ss.str();
+//    cout << " reference png file: " << png_name << endl;
+//    cv::Mat source(mdims[1],mdims[0],CV_64F);
+//    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
+//    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
+//    double dmin, dmax;
+//    cv::minMaxLoc( source, &dmin, &dmax );
+//    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
+//    cv::imwrite(png_name, saveImg );
+//    cout<<"wrote to " << png_name << endl;
+//}            
 
 void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     this->m_UpdateVector.clear();

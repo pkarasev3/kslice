@@ -29,7 +29,7 @@ endif()
 
 
 
-find_package(OpenCV  REQUIRED)
+#find_package(OpenCV  REQUIRED)
 message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
                    you also want to have had libgtk2.0-dev *Before* building opencv!" )
 

@@ -5,9 +5,9 @@
 
 #include "KDataWarehouse.h"
 #include "KViewerOptions.h"
+#include "vtkSlicerKSliceModuleLogicExport.h"
 
-
-class vtkKSlice : public vtkObject
+class VTK_SLICER_KSLICE_MODULE_LOGIC_EXPORT vtkKSlice : public vtkObject
 {
 
 

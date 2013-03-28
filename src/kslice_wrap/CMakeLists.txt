@@ -65,6 +65,9 @@ set(MODULE_RESOURCES
   Resources/qSlicer${MODULE_NAME}Module.qrc
   )
 
+set(KSLICE_LIB_PATH  ${CMAKE_SOURCE_DIR}/../ CACHE PATH "where are vrcl and KSegmentor libraries")
+link_directories(${KSLICE_LIB_PATH})
+
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
   NAME ${MODULE_NAME}
@@ -80,6 +83,7 @@ slicerMacroBuildQtModule(
 
 #-----------------------------------------------------------------------------
 ##Set up the Editor module
+
 
 set(MODULE_PYTHON_SCRIPTS
   KSliceEffect.py 
