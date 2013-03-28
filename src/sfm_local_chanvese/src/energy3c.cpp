@@ -14,9 +14,12 @@
 #include "math.h"
 #include <iostream>
 #include <fstream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #include <omp.h>
+#ifdef WIN32
+#define assert( X ) { }
+#endif
 
 using std::vector;
 
@@ -630,7 +633,8 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
 {
     int x,y,z,idx;
     double *F, *kappa;
-    double a,u,v,I;
+    double a=0.0; double I=0.0;
+    double u=0.0; double v=0.0; 
 
     CheckLevelSetSizes( Lz->length );
     F          = &(FVec[0]);
@@ -1660,6 +1664,8 @@ void en_null_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     }
 }
 
+
+#if HAS_OPENCV
 void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
 
 
@@ -1697,7 +1703,27 @@ void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
 
 }
 
-void smoothHist(double *pdfRough, double *pdfSmooth ){
+
+
+void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgRange ){
+
+    //create matrix with our data
+    int offsetInt=dims[0]*dims[1]*sliceNum;
+
+    cv::Mat histImage =  cv::Mat(dims[0],dims[1], CV_64FC1,&img[offsetInt]);
+    histImage  = (histImage - imgRange[0])* (1.0 / (imgRange[1]-imgRange[0]) );
+
+    cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
+    cv::imshow(name,histImage );
+
+    //hold the images until a key is pressed
+    cv::waitKey(30);
+
+}
+
+#endif
+
+ void smoothHist(double *pdfRough, double *pdfSmooth ){
 
     //    //create matrix with our data
     //    cv::Mat roughPDF =  cv::Mat(nbins,1, CV_32FC1,&pdfRough);
@@ -1746,26 +1772,6 @@ void smoothHist(double *pdfRough, double *pdfSmooth ){
     //    }
     //std::cout<<testSumAfter<<std::endl;
 }
-
-void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgRange ){
-
-    //create matrix with our data
-    int offsetInt=dims[0]*dims[1]*sliceNum;
-
-    cv::Mat histImage =  cv::Mat(dims[0],dims[1], CV_64FC1,&img[offsetInt]);
-    histImage  = (histImage - imgRange[0])* (1.0 / (imgRange[1]-imgRange[0]) );
-
-    cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
-    cv::imshow(name,histImage );
-
-    //hold the images until a key is pressed
-    cv::waitKey(30);
-
-}
-
-
-
-
 
 
 /** new functions in library after clear dividing line
@@ -1916,7 +1922,7 @@ void en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in)
 
     bool bPrintMeansInOut = true;
     if( bPrintMeansInOut ) {
-        std::cout << "mu In:  " << cv::Mat( uin_rgb ) << std::endl;
-        std::cout << "mu Out: " << cv::Mat( uin_rgb ) << std::endl;
+       // std::cout << "mu In:  " << cv::Mat( uin_rgb ) << std::endl;
+       // std::cout << "mu Out: " << cv::Mat( uin_rgb ) << std::endl;
     }
 }

@@ -8,9 +8,13 @@
 
 struct KDataWarehouse
 {
-public:
+    KDataWarehouse(){
+        ksegmentor = NULL;
+    }
     ~KDataWarehouse(){
-        delete ksegmentor;
+        if( ksegmentor ) {
+            delete ksegmentor;
+        }
     }
 
 

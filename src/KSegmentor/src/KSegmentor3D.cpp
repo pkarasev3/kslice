@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
+#include <assert.h>
 //#include <boost/shared_ptr.hpp>
 
 using std::string;
@@ -418,7 +419,7 @@ void KSegmentor3D::Update3D()
                                          (phi_out > 0.65) +
                                          (phi_out > 0.5) )
                                        *mult);
-        changeInLabel += fabs( (outputVal - ptrCurrLabel[idx]) > 1e-3 );
+        changeInLabel += fabs( double(outputVal - ptrCurrLabel[idx]) ) ;
         ptrCurrLabel[idx] =outputVal;
         mask[idx]         =(double) ( 0 < ptrCurrLabel[idx] ); // d'oh, *update the mask!*
 

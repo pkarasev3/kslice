@@ -28,6 +28,8 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   )
 
+message(STATUS "KSLICE_LIB_PATH = ${KSLICE_LIB_PATH}" )
+link_directories(${KSLICE_LIB_PATH})
 #-----------------------------------------------------------------------------
 SlicerMacroBuildModuleWidgets(
   NAME ${KIT}
@@ -40,4 +42,5 @@ SlicerMacroBuildModuleWidgets(
   RESOURCES ${${KIT}_RESOURCES}
   WRAP_PYTHONQT
   )
+
 

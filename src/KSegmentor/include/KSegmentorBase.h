@@ -7,8 +7,8 @@
 #include "KViewerOptions.h"
 #include <iostream>
 
-#include <opencv2/core/core.hpp>
-#include <boost/shared_ptr.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <boost/shared_ptr.hpp>
 
 class vtkImageData;
 
@@ -27,7 +27,7 @@ namespace vrcl
 
 
 /** write string on top of image data in-place*/
-void waterMark(const std::string& text, cv::Mat & img);
+//void waterMark(const std::string& text, cv::Mat & img);
 
 /** compute volume (non-zero elements) in label map, insert to string "xyz mL^3
     optionally, pass "left" or "right" to do only lateral or medial side. */
@@ -184,7 +184,7 @@ class KSegmentorBase
 
         virtual void OnUserPaintsLabel()=0;
     protected:
-        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,;
+        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
         vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
@@ -220,7 +220,8 @@ class KSegmentorBase
         double m_Umax;
 
         /** struct containing formerly global low-level crap in sfm_local library */
-        boost::shared_ptr<SFM_vars>  m_SFM_vars;
+        //boost::shared_ptr<SFM_vars>  m_SFM_vars;
+        SFM_vars* m_SFM_vars;
 
 public:
         short *ptrCurrImage; //ptr to current image slice

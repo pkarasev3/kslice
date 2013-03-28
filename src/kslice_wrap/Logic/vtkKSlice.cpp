@@ -18,6 +18,10 @@ vtkStandardNewMacro(vtkKSlice); //for the new() macro
 
 
 vtkKSlice::vtkKSlice( ) {
+    ImageVol = NULL;
+    LabelVol = NULL;
+    UIVol = NULL;
+
     dataWarehouse= new KDataWarehouse();
 
     BrushRad=7;
@@ -27,6 +31,7 @@ vtkKSlice::vtkKSlice( ) {
     m_bUseEdgeBased=0;
     contInit=0;
     initCorrectFlag=0; //should not run updates before this flag is set to 1
+
 }
 
 
