@@ -82,6 +82,7 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        void SetSliceOrientationIJK(const std::string& ijk_str);
         void SetCurrentSlice(int currSlice);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
@@ -216,7 +217,7 @@ class KSegmentorBase
         float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;
-
+        std::string m_IJK_orient; // IJ, JK, IK
         double m_Umax;
 
         /** struct containing formerly global low-level crap in sfm_local library */
