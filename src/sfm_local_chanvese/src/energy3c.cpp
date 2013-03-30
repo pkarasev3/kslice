@@ -19,6 +19,8 @@
 #include <omp.h>
 #ifdef WIN32
 #define assert( X ) { }
+#else
+  #include <assert.h>
 #endif
 
 using std::vector;
@@ -634,7 +636,7 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
     int x,y,z,idx;
     double *F, *kappa;
     double a=0.0; double I=0.0;
-    double u=0.0; double v=0.0; 
+    double u=0.0; double v=0.0;
 
     CheckLevelSetSizes( Lz->length );
     F          = &(FVec[0]);

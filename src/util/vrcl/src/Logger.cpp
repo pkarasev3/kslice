@@ -20,4 +20,10 @@ float Clocker::totalT(){
     return total;
 }
 
+Logger& Log() {
+
+    return Logger::log;
+}
+
+
 } // end namespace

@@ -43,6 +43,7 @@ vtkKSlice::~vtkKSlice() {
 void vtkKSlice::SetOrientation(const std::string& orient) {
  // axial,sagittal,coronal,etc
   std::cout<<"set kslice orientation to " << orient << std::endl;
+  this->dataWarehouse->ksegmentor->SetSliceOrientationIJK(orient);
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
@@ -71,15 +72,16 @@ void vtkKSlice::PasteSlice(int toSlice){
     vrcl::copySliceFromTo(LabelVol, FromSlice, ToSlice);
 }
 
-void vtkKSlice::Initialize(){
+void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
-    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
+    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
+                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad);
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
 
-void vtkKSlice::runUpdate(bool reInitFromMask){
+void vtkKSlice::runUpdate(bool reInitFromMask){      // E key now
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
         dataWarehouse->ksegmentor->Update2D(reInitFromMask);
