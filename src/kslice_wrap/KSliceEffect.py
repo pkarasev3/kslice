@@ -369,8 +369,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     # a number of observers for mouse events, bound to the interactors
     self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
-	self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
-	
+    self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
+  
     #make KSlice class
     print("making a kslice")
     #import vtkSlicerKSliceModuleLogicPython
@@ -416,7 +416,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         ijkPlane        = self.sliceIJKPlane()
         print "ijk plane is: " + str(ijkPlane)
         self.ksliceMod.SetOrientation(str(ijkPlane))
-		
+    
         #if 0==vals['label']:
         self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
         # right click for negative ?
