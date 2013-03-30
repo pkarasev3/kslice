@@ -37,17 +37,17 @@ namespace vrcl
 
 void test_OpenMP()
 {
-  int nthreads, tid;
-  omp_set_num_threads(8);
-  nthreads = omp_get_num_threads();
-  #pragma omp parallel shared(nthreads, tid)
-  { // fork some threads, each one does one expensive operation
-    tid = omp_get_thread_num();
-    if( tid == 0 )      { }
-    else if( tid == 1 ) { }
-    else if( tid == 2 ) { }
+//  int nthreads, tid;
+//  omp_set_num_threads(8);
+//  nthreads = omp_get_num_threads();
+//  #pragma omp parallel shared(nthreads, tid)
+//  { // fork some threads, each one does one expensive operation
+//    tid = omp_get_thread_num();
+//    if( tid == 0 )      { }
+//    else if( tid == 1 ) { }
+//    else if( tid == 2 ) { }
 
-  }
+//  }
 }
 
 /** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
@@ -120,7 +120,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
         ptrIntegral_Image[i] = 0.0;
         ptrU_t_Image[i] = 0.0;
     }
-    
+
     m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
     imgRange   = new double[2];
@@ -225,7 +225,7 @@ void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
         }
     }
 }
-//                   
+//
 //void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
 //{
 //    std::stringstream  ss;
@@ -244,7 +244,7 @@ void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 //    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
 //    cv::imwrite(png_name, saveImg );
 //    cout<<"wrote to " << png_name << endl;
-//}            
+//}
 
 void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     this->m_UpdateVector.clear();

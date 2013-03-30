@@ -161,10 +161,7 @@ private:
 
 /** \brief get the Global Logger object - singleton pattern
  */
-inline Logger& Log() {
-
-    return Logger::log;
-}
+Logger& Log();
 
 /** \brief get the Logger.out
  */
