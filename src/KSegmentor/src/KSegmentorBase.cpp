@@ -96,7 +96,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     image->GetSpacing( m_Spacing_mm );
 
-
+    m_IJK_orient = std::string("IJ");
     cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = UIVol; //vtkSmartPointer<vtkImageData>::New();
@@ -204,6 +204,17 @@ double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
     return (E/2.0);
 }
 
+void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
+{
+    bool ij =  (0 == ijk_str.compare("IJ") );
+    bool jk =  (0 == ijk_str.compare("JK") );
+    bool ik =  (0 == ijk_str.compare("IK") );
+    if( ij || jk || ik ) {
+        this->m_IJK_orient = ijk_str;
+    } else { 
+        std::cout << "invalid IJK orientation in KSegmentorBase! ignoring " << ijk_str << endl;
+    }
+}
 
 void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 {
