@@ -362,7 +362,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
 
-
     #put test listener on the whole window
     # Don't think we need this!! This gets called on window resize, change label shown, etc
     self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
@@ -392,6 +391,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     self.UIVol    = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
     self.ksliceMod= ksliceMod;
+    self.currSlice= None
+    self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful
 
 
@@ -401,7 +402,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       pass
     else:
       print "windowListener => processEvent( " + str(event) +" )"
-    if event == "LeftButtonPressEvent":
+    if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       sw = self.swLUT[interactor]
       if not sw:
         print "caller (interactor?) not found in lookup table!"
@@ -409,16 +410,20 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       else:
         viewName,orient = get_view_names(sw)
         xy              = interactor.GetEventPosition()
-        ijk             = smart_xyToIJK(xy,sw)
-        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        ijk             = smart_xyToIJK(xy,sw)      
         vals            = get_values_at_IJK(ijk,sw)
         self.sliceLogic = sw.sliceLogic()
         ijkPlane        = self.sliceIJKPlane()
         print "ijk plane is: " + str(ijkPlane)
         self.ksliceMod.SetOrientation(str(ijkPlane))
-    
+        self.ijkPlane = ijkPlane
+        self.computeCurrSlice()
         #if 0==vals['label']:
-        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        #self.currSlice = self.computeCurrSliceSmarter(ijk)
+        print "smarter curr slice = " + str(self.currSlice)
+        if event == "LeftButtonPressEvent":
+          print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"        
+          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
         # right click for negative ?
         #else:
         #  self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
@@ -447,11 +452,29 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelImage.Modified()
     print('pasteslice')
 
+  def computeCurrSliceSmarter(self,ijk):
+    ns=-1
+    for orient in ( ('IJ',2),('JK',0),('IK',1) ):
+      if self.ijkPlane == orient[0]:
+        ns = ijk[ orient[1] ]
+    return ns
+
   def computeCurrSlice(self):
-    sliceOffset = self.sliceLogic.GetSliceOffset() #gets the current slice location, just need spacing to figure out which slice currently working on
+    # annoying to reset these...    
+    labelLogic = self.sliceLogic.GetLabelLayer()
+    self.labelNode = labelLogic.GetVolumeNode()
+    backgroundLogic = self.sliceLogic.GetBackgroundLayer()
+    self.backgroundNode = backgroundLogic.GetVolumeNode()
+
+    sliceOffset = self.sliceLogic.GetSliceOffset() 
     spacingVec  = self.labelNode.GetSpacing()
     originVec   = self.labelNode.GetOrigin()
-    self.currSlice=int( round( (sliceOffset - originVec[2])/spacingVec[2]))
+    for orient in ( ('IJ',2),('JK',0),('IK',1) ):
+      if self.ijkPlane == orient[0]:
+        cs=int( round( (sliceOffset - originVec[orient[1]])/spacingVec[orient[1]]))
+    #self.currSlice=computeCurrSliceSmarter
+    self.currSlice = abs(cs) # hacky, is this always the fix if result of above is negative? 
+    print "currSlice = " + str(self.currSlice) + ", offset= " + str(sliceOffset)
 
 
   def runSegment2D(self):
