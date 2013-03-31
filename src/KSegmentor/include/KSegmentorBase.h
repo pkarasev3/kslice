@@ -206,6 +206,7 @@ class KSegmentorBase
 
         void CreateLLs(LLset& ll);
 
+        std::vector<double> cache_phi;
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );

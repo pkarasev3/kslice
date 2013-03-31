@@ -210,8 +210,11 @@ void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
     bool jk =  (0 == ijk_str.compare("JK") );
     bool ik =  (0 == ijk_str.compare("IK") );
     if( ij || jk || ik ) {
+      if( ijk_str.compare(m_IJK_orient) ) {
+        cache_phi.clear(); std::cout << "changed orientation!" << std::endl;
+      }
         this->m_IJK_orient = ijk_str;
-    } else { 
+    } else {
         std::cout << "invalid IJK orientation in KSegmentorBase! ignoring " << ijk_str << endl;
     }
 }

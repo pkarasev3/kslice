@@ -19,7 +19,7 @@ using std::string;
 //using cv::Mat;
 
 
-KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, 
+KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image,
                                             vtkImageData *label, vtkImageData* UIVol,
                                             bool contInit)
 {
@@ -27,10 +27,10 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image,
     int numIts = 20;
     float distWeight=0.01;
     int brushRad = 5;
-    KSegmentor3D* seg3d = 
+    KSegmentor3D* seg3d =
           new KSegmentor3D(image,label,UIVol,
                            contInit,currSlice,numIts,distWeight,brushRad);
-    return seg3d; 
+    return seg3d;
 }
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
@@ -160,7 +160,7 @@ void KSegmentor3D::OnUserPaintsLabel() {
 }
 
 namespace {
-  std::vector<double> cache_phi(0);
+
 }
 
 void KSegmentor3D::Update2D(bool reInitFromMask)
@@ -169,7 +169,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     this->CreateLLs(LL2D);
 
     const char *imgType=imageVol->GetScalarTypeAsString(); //IKDebug
-    // IK: use this info to check you have the data type being cast! 
+    // IK: use this info to check you have the data type being cast!
     //std::cout<<sizeof(unsigned short*)<<std::endl;
     //std::cout<<sizeof(short*)<<std::endl;
 
@@ -190,8 +190,10 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     size_t sz = dim0 * dim1;
-    if( cache_phi.size() != sz )
+    if( cache_phi.size() != sz ) {
       cache_phi.resize(sz);
+      reInitFromMask=true; //someone reset the cache phi, i.e. orientation change
+    }
 
     double* imgSlice          = new double[  dim0 * dim1 ];
     double* maskSlice       = new double[ dim0 * dim1 ];
@@ -201,8 +203,8 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     unsigned int element3D;
     long elemNum=0;
-    for (int j=0; j<=mdims[1]-1; j++)  {
-        for (int i=0; i<=mdims[0]-1; i++) {
+    for (int j=0; j<=dim1-1; j++)  {
+        for (int i=0; i<=dim0-1; i++) {
             // indexing definition:  ptr[k*mdims[1]*mdimsee[0] +j*mdims[0]+i];
             element3D=this->currSlice*dim1*dim0 +j*dim0+i;
             imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
@@ -242,7 +244,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
                   LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
 
 
-    cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
+    cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
     if( (prevSlice == this->currSlice) && !reInitFromMask ) {
       cout <<  "\033[01;32m\033]"
            << "using cached phi " << "\033[00m\033]" << endl;
