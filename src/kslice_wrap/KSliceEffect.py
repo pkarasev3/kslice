@@ -415,10 +415,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       if 0==self.userMod:
         print("modified by user, kslice bot is running")
       self.userMod=1
-<<<<<<< HEAD
-      print("modified by user")
-=======
->>>>>>> 74f49f60818d82314b829f490ea30054d680bf69
     else:
       self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0 
