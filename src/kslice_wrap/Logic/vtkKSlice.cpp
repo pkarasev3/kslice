@@ -18,6 +18,10 @@ vtkStandardNewMacro(vtkKSlice); //for the new() macro
 
 
 vtkKSlice::vtkKSlice( ) {
+    ImageVol = NULL;
+    LabelVol = NULL;
+    UIVol = NULL;
+
     dataWarehouse= new KDataWarehouse();
 
     BrushRad=7;
@@ -27,6 +31,7 @@ vtkKSlice::vtkKSlice( ) {
     m_bUseEdgeBased=0;
     contInit=0;
     initCorrectFlag=0; //should not run updates before this flag is set to 1
+
 }
 
 
@@ -38,13 +43,27 @@ vtkKSlice::~vtkKSlice() {
 void vtkKSlice::SetOrientation(const std::string& orient) {
  // axial,sagittal,coronal,etc
   std::cout<<"set kslice orientation to " << orient << std::endl;
+  this->dataWarehouse->ksegmentor->SetSliceOrientationIJK(orient);
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
-  std::cout<<"increment U in kslice c++ by " << val << std::endl;
+  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
+            << i << "," <<j << ", " << k << std::endl;
+ // UIVol->Print(std::cout);
+  //
+
+
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor! 
-  this->UIVol->SetScalarComponentFromDouble(i,j,k,0,Umod);
+  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor!
+
+  // works?
+  dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
+
+  //UIVol->DeepCopy(dataWarehouse->ksegmentor->GetUIVol());
+  cout << "same pointer? " << UIVol << ", " << dataWarehouse->ksegmentor->U_Integral_image << std::endl;
+  double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
+ // UIVol->Print(std::cout);
 }
 
 
@@ -53,15 +72,16 @@ void vtkKSlice::PasteSlice(int toSlice){
     vrcl::copySliceFromTo(LabelVol, FromSlice, ToSlice);
 }
 
-void vtkKSlice::Initialize(){
+void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
-    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, contInit, CurrSlice, NumIts, DistWeight, BrushRad);
+    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
+                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad);
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
 
-void vtkKSlice::runUpdate(bool reInitFromMask){
+void vtkKSlice::runUpdate(bool reInitFromMask){      // E key now
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
         dataWarehouse->ksegmentor->Update2D(reInitFromMask);

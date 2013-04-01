@@ -5,9 +5,9 @@
 
 #include "KDataWarehouse.h"
 #include "KViewerOptions.h"
+#include "vtkSlicerKSliceModuleLogicExport.h"
 
-
-class vtkKSlice : public vtkObject
+class VTK_SLICER_KSLICE_MODULE_LOGIC_EXPORT vtkKSlice : public vtkObject
 {
 
 
@@ -31,7 +31,7 @@ public:
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
 
   // needs implementation
-  void SetOrientation(const std::string& orient); // axial,sagittal,coronal,etc
+  void SetOrientation(const std::string& orient); // IJ, JK, IK
   void applyUserIncrement(int i, int j, int k, double val);
 
   //implemented functionality

@@ -1,5 +1,5 @@
 #get volume 
-volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/ANON0084.mha")
+volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
 
 # /u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha");  
 

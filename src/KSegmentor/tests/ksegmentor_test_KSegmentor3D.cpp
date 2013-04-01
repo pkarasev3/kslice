@@ -2,23 +2,24 @@
 #include <string>
 #include <list>
 
-#include <unistd.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <string>
+#ifndef WIN32
+    #include <unistd.h>
+#endif
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
 
-#include "boost/shared_ptr.hpp"
-#include "boost/program_options.hpp"
-#include "boost/lexical_cast.hpp"
+//#include "boost/shared_ptr.hpp"
+//#include "boost/program_options.hpp"
+//#include "boost/lexical_cast.hpp"
 #include "vtkMetaImageReader.h"
 #include "vtkMetaImageWriter.h"
-#include "boost/foreach.hpp"
+//#include "boost/foreach.hpp"
 #include "vtkSmartPointer.h"
 #include "vtkImageData.h"
 #include "KSegmentor3D.h"
 
-#include <initializer_list>
+//#include <initializer_list>
 
 namespace po = boost::program_options;
 using namespace std;
@@ -52,7 +53,7 @@ struct KSegTest2_Options
     po::variables_map vm;
     po::store( parse_command_line(argc, argv, commands, po::command_line_style::unix_style ), vm);
     po::notify(vm);
-
+   
     if (vm.count("help")) {
       cout << commands << "\n";
       exit(1);
@@ -99,6 +100,7 @@ int main( int argc, char* argv[] )
 
   SP(image,vtkImageData);
   SP(label,vtkImageData);
+  SP(UIVol,vtkImageData);
   SP(imgReader,vtkMetaImageReader);
   SP(lblReader,vtkMetaImageReader);
 
@@ -120,8 +122,9 @@ int main( int argc, char* argv[] )
 
   image = imgReader->GetOutput();
   label = lblReader->GetOutput();
+  UIVol->DeepCopy(label); // so its not empty
 
-  KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(image,label,true);
+  KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(image,label,UIVol,true);
   kseg = boost::shared_ptr<KSegmentorBase>(raw_ptr);
   kseg->setNumIterations( opts.segmentor_iters );
   kseg->SetEnergyChanVese( );

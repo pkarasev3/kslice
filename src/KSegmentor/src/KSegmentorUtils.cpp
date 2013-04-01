@@ -20,20 +20,21 @@
 #include "vtkImageContinuousDilate3D.h"
 #include "vtkSmartPointer.h"
 #include "KSandbox.h"
-
+#include <sstream>
 #include "Logger.h"
 #include "algorithm"
 #include "vector"
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "LevelSetCurve.h"
-
+using std::stringstream;
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include "LevelSetCurve.h"
+using std::string;
 using std::vector;
 using std::cout;
 using std::endl;
 using namespace vrcl;
-using namespace cv;
+//using namespace cv;
 
 #define SP( X )  vtkSmartPointer<X>
 
@@ -41,17 +42,17 @@ namespace {
   const static string PrintVerbose = "VerboseKSegUtils";
 }
 
-namespace  vrcl  
+namespace  vrcl
 {
-
+  /*
   void waterMark(const std::string& text, Mat & img)
   {
     int baseline = 0;
     Size textSize = getTextSize(text, CV_FONT_HERSHEY_PLAIN, 3, 2, &baseline);
     Point textOrg((img.cols - textSize.width) / 2, (img.rows + textSize.height) / 2);
     putText(img, text, textOrg, CV_FONT_HERSHEY_PLAIN, 3, Scalar::all(1), 2, 8);
-  
-  }
+
+  }       */
 
 
   void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo )
@@ -166,13 +167,13 @@ void getVolumeAsString( const vector<double>& imageSpacing,
     if( numberOnly ) {
       ss << area_sum ;
     } else {
-      ss << "  Volume: " << area_sum << " mL ";
+      ss << string("  Volume: ") << area_sum << string(" mL ");
     }
     volumeString = ss.str();
-    IFLOG( PrintVerbose, cout << "label range: "<<label_range[0]
-                              << ","<<label_range[1]<< endl )
-    IFLOG( PrintVerbose, cout << "image spacing: " << cv::Mat( imageSpacing ) )
-    IFLOG( PrintVerbose, cout << volumeString )
+    //IFLOG( PrintVerbose, cout << "label range: "<<label_range[0]
+   //                           << ","<<label_range[1]<< endl )
+   // IFLOG( PrintVerbose, cout << "image spacing: " << cv::Mat( imageSpacing ) )
+   // IFLOG( PrintVerbose, cout << volumeString )
 }
 
 void getXYZExtents( const std::vector<double>& imageSpacing,
@@ -361,19 +362,19 @@ void KViewer::KSegment_basic_shrink() {
   qVTK1->update();
   qVTK2->update();
   UpdateModel3D();
-} 
+}
 
 void interactiveMeanSeparation( const Mat& img, const Mat& phi, Mat& result, int threadKey )
-{ 
+{
   // This is accidentally multithreaded so you can segment multiple slices at once...
-  // uh... let's take advantage of that by giving windows unique names? 
- 
+  // uh... let's take advantage of that by giving windows unique names?
+
   std::stringstream ss;
   ss << "Segmenting Slice " << " ... Esc or 'q' to return to main interface";
   string window_name = ss.str();
   cout << ss << " " << threadKey << endl;
   namedWindow( window_name,  WINDOW_AUTOSIZE);
-  imshow(window_name, img); 
+  imshow(window_name, img);
   waitKey(1);
   LevelSetCurve  LS( img, phi, string( window_name ) );
   char c = 'c';
@@ -384,7 +385,7 @@ void interactiveMeanSeparation( const Mat& img, const Mat& phi, Mat& result, int
     int its = 30;
     LS.EvolveSparseField( its, &output );
     cout << " . " ;
-  
+
     // waterMark("press 'q' to return to main app",imgToShow);
     cvShowImage(window_name.c_str(), &output);
     c = waitKey(0);
@@ -393,7 +394,7 @@ void interactiveMeanSeparation( const Mat& img, const Mat& phi, Mat& result, int
   cout << "returning to kviewer_desktop " << endl;
   LS.getPhi(result);
 
-  
+
 }
 
 void runMeanSeparationOnSlice( vtkImageData* image, vtkImageData* label, int sliceIndex )
@@ -425,12 +426,12 @@ void runMeanSeparationOnSlice( vtkImageData* image, vtkImageData* label, int sli
   phi  = (-phi+0.5)*2.5; // negative inside, positive outside
   img  = (img - imgRange[0])* (1.0 / (imgRange[1]-imgRange[0]) );
   Mat phi_new = Mat::zeros(phi.size(), phi.type() );
-  interactiveMeanSeparation( img, phi, phi_new, sliceIndex ); // do the sfls work 
+  interactiveMeanSeparation( img, phi, phi_new, sliceIndex ); // do the sfls work
   for (int i = 0; i < dimsLabel[0]; i++)      {
     for (int j = 0; j < dimsLabel[1]; j++)    {
-          float phival       = ( phi_new.at<float>(i,j) < 0 ) * 1.0;    
+          float phival       = ( phi_new.at<float>(i,j) < 0 ) * 1.0;
           long elemNum       = k * dimsLabel[0] * dimsLabel[1] + j * dimsLabel[1] + i;
-          ptrLabel[elemNum]  = short( phival * labelRange[1] );     
+          ptrLabel[elemNum]  = short( phival * labelRange[1] );
      }
   }
 

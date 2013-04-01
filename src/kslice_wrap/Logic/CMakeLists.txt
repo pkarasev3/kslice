@@ -21,10 +21,12 @@ set(${KIT}_SRCS
 
 message(STATUS "Slicer_SOURCE_DIR is:  ${Slicer_SOURCE_DIR}")
 
+link_directories(${KSLICE_LIB_PATH})
 set(${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/lib/libvrcl.so
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/lib/libKSegmentor.so
+  vrcl  KSegmentor  sfm_local_chanvese
+  #${CMAKE_CURRENT_SOURCE_DIR}/../../../build/lib/libvrcl.so
+  #${CMAKE_CURRENT_SOURCE_DIR}/../../../build/lib/libKSegmentor.so
   )
 
 #-----------------------------------------------------------------------------

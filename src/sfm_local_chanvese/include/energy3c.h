@@ -88,9 +88,12 @@ double en_kappa_pt(PT* p, double *phi, long *dims);
 // returns curvature (kappa) at p (x,y,z) and sets dx and dy values for the norm
 double en_kappa_norm_pt(PT* p, double *phi, long *dims, double *dx, double *dy, double *dz);
 
+#define HAS_OPENCV 0
+#if HAS_OPENCV
 //display histogram function
 void draw_histogram(double *pdf,char* pdfInFileName, double a, int display);
 void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgRange );
+#endif
 
 //compute min/max in image to build histogram correctly
 void findMinMax(double *img,long *dims);

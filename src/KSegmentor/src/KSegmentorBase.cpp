@@ -7,10 +7,10 @@
 #include <omp.h>
 #include <string>
 #include <sstream>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 using std::string;
-using cv::Mat;
+//using cv::Mat;
 
 //these global variables are no good, need to fix later
 //extern double ain, aout, auser; // means
@@ -37,17 +37,17 @@ namespace vrcl
 
 void test_OpenMP()
 {
-  int nthreads, tid;
-  omp_set_num_threads(8);
-  nthreads = omp_get_num_threads();
-  #pragma omp parallel shared(nthreads, tid)
-  { // fork some threads, each one does one expensive operation
-    tid = omp_get_thread_num();
-    if( tid == 0 )      { }
-    else if( tid == 1 ) { }
-    else if( tid == 2 ) { }
+//  int nthreads, tid;
+//  omp_set_num_threads(8);
+//  nthreads = omp_get_num_threads();
+//  #pragma omp parallel shared(nthreads, tid)
+//  { // fork some threads, each one does one expensive operation
+//    tid = omp_get_thread_num();
+//    if( tid == 0 )      { }
+//    else if( tid == 1 ) { }
+//    else if( tid == 2 ) { }
 
-  }
+//  }
 }
 
 /** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
@@ -55,6 +55,7 @@ double KSegmentorBase::defaultKappaParam = 0.35;
 
 
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label,
+                                         vtkImageData* UIVol,
                                         bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
 {
     m_CustomSpeedImgPointer=NULL;
@@ -95,23 +96,30 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     image->GetSpacing( m_Spacing_mm );
 
-
+    m_IJK_orient = std::string("IJ");
     cout << "segmentor using ROI size: " << rad << endl;
 
-    U_Integral_image = vtkSmartPointer<vtkImageData>::New();
+    U_Integral_image = UIVol; //vtkSmartPointer<vtkImageData>::New();
     U_t_image= vtkSmartPointer<vtkImageData>::New();
 
-    U_Integral_image->SetExtent(image->GetExtent());
-    U_Integral_image->SetScalarTypeToDouble();
-    U_Integral_image->SetSpacing(image->GetSpacing());
-    U_Integral_image->AllocateScalars();
+//    U_Integral_image->SetExtent(image->GetExtent());
+//    U_Integral_image->SetScalarTypeToDouble();
+//    U_Integral_image->SetSpacing(image->GetSpacing());
+//    U_Integral_image->AllocateScalars();
     ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
 
     U_t_image->SetExtent(image->GetExtent());
     U_t_image->SetScalarTypeToDouble();
     U_t_image->SetSpacing(image->GetSpacing());
     U_t_image->AllocateScalars();
+    int npts  = U_t_image->GetNumberOfPoints();
     ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
+    double refval=0.0;
+    for( int i=0; i<npts; i++) {
+        refval= ptrIntegral_Image[i]; // seems to initialize as BS, at least in windows
+        ptrIntegral_Image[i] = 0.0;
+        ptrU_t_Image[i] = 0.0;
+    }
 
     m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
@@ -152,7 +160,9 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 namespace {
 
 const double epsH = sqrt(2.0);   // epsilon   = sqrt(2);
-
+#ifndef CV_PI
+#define CV_PI  3.1415926535
+#endif
 inline double Heavi( double z )
 {
 
@@ -194,6 +204,20 @@ double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
     return (E/2.0);
 }
 
+void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
+{
+    bool ij =  (0 == ijk_str.compare("IJ") );
+    bool jk =  (0 == ijk_str.compare("JK") );
+    bool ik =  (0 == ijk_str.compare("IK") );
+    if( ij || jk || ik ) {
+      if( ijk_str.compare(m_IJK_orient) ) {
+        cache_phi.clear(); std::cout << "changed orientation!" << std::endl;
+      }
+        this->m_IJK_orient = ijk_str;
+    } else {
+        std::cout << "invalid IJK orientation in KSegmentorBase! ignoring " << ijk_str << endl;
+    }
+}
 
 void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 {
@@ -215,26 +239,26 @@ void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
         }
     }
 }
-
-void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
-{
-    std::stringstream  ss;
-    ss << fileName;
-    bool name_is_png=(0==std::string(".png").compare(fileName.substr(fileName.size()-4,4)) );
-    if( !name_is_png ) {
-      ss << ".png" ;
-    }
-    string png_name = ss.str();
-    cout << " reference png file: " << png_name << endl;
-    cv::Mat source(mdims[1],mdims[0],CV_64F);
-    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
-    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
-    double dmin, dmax;
-    cv::minMaxLoc( source, &dmin, &dmax );
-    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
-    cv::imwrite(png_name, saveImg );
-    cout<<"wrote to " << png_name << endl;
-}
+//
+//void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
+//{
+//    std::stringstream  ss;
+//    ss << fileName;
+//    bool name_is_png=(0==std::string(".png").compare(fileName.substr(fileName.size()-4,4)) );
+//    if( !name_is_png ) {
+//      ss << ".png" ;
+//    }
+//    string png_name = ss.str();
+//    cout << " reference png file: " << png_name << endl;
+//    cv::Mat source(mdims[1],mdims[0],CV_64F);
+//    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
+//    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
+//    double dmin, dmax;
+//    cv::minMaxLoc( source, &dmin, &dmax );
+//    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
+//    cv::imwrite(png_name, saveImg );
+//    cout<<"wrote to " << png_name << endl;
+//}
 
 void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
     this->m_UpdateVector.clear();
@@ -249,7 +273,7 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
             for (int k=0; k<=this->dimz-1; k++) {
                 element=k*dimx*dimy +j*dimx+i;
                 if(accumulate)
-                    this->accumulateUserInputInUserInputImages((double)ptrCurrLabel[element],element);
+                    this->accumulateUserInput((double)ptrCurrLabel[element],element);
                 if(ptrCurrLabel[element]>0)
                 {
                     this->AddPointToUpdateVector(element);
@@ -279,11 +303,18 @@ void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
 }
 
 
-void KSegmentorBase::accumulateUserInputInUserInputImages( double value,const unsigned int element){
+void KSegmentorBase::accumulateUserInput( double value,const unsigned int element){
     double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
     this->ptrU_t_Image[element]=user_input;
 }
 
+void KSegmentorBase::accumulateUserInput( double value, int i, int j, int k) {
+    double user_input      = -5.0 * ( value > 0.5 ) + 5.0 * ( value <= 0.5 );
+    this->U_Integral_image->SetScalarComponentFromDouble(i,j,k,0,user_input);
+    std::cout << "KSegmentorBase::accumulateUserInput " << user_input << " at i,j,k =  "
+              << i << "," <<j << ", " << k << std::endl;
+    this->U_Integral_image->Modified();
+}
 
 void KSegmentorBase::setNumIterations(int itersToRun){
     this->iter=itersToRun;

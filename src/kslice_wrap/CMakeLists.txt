@@ -7,8 +7,8 @@ if(NOT Slicer_SOURCE_DIR)
   set(EXTENSION_NAME KSlice)
   set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Extensions/KSlice")
   set(EXTENSION_CATEGORY "Examples")
-  set(EXTENSION_CONTRIBUTORS "Jean-Christophe Fillion-Robin (Kitware)")
-  set(EXTENSION_DESCRIPTION "This is an example of extension bundling a loadable module")
+  set(EXTENSION_CONTRIBUTORS "Ivan Kolesov Peter Karasev Karl Fritscher")
+  set(EXTENSION_DESCRIPTION " ")
   set(EXTENSION_ICONURL "http://viewvc.slicer.org/viewvc.cgi/Slicer4/trunk/Extensions/Testing/KSlice/Resources/Icons/KSlice.png?revision=19437&view=co")
   set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-KSlice-screenshot.png")
 endif()
@@ -65,6 +65,9 @@ set(MODULE_RESOURCES
   Resources/qSlicer${MODULE_NAME}Module.qrc
   )
 
+set(KSLICE_LIB_PATH  ${CMAKE_SOURCE_DIR}/../ CACHE PATH "where are vrcl and KSegmentor libraries")
+link_directories(${KSLICE_LIB_PATH})
+
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
   NAME ${MODULE_NAME}
@@ -81,8 +84,9 @@ slicerMacroBuildQtModule(
 #-----------------------------------------------------------------------------
 ##Set up the Editor module
 
+
 set(MODULE_PYTHON_SCRIPTS
-  KSliceEffect.py 
+  KSliceEffect.py
   )
 
 set(MODULE_PYTHON_RESOURCES
@@ -97,6 +101,9 @@ ctkMacroCompilePythonScript(
   DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
   INSTALL_DIR ${Slicer_INSTALL_ROOT}
   )
+
+# argh...
+# add_dependencies(KSliceEffect  ${MODULE_NAME})
 
 #-----------------------------------------------------------------------------
 

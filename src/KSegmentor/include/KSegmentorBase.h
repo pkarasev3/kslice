@@ -7,8 +7,8 @@
 #include "KViewerOptions.h"
 #include <iostream>
 
-#include <opencv2/core/core.hpp>
-#include <boost/shared_ptr.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <boost/shared_ptr.hpp>
 
 class vtkImageData;
 
@@ -27,7 +27,7 @@ namespace vrcl
 
 
 /** write string on top of image data in-place*/
-void waterMark(const std::string& text, cv::Mat & img);
+//void waterMark(const std::string& text, cv::Mat & img);
 
 /** compute volume (non-zero elements) in label map, insert to string "xyz mL^3
     optionally, pass "left" or "right" to do only lateral or medial side. */
@@ -82,6 +82,7 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        void SetSliceOrientationIJK(const std::string& ijk_str);
         void SetCurrentSlice(int currSlice);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
@@ -96,8 +97,10 @@ class KSegmentorBase
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
+        virtual void accumulateUserInput(double value,const unsigned int element);
 
-        virtual void accumulateUserInputInUserInputImages( double value,const unsigned int element);
+        /** for 3D updates that are less frequent */
+        virtual void accumulateUserInput(double value, int i, int j, int k);
 
         void AddPointToUpdateVector(unsigned int element){
             m_UpdateVector.push_back(element);
@@ -175,12 +178,14 @@ class KSegmentorBase
         {
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
+        vtkImageData* GetUIVol() { return U_Integral_image; }
 
-        vtkSmartPointer<vtkImageData> U_Integral_image;
+        //vtkSmartPointer<vtkImageData>
+        vtkImageData* U_Integral_image;
 
         virtual void OnUserPaintsLabel()=0;
     protected:
-        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image,;
+        vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
         vtkSmartPointer<vtkImageReslice> m_Reslicer;
 
@@ -188,7 +193,7 @@ class KSegmentorBase
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
 
-        void InitializeVariables(vtkImageData* image, vtkImageData* label,
+        void InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
                                  bool contInit, int currSlice, int numIts, float distWeight, int brushRad);
         void InitializeMaskAndImage();
         void UpdateMask(bool bForceUpdateAll = false);
@@ -201,6 +206,7 @@ class KSegmentorBase
 
         void CreateLLs(LLset& ll);
 
+        std::vector<double> cache_phi;
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );
@@ -212,11 +218,12 @@ class KSegmentorBase
         float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;
-
+        std::string m_IJK_orient; // IJ, JK, IK
         double m_Umax;
 
         /** struct containing formerly global low-level crap in sfm_local library */
-        boost::shared_ptr<SFM_vars>  m_SFM_vars;
+        //boost::shared_ptr<SFM_vars>  m_SFM_vars;
+        SFM_vars* m_SFM_vars;
 
 public:
         short *ptrCurrImage; //ptr to current image slice
