@@ -485,7 +485,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #labelLogic = self.sliceLogic.GetLabelLayer()
     #labelNode = labelLogic.GetVolumeNode()
     lm = slicer.app.layoutManager()
-
+    
+    
     self.computeCurrSlice()
 
     # get the parameters from MRML
@@ -498,13 +499,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetNumIts(50)
 
     #debug prints: lets see how this went ...
-    print(self.currSlice)
-    print(currRad)
+    #print(self.currSlice)
+    #print(currRad)
 
 
     #execute a run
     self.ksliceMod.runUpdate(self.userMod)
-    print("1")
+    #print("1")
 
     #signal to slicer that the label needs to be updated
     labelImage=self.labelNode.GetImageData()
