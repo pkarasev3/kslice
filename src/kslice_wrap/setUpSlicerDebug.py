@@ -1,7 +1,6 @@
 #get volume 
-volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
+volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
 
-# /u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha");  
 
 #create a label volume, make it active
 volumesLogic = slicer.modules.volumes.logic();

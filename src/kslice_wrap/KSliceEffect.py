@@ -361,6 +361,7 @@ by other code without the need for a view context.
     labelImg=self.labelNode.GetImageData()
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
+    self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
 
     #put test listener on the whole window
     # Don't think we need this!! This gets called on window resize, change label shown, etc
@@ -388,6 +389,7 @@ by other code without the need for a view context.
     tmpVol.AllocateScalars()
     ksliceMod.SetUIVol( tmpVol )
     ksliceMod.Initialize() # kind of heavy-duty
+    self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
 
     self.UIVol = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
     self.ksliceMod= ksliceMod;
@@ -395,6 +397,47 @@ by other code without the need for a view context.
     self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful
 
+    #create a set of containers to compute changes
+    volSize=self.labelImg.GetDimensions()
+    volumesLogic = slicer.modules.volumes.logic()
+    ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ij_Tmp')
+    ij_tmp_imgDat=ij_tmp.GetImageData()
+    ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1], 1) #use just one slice to keep track of changes
+    ij_tmp_imgDat.SetScalarTypeToDouble()
+    ij_tmp_imgDat.AllocateScalars()
+    ij_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ij_Tmp') #get the numpy array
+    ij_tmpArr[:]=0
+    self.ij_tmpArr=ij_tmpArr
+    
+
+    jk_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-jk_Tmp')
+    jk_tmp_imgDat=jk_tmp.GetImageData()
+    jk_tmp_imgDat.SetDimensions(volSize[1], volSize[2], 1) #use just one slice to keep track of changes
+    jk_tmp_imgDat.SetScalarTypeToDouble()
+    jk_tmp_imgDat.AllocateScalars()
+    jk_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-jk_Tmp') #get the numpy array
+    jk_tmpArr[:]=0
+    self.jk_tmpArr=jk_tmpArr
+
+
+    ik_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ik_Tmp')
+    ik_tmp_imgDat=ik_tmp.GetImageData()
+    ik_tmp_imgDat.SetDimensions(volSize[0], volSize[2], 1) #use just one slice to keep track of changes
+    ik_tmp_imgDat.SetScalarTypeToDouble()
+    ik_tmp_imgDat.AllocateScalars()
+    ik_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ik_Tmp') #get the numpy array
+    ik_tmpArr[:]=0    
+    self.ik_tmpArr=ik_tmpArr
+    
+    #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
+    self.currSlice_tmp=self.currSlice
+    self.ijkPlane_tmp=self.ijkPlane
+    
+    #print("printing the arrays")
+    #self.ij_tmpArr.shape
+    print(self.ij_tmpArr)
+    print(self.jk_tmpArr)
+    print(self.ik_tmpArr)
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
@@ -423,11 +466,16 @@ by other code without the need for a view context.
         print "smarter curr slice = " + str(self.currSlice)
         if event == "LeftButtonPressEvent":
           print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
-        # right click for negative ?
-        #else:
-        # self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
+          #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
+          if self.ijkPlane_tmp==ijkPlane & self.currSlice_tmp==self.currSlice:
+             print("accumulating")
+          #else
+            
+               
 
+         # right click for negative ?
+         #else:
+         # self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
   def labModByUser(self,caller,event):
     if self.acMod==0 :
       if 0==self.userMod:
