@@ -6,6 +6,9 @@ from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
+from copy import copy, deepcopy
+from numpy import *
+
 #import KSliceEffect_GUI
 
 #
@@ -430,22 +433,48 @@ by other code without the need for a view context.
     ik_tmpArr[:]=0    
     self.ik_tmpArr=ik_tmpArr
     
+    print(volSize)
+    self.i_range=arange(0,volSize[0])
+    self.j_range=arange(0,volSize[1])
+    self.k_range=arange(0,volSize[2])
+
+
+
     #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp=self.ijkPlane
-    
-    #print("printing the arrays")
-    #self.ij_tmpArr.shape
-    print(self.ij_tmpArr)
-    print(self.jk_tmpArr)
-    print(self.ik_tmpArr)
+    self.accumInProg=0                  #marker to know that we are accumulating user input    
+
+
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
+
     if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
       print "windowListener => processEvent( " + str(event) +" )"
+    if (event=="ModifiedEvent") & (self.accumInProg==1) :
+      #print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+      #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
+      #if (self.ijkPlane_tmp==self.ijkPlane) and (self.currSlice_tmp==self.currSlice):   #is this check necessary, seems not
+        if self.ijkPlane=="IJ":
+            self.UIarray[self.linInd]+=self.labArr[self.linInd]#find the next stuff that was painted
+            self.labArr[self.linInd] = (self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event)          
+        elif self.ijkPlane=="JK":
+            self.UIarray[self.linInd]+=self.labArr[self.linInd]
+            self.labArr[self.linInd] = (self.jk_tmpArr + self.labArr[self.linInd])!=0 
+        elif self.ijkPlane=="IK":
+            self.UIarray[self.linInd]+=self.labArr[self.linInd]
+            self.labArr[self.linInd] = (self.ik_tmpArr + self.labArr[self.linInd])!=0 
+
+        self.accumInProg=0    #done accumulating
+        print(self.UIarray.max())
+        print(self.UIarray.min())
+        
+        #print(self.ij_tmpArr)
+        #print("accumulating")
+        #else       #this logic must be filled in!!!!
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       sw = self.swLUT[interactor]
       if not sw:
@@ -462,34 +491,38 @@ by other code without the need for a view context.
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
         self.computeCurrSlice()
+        print(self.currSlice)
         #if 0==vals['label']:
         #self.currSlice = self.computeCurrSliceSmarter(ijk)
         print "smarter curr slice = " + str(self.currSlice)
 
-        print(ijkPlane)
-        print(self.ijkPlane_tmp)
-        print(self.UIarray.shape)
-        print(self.labArr.shape)  
-        self.UIarray[1,1,1]
-        self.labArr[5,5,5]
-        print(self.currSlice)
-  	if event == "LeftButtonPressEvent":
-          print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-          #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
-          if (self.ijkPlane_tmp==ijkPlane) & (self.currSlice_tmp==self.currSlice):   #logic below need to work with all combination of ijk planes
-	     self.UIarray[self.currSlice, :,:]=self.UIarray[self.currSlice, :,:] + (self.labArr[self.currSlice, :,:]-self.ij_tmpArr) #find the next stuff that was painted
-             self.ij_tmpArr=self.labArr[self.currSlice,:,:] #store for next comparison
-             print(self.UIarray.max())
-             print(self.UIarray.min())
-             #print(self.ij_tmpArr)
-             #print("accumulating")
-          #else       #this logic must be filled in!!!!
-            
-               
-
-         # right click for negative ?
-         #else:
-         # self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
+    if event == "LeftButtonPressEvent":
+        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+  
+        if self.ijkPlane=="IJ":
+            self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
+            self.ij_tmpArr=deepcopy(self.labArr[self.linInd])
+            self.labArr[self.linInd]=0             
+            print(self.ij_tmpArr.shape)
+            print(self.ij_tmpArr.max())
+            print(self.ij_tmpArr.min())
+        elif self.ijkPlane=="JK":
+            self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
+            self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
+            self.labArr[self.linInd]=0
+            print "shape= " + str(self.jk_tmpArr.shape))
+            print(self.jk_tmpArr.max())
+            print(self.jk_tmpArr.min())
+        elif self.ijkPlane=="IK":
+            self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
+            self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
+            self.labArr[self.linInd]=0
+            print(self.ik_tmpArr.shape)
+            print(self.ik_tmpArr.max())
+            print(self.ik_tmpArr.min())
+                
+        self.accumInProg=1
+       
   def labModByUser(self,caller,event):
     if self.acMod==0 :
       if 0==self.userMod:
