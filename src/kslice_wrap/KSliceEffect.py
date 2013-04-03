@@ -361,7 +361,8 @@ by other code without the need for a view context.
     labelImg=self.labelNode.GetImageData()
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
-    self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
+    #self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
+    self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
 
     #put test listener on the whole window
     # Don't think we need this!! This gets called on window resize, change label shown, etc
@@ -402,7 +403,7 @@ by other code without the need for a view context.
     volumesLogic = slicer.modules.volumes.logic()
     ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ij_Tmp')
     ij_tmp_imgDat=ij_tmp.GetImageData()
-    ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1], 1) #use just one slice to keep track of changes
+    ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1],1) #use just one slice to keep track of changes
     ij_tmp_imgDat.SetScalarTypeToDouble()
     ij_tmp_imgDat.AllocateScalars()
     ij_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ij_Tmp') #get the numpy array
@@ -464,12 +465,25 @@ by other code without the need for a view context.
         #if 0==vals['label']:
         #self.currSlice = self.computeCurrSliceSmarter(ijk)
         print "smarter curr slice = " + str(self.currSlice)
-        if event == "LeftButtonPressEvent":
+
+        print(ijkPlane)
+        print(self.ijkPlane_tmp)
+        print(self.UIarray.shape)
+        print(self.labArr.shape)  
+        self.UIarray[1,1,1]
+        self.labArr[5,5,5]
+        print(self.currSlice)
+  	if event == "LeftButtonPressEvent":
           print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
           #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
-          if self.ijkPlane_tmp==ijkPlane & self.currSlice_tmp==self.currSlice:
-             print("accumulating")
-          #else
+          if (self.ijkPlane_tmp==ijkPlane) & (self.currSlice_tmp==self.currSlice):   #logic below need to work with all combination of ijk planes
+	     self.UIarray[self.currSlice, :,:]=self.UIarray[self.currSlice, :,:] + (self.labArr[self.currSlice, :,:]-self.ij_tmpArr) #find the next stuff that was painted
+             self.ij_tmpArr=self.labArr[self.currSlice,:,:] #store for next comparison
+             print(self.UIarray.max())
+             print(self.UIarray.min())
+             #print(self.ij_tmpArr)
+             #print("accumulating")
+          #else       #this logic must be filled in!!!!
             
                
 

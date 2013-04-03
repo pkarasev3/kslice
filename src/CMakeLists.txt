@@ -8,7 +8,7 @@ enable_testing()
 set(MODULE_NAME KSlice)
 #-----------------------------------------------------------------------------
 
-set(KSlice_Build_SlicerWrap  CACHE  bool true)
+set(KSlice_Build_SlicerWrap CACHE bool true)
 
 if(KSlice_Build_SlicerWrap)
   if(NOT Slicer_SOURCE_DIR)
@@ -29,9 +29,9 @@ endif()
 
 
 
-#find_package(OpenCV  REQUIRED)
-message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
-                   you also want to have had libgtk2.0-dev *Before* building opencv!" )
+#find_package(OpenCV REQUIRED)
+message(STATUS " OpenCV_LIBS = ${OpenCV_LIBS} ;
+you also want to have had libgtk2.0-dev *Before* building opencv!" )
 
 
 SET(BUILD_SHARED_LIBS ON)
@@ -39,27 +39,27 @@ SET(BUILD_SHARED_LIBS ON)
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH  "Single Directory for all Executables")
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE PATH  "Single Directory for all Libraries")
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH "Single Directory for all Executables")
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE PATH "Single Directory for all Libraries")
 
 # semi-hack: copy the scripts dir so the relative structure still jives, and temp files can be wiped easily
-set(SCRIPT_PATH ${CMAKE_SOURCE_DIR}/../scripts CACHE PATH  "scripts folder")
-set(DATA_PATH ${CMAKE_SOURCE_DIR}/../data CACHE PATH  "data folder")
-execute_process(COMMAND "sh"  ${SCRIPT_PATH}/link_build_dir_to_scripts_and_data.sh  "
-                ${CMAKE_SOURCE_DIR}"  "${CMAKE_BINARY_DIR}"   "${SCRIPT_PATH}"  ${DATA_PATH})
+set(SCRIPT_PATH ${CMAKE_SOURCE_DIR}/../scripts CACHE PATH "scripts folder")
+set(DATA_PATH ${CMAKE_SOURCE_DIR}/../data CACHE PATH "data folder")
+execute_process(COMMAND "sh" ${SCRIPT_PATH}/link_build_dir_to_scripts_and_data.sh "
+${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" "${SCRIPT_PATH}" ${DATA_PATH})
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "configuration (default: Debug)")
-set(BUILD_QTGUI_DEMO_SH  CACHE bool false)
+set(BUILD_QTGUI_DEMO_SH CACHE bool false)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # run shell script to force-clean... delete everything in /bin and /lib, and generated moc files
 # more work to build but enables sloppy user to have installed a bunch of conflicting QT libs
-message(STATUS "    force clean this round? (set to 0 or 1) " )
-set(FORCE_CLEAN_SH  CACHE bool true)
+message(STATUS " force clean this round? (set to 0 or 1) " )
+set(FORCE_CLEAN_SH CACHE bool true)
 if(${FORCE_CLEAN_SH})
-message(STATUS "   running force_clean.sh once and setting flag back to false! " )
-execute_process(COMMAND "sh"  ${SCRIPT_PATH}/force_clean.sh  "${EXECUTABLE_OUTPUT_PATH}"  "${LIBRARY_OUTPUT_PATH}" )
-set(FORCE_CLEAN_SH  CACHE bool true)
+message(STATUS " running force_clean.sh once and setting flag back to false! " )
+execute_process(COMMAND "sh" ${SCRIPT_PATH}/force_clean.sh "${EXECUTABLE_OUTPUT_PATH}" "${LIBRARY_OUTPUT_PATH}" )
+set(FORCE_CLEAN_SH CACHE bool true)
 else(${FORCE_CLEAN_SH})
 message(STATUS " not running force_clean! " )
 endif(${FORCE_CLEAN_SH})
@@ -73,9 +73,9 @@ endif(${FORCE_CLEAN_SH})
 
 #find_package(Qt)
 #IF(QT_USE_FILE)
-#  include(${QT_USE_FILE})
+# include(${QT_USE_FILE})
 #ELSE(QT_USE_FILE)
-#  SET(QT_LIBRARIES   ${QT_QT_LIBRARY})
+# SET(QT_LIBRARIES ${QT_QT_LIBRARY})
 #ENDIF(QT_USE_FILE)
 
 
@@ -96,11 +96,11 @@ endif(WIN32)
 
 
 
-set(TOTENKOPF_WERROR  CACHE bool false)
+set(TOTENKOPF_WERROR CACHE bool false)
 if(${TOTENKOPF_WERROR})
   set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} "-Werror")
   set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} "-Werror")
-  message(STATUS  "using 'errors are warnings!' flag in gcc..." )
+  message(STATUS "using 'errors are warnings!' flag in gcc..." )
 endif(${TOTENKOPF_WERROR})
 
 
@@ -128,14 +128,14 @@ add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
 add_subdirectory(KSegmentor)
 
-#set(BUILD_ITK_DEPENDENT_STUFF  CACHE bool false)
+#set(BUILD_ITK_DEPENDENT_STUFF CACHE bool false)
 #if(${BUILD_ITK_DEPENDENT_STUFF})
-#  message(STATUS "   found ITK, building with it! " )
-#  add_subdirectory(SampleApplications/Make3DModel)
+# message(STATUS " found ITK, building with it! " )
+# add_subdirectory(SampleApplications/Make3DModel)
   #add_subdirectory(Gao3DRSS)
   #add_subdirectory(SampleApplications/MHADecompressor)
 #else(${BUILD_ITK_DEPENDENT_STUFF})
-#  message(STATUS "   no ITK for you " )
+# message(STATUS " no ITK for you " )
 #endif(${BUILD_ITK_DEPENDENT_STUFF})
 
 add_subdirectory(sfm_local_chanvese)
@@ -143,20 +143,20 @@ add_subdirectory(sfm_local_chanvese)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-message(STATUS "    build qtGUI_Demo? (set to 0 or 1) " )
+message(STATUS " build qtGUI_Demo? (set to 0 or 1) " )
 if(${BUILD_QTGUI_DEMO_SH})
-    message(STATUS "   yes, building qtGUI_Demo!  " )
+    message(STATUS " yes, building qtGUI_Demo! " )
     add_subdirectory(SampleApplications/qtGUI_Demo)
 else(${BUILD_QTGUI_DEMO_SH})
-    message(STATUS "   no qtGUI_Demo for you " )
+    message(STATUS " no qtGUI_Demo for you " )
 endif(${BUILD_QTGUI_DEMO_SH})
 
-message(STATUS "    Compiler:                  ${CMAKE_COMPILER} ")
-message(STATUS "    C++ flags (Release):       ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-message(STATUS "    C++ flags (Debug):         ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-message(STATUS "    QT_LIBRARIES:              ${QT_LIBRARIES} " )
-message(STATUS "    qt include dir:            ${QT_include_DIR} "  )
+message(STATUS " Compiler: ${CMAKE_COMPILER} ")
+message(STATUS " C++ flags (Release): ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS " C++ flags (Debug): ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS " QT_LIBRARIES: ${QT_LIBRARIES} " )
+message(STATUS " qt include dir: ${QT_include_DIR} " )
 
-message(STATUS " fyi, bunch of image data is here ----   tsfat.bme.gatech.edu:/u4/public/karasev/data_medical/mha_grantmuller_kslice/mha_all/ " )
+message(STATUS " fyi, bunch of image data is here ---- tsfat.bme.gatech.edu:/u4/public/karasev/data_medical/mha_grantmuller_kslice/mha_all/ " )
 
 #...
