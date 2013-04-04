@@ -54,9 +54,8 @@ void test_OpenMP()
 double KSegmentorBase::defaultKappaParam = 0.35;
 
 
-void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label,
-                                         vtkImageData* UIVol,
-                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad)
+void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
+                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel)
 {
     m_CustomSpeedImgPointer=NULL;
     imageVol=image;
@@ -71,6 +70,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     this->iter=numIts;
     this->m_DistWeight=distWeight;
     this->rad= brushRad;
+    this->currLabel=currLabel;
 
     m_bUseEdgeBased = false;
     penaltyAlpha=0;

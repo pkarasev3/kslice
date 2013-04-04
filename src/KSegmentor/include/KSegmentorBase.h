@@ -194,7 +194,8 @@ class KSegmentorBase
 
 
         void InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                                 bool contInit, int currSlice, int numIts, float distWeight, int brushRad);
+                            bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel);
+
         void InitializeMaskAndImage();
         void UpdateMask(bool bForceUpdateAll = false);
 
@@ -251,6 +252,7 @@ public:
         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
         double rad;          //radius of ball used in local-global energies
+        int currLabel;       //the label value to mark inside contour
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];

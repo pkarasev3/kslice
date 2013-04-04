@@ -21,19 +21,18 @@ struct LL;
 
 class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
-        static KSegmentor3D* CreateSegmentor(vtkImageData *image,
-                                             vtkImageData *label, vtkImageData* UIVol, bool contInit);
+        //static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, vtkImageData* UIVol, bool contInit);
         KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                     bool contInit, int currSlice, int numIts, 
-                     float distWeight, int brushRad);
+                     bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel);
+
         virtual ~KSegmentor3D();
         void initializeData();
         virtual void Update3D();
         virtual void Update2D(bool reInitFromMask);
-        /** external interface to update at a voxel */
-        void accumulateCurrentUserInput( double value,const unsigned int element,
-                                         double weight=1.0 );
 
+
+        /** external interface to update at a voxel */
+        void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0 );
         virtual void OnUserPaintsLabel();
 
     private:

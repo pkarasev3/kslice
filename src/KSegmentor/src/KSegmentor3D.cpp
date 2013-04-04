@@ -19,26 +19,25 @@ using std::string;
 //using cv::Mat;
 
 
-KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image,
-                                            vtkImageData *label, vtkImageData* UIVol,
-                                            bool contInit)
-{
-  int currSlice=0;
-  int numIts = 20;
-  float distWeight=0.01;
-  int brushRad = 5;
-  KSegmentor3D* seg3d =
-      new KSegmentor3D(image,label,UIVol,
-                       contInit,currSlice,numIts,distWeight,brushRad);
-  return seg3d;
-}
+//KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image,
+//                                            vtkImageData *label, vtkImageData* UIVol,
+//                                            bool contInit)
+//{
+//  int currSlice=0;
+//  int numIts = 20;
+//  float distWeight=0.01;
+//  int brushRad = 5;
+//  KSegmentor3D* seg3d =
+//      new KSegmentor3D(image,label,UIVol,
+//                       contInit,currSlice,numIts,distWeight,brushRad);
+//  return seg3d;
+//}
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                           bool contInit, int currSlice, int numIts,
-                           float distWeight, int brushRad) {
+                           bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel)
+{
   m_EnergyName = GetSupportedEnergyNames()[1];
-  this->InitializeVariables(image,label, UIVol, contInit, currSlice,
-                            numIts, distWeight, brushRad);
+  this->InitializeVariables(image,label, UIVol, contInit, currSlice, numIts, distWeight, brushRad, currLabel);
 
   if(contInit) {
     std::cout<<"Initializing user input using label data"<<std::endl;
@@ -59,7 +58,7 @@ void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int e
   Umax         = this->GetUmax(); assert(Umax>0);
   double Ustep = weight * (Umax)/2.0;
   if( fabs(Ustep) < 0.01 ) {
-    /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1); }
+    /*cout <<"whoa something is *messed up*, check Umax " << endl;*/ assert(1); }
 
   double user_input      = -Ustep * ( value > 0.5 ) +
       Ustep * ( value <= 0.5 );
@@ -134,7 +133,7 @@ void KSegmentor3D::initializeData()
   labelVol->GetScalarRange( labelRange );
   if( abs(labelRange[1]) < 1e-3 )
   { // empty label; so set the proper range
-    labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal();
+    labelRange[1] = this->currLabel;
   }
   //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
@@ -316,7 +315,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
       //                                                          + (phi_out > 0.8) + (phi_out > 0.65)
       //                                                          + (phi_out > 0.5) ) * labelRange[1] / 4.0 );
 
-      ptrCurrLabel[element3D]=   ( (unsigned short) 0 >= phi_val )*labelRange[1];
+      ptrCurrLabel[element3D]=   ( (unsigned short) 0 >= phi_val )*this->currLabel;
 
       elemNum++;
     }

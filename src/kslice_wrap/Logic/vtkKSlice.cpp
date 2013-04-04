@@ -31,6 +31,7 @@ vtkKSlice::vtkKSlice( ) {
     m_bUseEdgeBased=0;
     contInit=0;
     initCorrectFlag=0; //should not run updates before this flag is set to 1
+    CurrLabel=1;
 
 }
 
@@ -47,7 +48,9 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
-  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
+/*DEPRECATED: this functionality is in python code now*/
+
+std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
             << i << "," <<j << ", " << k << std::endl;
  // UIVol->Print(std::cout);
   //
@@ -75,7 +78,7 @@ void vtkKSlice::PasteSlice(int toSlice){
 void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
     dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
-                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad);
+                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete

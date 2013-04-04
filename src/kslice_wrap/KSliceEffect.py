@@ -6,6 +6,9 @@ from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
+from copy import copy, deepcopy
+from numpy import *
+
 #import KSliceEffect_GUI
 
 #
@@ -20,7 +23,7 @@ import vtkSlicerKSliceModuleLogicPython
 
 class KSliceEffectOptions(EditorLib.LabelEffectOptions):
   """ KSliceEffect-specfic gui
-  """
+"""
 
   def __init__(self, parent=0):
     super(KSliceEffectOptions,self).__init__(parent)
@@ -29,10 +32,10 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     #save a layout manager, get just the red slice
     editUtil = EditorLib.EditUtil.EditUtil()
     parameterNode = editUtil.getParameterNode()
-    lm                      = slicer.app.layoutManager()
-    self.redSliceWidget     = lm.sliceWidget('Red')
-    self.yellowSliceWidget  = lm.sliceWidget('Yellow')
-    self.greenSliceWidget   = lm.sliceWidget('Green')
+    lm = slicer.app.layoutManager()
+    self.redSliceWidget = lm.sliceWidget('Red')
+    self.yellowSliceWidget = lm.sliceWidget('Yellow')
+    self.greenSliceWidget = lm.sliceWidget('Green')
     self.parameterNode=parameterNode
 
   def __del__(self):
@@ -78,7 +81,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.widgets.append(self.locRadSpinBox)
 
     HelpButton(self.frame, "This is an interactive segmentation tool.")
-    self.frame.layout().addStretch(1)     # Add vertical spacer
+    self.frame.layout().addStretch(1) # Add vertical spacer
 
   def destroy(self):
     super(KSliceEffectOptions,self).destroy()
@@ -114,9 +117,9 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     print("making the connections")
     #params = ("radius",)
     #for p in params:
-    #  if self.parameterNode.GetParameter("KSliceEffect,"+p) == '':
-    #    # don't update if the parameter node has not got all values yet
-    #    return
+    # if self.parameterNode.GetParameter("KSliceEffect,"+p) == '':
+    # # don't update if the parameter node has not got all values yet
+    # return
 
 
     self.updatingGUI = True
@@ -152,10 +155,10 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
 class KSliceCLBot(object): #stays active even when running the other editor effects
   """
-  Task to run in the background for this effect.
-  Receives a reference to the currently active options
-  so it can access tools if needed.
-  """
+Task to run in the background for this effect.
+Receives a reference to the currently active options
+so it can access tools if needed.
+"""
   def __init__(self,options):
     self.editUtil = EditUtil.EditUtil()
     self.sliceWidget = options.tools[0].sliceWidget
@@ -201,13 +204,13 @@ class KSliceCLBot(object): #stays active even when running the other editor effe
 
 class KSliceEffectTool(LabelEffect.LabelEffectTool):
   """
-  One instance of this will be created per-view when the effect
-  is selected.  It is responsible for implementing feedback and
-  label map changes in response to user input.
-  This class observes the editor parameter node to configure itself
-  and queries the current view for background and label volume
-  nodes to operate on.
-  """
+One instance of this will be created per-view when the effect
+is selected. It is responsible for implementing feedback and
+label map changes in response to user input.
+This class observes the editor parameter node to configure itself
+and queries the current view for background and label volume
+nodes to operate on.
+"""
 
   def __init__(self, sliceWidget):
     super(KSliceEffectTool,self).__init__(sliceWidget)
@@ -218,8 +221,8 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
 #print("Got a %s at %s in %s", (event,str(xy),viewName))
   def processEvent(self, caller=None, event=None):
     """
-    handle events from the render window interactor
-    """
+handle events from the render window interactor
+"""
     if event == "LeftButtonPressEvent":
       xy = self.interactor.GetEventPosition()
       viewName,orient = get_view_names(self.sliceWidget)
@@ -234,11 +237,11 @@ class KSliceEffectTool(LabelEffect.LabelEffectTool):
       pass
 
 def get_view_names( sw ):
-    viewName    = sw.sliceLogic().GetSliceNode().GetName()
-    lm          = slicer.app.layoutManager()
-    orient      = lm.sliceWidget(viewName).sliceOrientation;
+    viewName = sw.sliceLogic().GetSliceNode().GetName()
+    lm = slicer.app.layoutManager()
+    orient = lm.sliceWidget(viewName).sliceOrientation;
     valid_orient= ('Axial','Sagittal','Coronal','Reformat')
-    viewOrient  = None
+    viewOrient = None
     for vo in valid_orient:
       if vo == orient:
         viewOrient = vo
@@ -248,7 +251,7 @@ def get_view_names( sw ):
 
 def smart_xyToIJK(xy,sliceWidget):
   xyz = sliceWidget.sliceView().convertDeviceToXYZ(xy);
-  ll  = sliceWidget.sliceLogic().GetLabelLayer()
+  ll = sliceWidget.sliceLogic().GetLabelLayer()
   xyToIJK = ll.GetXYToIJKTransform().GetMatrix()
   ijkFloat = xyToIJK.MultiplyPoint(xyz+(1,))[:3]
   print( ijkFloat )
@@ -265,13 +268,13 @@ def smart_xyToIJK(xy,sliceWidget):
 def get_values_at_IJK( ijk, sliceWidget):
   labelLogic = sliceWidget.sliceLogic().GetLabelLayer()
   volumeNode = labelLogic.GetVolumeNode()
-  imageData  = volumeNode.GetImageData()
+  imageData = volumeNode.GetImageData()
   if not imageData:
     return "No Label Image"
   dims = imageData.GetDimensions()
   print "current view dims = " + str(dims)
   wasOutOfFrame = False
-  values        = {'label':None,'U':None}
+  values = {'label':None,'U':None}
   for ele in xrange(3):
     ijk
     if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
@@ -286,15 +289,15 @@ def get_values_at_IJK( ijk, sliceWidget):
 
 
 def bind_view_observers( handlerFunc ):
-  layoutManager  = slicer.app.layoutManager()
+  layoutManager = slicer.app.layoutManager()
   sliceNodeCount = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLSliceNode')
-  ObserverTags   = []
-  SliceWidgetLUT = {}   # for  sw = SliceWidget[caller] in handlerFunc
+  ObserverTags = []
+  SliceWidgetLUT = {} # for sw = SliceWidget[caller] in handlerFunc
   for nodeIndex in xrange(sliceNodeCount):
-    sliceNode   = slicer.mrmlScene.GetNthNodeByClass(nodeIndex, 'vtkMRMLSliceNode')
+    sliceNode = slicer.mrmlScene.GetNthNodeByClass(nodeIndex, 'vtkMRMLSliceNode')
     sliceWidget = layoutManager.sliceWidget(sliceNode.GetLayoutName())
     print "did a bind_view_observers for view: " + str(sliceNode.GetLayoutName())
-    if sliceWidget:  # add obserservers and keep track of tags
+    if sliceWidget: # add obserservers and keep track of tags
       style = sliceWidget.sliceView().interactor()
       SliceWidgetLUT[style] = sliceWidget
       events = ("LeftButtonPressEvent","MouseMoveEvent",
@@ -310,14 +313,14 @@ def bind_view_observers( handlerFunc ):
 
 class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   """
-  This class contains helper methods for a given effect
-  type.  It can be instanced as needed by an KSliceEffectTool
-  or KSliceEffectOptions instance in order to compute intermediate
-  results (say, for user feedback) or to implement the final
-  segmentation editing operation.  This class is split
-  from the KSliceEffectTool so that the operations can be used
-  by other code without the need for a view context.
-  """
+This class contains helper methods for a given effect
+type. It can be instanced as needed by an KSliceEffectTool
+or KSliceEffectOptions instance in order to compute intermediate
+results (say, for user feedback) or to implement the final
+segmentation editing operation. This class is split
+from the KSliceEffectTool so that the operations can be used
+by other code without the need for a view context.
+"""
 
   def __init__(self,sliceLogic):
     self.sliceLogic = sliceLogic
@@ -328,25 +331,25 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # 'MouseTool' - grabs the cursor
     # 'Nonmodal' - can be applied while another is active
     # 'Disabled' - not available
-    self.attributes  = ('MouseTool')
+    self.attributes = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
 
     #create variables to keep track of how the label changed (automatic part or user input)
-    self.acMod   = 0
+    self.acMod = 0
     self.userMod = 0
 
     #create a key shortcut
-    k = qt.QKeySequence(qt.Qt.Key_E)   # Press e/E to run segmentor
-    cp= qt.QKeySequence(qt.Qt.Key_C)  # copy
-    ps= qt.QKeySequence(qt.Qt.Key_V)  # paste
+    k = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor
+    cp= qt.QKeySequence(qt.Qt.Key_C) # copy
+    ps= qt.QKeySequence(qt.Qt.Key_V) # paste
 
     self.qtkeyconnections = []
-    self.qtkeydefs = [     [k,self.runSegment2D],
+    self.qtkeydefs = [ [k,self.runSegment2D],
                            [cp,self.copyslice],
                            [ps,self.pasteslice] ] # like a cell array in matlab
     for i in [0,1,2]:
         keydef = self.qtkeydefs[i]
-        s = qt.QShortcut(keydef[0], mainWindow())  # connect this qt event to mainWindow focus
+        s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
         s.connect('activatedAmbiguously()', keydef[1])
         self.qtkeyconnections.append(s)
@@ -361,6 +364,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelImg=self.labelNode.GetImageData()
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
+    #self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
+    self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
 
     #put test listener on the whole window
     # Don't think we need this!! This gets called on window resize, change label shown, etc
@@ -383,25 +388,108 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     steeredArray = slicer.util.array(steeredName) #get the numpy array
     steeredArray[:]=0 #initialize user input
-    tmpVol         = steeredVolume.GetImageData()
+    tmpVol = steeredVolume.GetImageData()
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
     ksliceMod.SetUIVol( tmpVol )
+    ksliceMod.SetCurrLabel(EditorLib.EditUtil.EditUtil().getLabel())  
     ksliceMod.Initialize() # kind of heavy-duty
+    self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
 
-    self.UIVol    = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    self.UIVol = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
     self.ksliceMod= ksliceMod;
     self.currSlice= None
     self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful
 
+    #create a set of containers to compute changes
+    volSize=self.labelImg.GetDimensions()
+    volumesLogic = slicer.modules.volumes.logic()
+    ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ij_Tmp')
+    ij_tmp_imgDat=ij_tmp.GetImageData()
+    ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1],1) #use just one slice to keep track of changes
+    ij_tmp_imgDat.SetScalarTypeToDouble()
+    ij_tmp_imgDat.AllocateScalars()
+    ij_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ij_Tmp') #get the numpy array
+    ij_tmpArr[:]=0
+    self.ij_tmpArr=ij_tmpArr
+    
+
+    jk_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-jk_Tmp')
+    jk_tmp_imgDat=jk_tmp.GetImageData()
+    jk_tmp_imgDat.SetDimensions(volSize[1], volSize[2], 1) #use just one slice to keep track of changes
+    jk_tmp_imgDat.SetScalarTypeToDouble()
+    jk_tmp_imgDat.AllocateScalars()
+    jk_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-jk_Tmp') #get the numpy array
+    jk_tmpArr[:]=0
+    self.jk_tmpArr=jk_tmpArr
+
+
+    ik_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ik_Tmp')
+    ik_tmp_imgDat=ik_tmp.GetImageData()
+    ik_tmp_imgDat.SetDimensions(volSize[0], volSize[2], 1) #use just one slice to keep track of changes
+    ik_tmp_imgDat.SetScalarTypeToDouble()
+    ik_tmp_imgDat.AllocateScalars()
+    ik_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ik_Tmp') #get the numpy array
+    ik_tmpArr[:]=0    
+    self.ik_tmpArr=ik_tmpArr
+    
+    print(volSize)
+    self.i_range=arange(0,volSize[0])
+    self.j_range=arange(0,volSize[1])
+    self.k_range=arange(0,volSize[2])
+
+
+
+    #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
+    self.currSlice_tmp=self.currSlice
+    self.ijkPlane_tmp=self.ijkPlane
+    self.accumInProg=0                  #marker to know that we are accumulating user input    
+
+
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
-    if event == "MouseMoveEvent":       # this a verbose event, dont print
+
+    if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
       print "windowListener => processEvent( " + str(event) +" )"
+    if (event=="ModifiedEvent") & (self.accumInProg==1) :
+        currLab=EditorLib.EditUtil.EditUtil().getLabel()
+	    signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
+
+        if self.ijkPlane=="IJ":
+            if signAccum==-1:          #this means we're drawing
+                deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
+                newLab=(self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event) 
+            elif signAccum==1:                       #user is erasing
+                deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd]  
+        elif self.ijkPlane=="JK":
+            if signAccum==-1: 
+                deltPaint=self.labArr[self.linInd]
+                newLab=(self.jk_tmpArr + self.labArr[self.linInd])!=0  
+            elif signAccum==1:    
+                deltPaint=(self.jk_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd] 
+        elif self.ijkPlane=="IK":
+            if signAccum==-1: 
+                deltPaint=self.labArr[self.linInd]
+                newLab=(self.ik_tmpArr + self.labArr[self.linInd])!=0  
+            elif signAccum==1:    
+                deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd] 
+
+        self.UIarray[self.linInd]+=signAccum*deltPaint
+        self.labArr[self.linInd] = newLab   
+        self.accumInProg=0    #done accumulating
+
+
+        print "maximum of User input ☃:" + str(self.UIarray.max())
+        print "minimum of user input ☃:" + str(self.UIarray.min())
+        print "sign of accumulation ☃:"   + str(signAccum)        
+
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       sw = self.swLUT[interactor]
       if not sw:
@@ -409,32 +497,55 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         pass
       else:
         viewName,orient = get_view_names(sw)
-        xy              = interactor.GetEventPosition()
-        ijk             = smart_xyToIJK(xy,sw)      
-        vals            = get_values_at_IJK(ijk,sw)
+        xy = interactor.GetEventPosition()
+        ijk = smart_xyToIJK(xy,sw)
+        vals = get_values_at_IJK(ijk,sw)
         self.sliceLogic = sw.sliceLogic()
-        ijkPlane        = self.sliceIJKPlane()
+        ijkPlane = self.sliceIJKPlane()
         print "ijk plane is: " + str(ijkPlane)
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
         self.computeCurrSlice()
+        print(self.currSlice)
         #if 0==vals['label']:
         #self.currSlice = self.computeCurrSliceSmarter(ijk)
         print "smarter curr slice = " + str(self.currSlice)
-        if event == "LeftButtonPressEvent":
-          print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"        
-          self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
-        # right click for negative ?
-        #else:
-        #  self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-1.0)
 
+    if event == "LeftButtonPressEvent":
+        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        self.accumInProg=1
+        if self.ijkPlane=="IJ":
+            self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
+            self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
+            print(self.ij_tmpArr.shape)
+            print(self.ij_tmpArr.max())
+            print(self.ij_tmpArr.min())
+        elif self.ijkPlane=="JK":
+            self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
+            self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
+            print "shape= " + str(self.jk_tmpArr.shape)
+            print(self.jk_tmpArr.max())
+            print(self.jk_tmpArr.min())
+        elif self.ijkPlane=="IK":
+            self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
+            self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
+            print(self.ik_tmpArr.shape)
+            print(self.ik_tmpArr.max())
+            print(self.ik_tmpArr.min())            
+
+        if EditorLib.EditUtil.EditUtil().getLabel()==0:  #need this only if erasing
+            self.labArr[self.linInd]=0   
+
+                
+
+       
   def labModByUser(self,caller,event):
     if self.acMod==0 :
       if 0==self.userMod:
         print("modified by user, kslice bot is running")
       self.userMod=1
     else:
-      self.acMod=0  #modification came from active contour, reset variable, prepare to listen to next modification
+      self.acMod=0 #modification came from active contour, reset variable, prepare to listen to next modification
       self.userMod=0
       #print("modified by active contour")
       pass
@@ -460,20 +571,20 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     return ns
 
   def computeCurrSlice(self):
-    # annoying to reset these...    
+    # annoying to reset these...
     labelLogic = self.sliceLogic.GetLabelLayer()
     self.labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
     self.backgroundNode = backgroundLogic.GetVolumeNode()
 
-    sliceOffset = self.sliceLogic.GetSliceOffset() 
-    spacingVec  = self.labelNode.GetSpacing()
-    originVec   = self.labelNode.GetOrigin()
+    sliceOffset = self.sliceLogic.GetSliceOffset()
+    spacingVec = self.labelNode.GetSpacing()
+    originVec = self.labelNode.GetOrigin()
     for orient in ( ('IJ',2),('JK',0),('IK',1) ):
       if self.ijkPlane == orient[0]:
         cs=int( round( (sliceOffset - originVec[orient[1]])/spacingVec[orient[1]]))
     #self.currSlice=computeCurrSliceSmarter
-    self.currSlice = abs(cs) # hacky, is this always the fix if result of above is negative? 
+    self.currSlice = abs(cs) # hacky, is this always the fix if result of above is negative?
     print "currSlice = " + str(self.currSlice) + ", offset= " + str(sliceOffset)
 
 
@@ -524,7 +635,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     for i in [0,1,2]:
         keyfun = self.qtkeydefs[i]
         keydef = self.qtkeyconnections[i]
-        print('disconnecting keydef:  ')
+        print('disconnecting keydef: ')
         print(keyfun)
         keydef.disconnect('activated()', keyfun[1])
         keydef.disconnect('activatedAmbiguously()', keyfun[1])
@@ -549,8 +660,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 class KSliceEffectExtension(LabelEffect.LabelEffect):
   """Organizes the Options, Tool, and Logic classes into a single instance
-  that can be managed by the EditBox
-  """
+that can be managed by the EditBox
+"""
 
   def __init__(self):
     # name is used to define the name of the icon image resource (e.g. KSliceEffect.png)
@@ -558,8 +669,8 @@ class KSliceEffectExtension(LabelEffect.LabelEffect):
     # tool tip is displayed on mouse hover
     self.toolTip = "Interactive Segmentation Tool"
     self.options = KSliceEffectOptions
-    self.tool    = KSliceEffectTool
-    self.logic   = KSliceEffectLogic
+    self.tool = KSliceEffectTool
+    self.logic = KSliceEffectLogic
 
 """ Test:
 
@@ -575,27 +686,27 @@ pet = EditorLib.KSliceEffectTool(sw)
 
 class KSliceEffect:
   """
-  This class is the 'hook' for slicer to detect and recognize the extension
-  as a loadable scripted module
-  """
+This class is the 'hook' for slicer to detect and recognize the extension
+as a loadable scripted module
+"""
   def __init__(self, parent):
     parent.title = "Editor KSliceEffect Effect"
     parent.categories = ["Developer Tools.Editor Extensions"]
     parent.contributors = ["Steve Pieper (Isomics)"] # insert your name in the list
     parent.helpText = """
-    Example of an editor extension.  No module interface here, only in the Editor module
-    """
+Example of an editor extension. No module interface here, only in the Editor module
+"""
     parent.acknowledgementText = """
-    This editor extension was developed by
-    <Author>, <Institution>
-    """
+This editor extension was developed by
+<Author>, <Institution>
+"""
 
     # TODO:
     # don't show this module - it only appears in the Editor module
     #parent.hidden = True
 
     # Add this extension to the editor's list for discovery when the module
-    # is created.  Since this module may be discovered before the Editor itself,
+    # is created. Since this module may be discovered before the Editor itself,
     # create the list if it doesn't already exist.
     try:
       slicer.modules.editorExtensions
@@ -626,19 +737,19 @@ class KSliceEffectWidget:
     pass
 
 '''
-  def get_IJK_orientation(self,xy,ijk,sw):
-    xy0 = (0,0)
-    if 1.0 < (abs(xy[0]-xy0[0])+abs(xy[1]-xy0[1])):
-      xy0=(2,2)
-    i0,j0,k0 = smart_xyToIJK( xy0, sw)
-    i1,j1,k1 = ijk[:]
-    if i0 == i1 and j0 == j1 and k0 == k1:
-      return None
-    if i0 == i1:
-      return 'JK'
-    if j0 == j1:
-      return 'IK'
-    if k0 == k1:
-      return 'IJ'
-    return None
+def get_IJK_orientation(self,xy,ijk,sw):
+xy0 = (0,0)
+if 1.0 < (abs(xy[0]-xy0[0])+abs(xy[1]-xy0[1])):
+xy0=(2,2)
+i0,j0,k0 = smart_xyToIJK( xy0, sw)
+i1,j1,k1 = ijk[:]
+if i0 == i1 and j0 == j1 and k0 == k1:
+return None
+if i0 == i1:
+return 'JK'
+if j0 == j1:
+return 'IK'
+if k0 == k1:
+return 'IJ'
+return None
 '''
