@@ -392,6 +392,7 @@ by other code without the need for a view context.
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
     ksliceMod.SetUIVol( tmpVol )
+    ksliceMod.SetCurrLabel(EditorLib.EditUtil.EditUtil().getLabel())  
     ksliceMod.Initialize() # kind of heavy-duty
     self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
 
@@ -510,7 +511,7 @@ by other code without the need for a view context.
             self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
             self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
             self.labArr[self.linInd]=0
-            print "shape= " + str(self.jk_tmpArr.shape))
+            print "shape= " + str(self.jk_tmpArr.shape)
             print(self.jk_tmpArr.max())
             print(self.jk_tmpArr.min())
         elif self.ijkPlane=="IK":

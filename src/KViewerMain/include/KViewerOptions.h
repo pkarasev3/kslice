@@ -10,11 +10,6 @@
 struct KViewerOptions
 {
 
-public:
-static double getDefaultDrawLabelMaxVal()
-{
-      return 1000.0;
-}
 
     int BrushRad; //radius of the local ball
     int NumIts; //number of iterations the contour will evolve for

@@ -29,6 +29,7 @@ public:
   vtkSetMacro(CurrSlice, int);            //void SetCurrSlice(int currSlice);
   vtkSetMacro(DistWeight, float);         //void SetDistWeight(float distWeight);
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
+  vtkSetMacro(CurrLabel, int);            //void CopySlice(int fromSlice);
 
   // needs implementation
   void SetOrientation(const std::string& orient); // IJ, JK, IK
@@ -58,6 +59,7 @@ private:
   int DistWeight;
   int FromSlice;
   int ToSlice;
+  int CurrLabel;
 
 
 };
