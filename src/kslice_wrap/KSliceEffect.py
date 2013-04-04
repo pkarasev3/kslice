@@ -456,28 +456,40 @@ by other code without the need for a view context.
     else:
       print "windowListener => processEvent( " + str(event) +" )"
     if (event=="ModifiedEvent") & (self.accumInProg==1) :
-      #print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-      #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
-      #if (self.ijkPlane_tmp==self.ijkPlane) and (self.currSlice_tmp==self.currSlice):   #is this check necessary, seems not
-	signAccum=(-1)*(EditorLib.EditUtil.EditUtil().getLabel()!=0) + (1)*(EditorLib.EditUtil.EditUtil().getLabel()==0) #change sign based on drawing/erasing
+        currLab=EditorLib.EditUtil.EditUtil().getLabel()
+	    signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
 
         if self.ijkPlane=="IJ":
-            self.UIarray[self.linInd]+=signAccum*self.labArr[self.linInd]#find the next stuff that was painted
-            self.labArr[self.linInd] = (self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event)          
+            if signAccum==-1:          #this means we're drawing
+                deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
+                newLab=(self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event) 
+            elif signAccum==1:                       #user is erasing
+                deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd]  
         elif self.ijkPlane=="JK":
-            self.UIarray[self.linInd]+=signAccum*self.labArr[self.linInd]
-            self.labArr[self.linInd] = (self.jk_tmpArr + self.labArr[self.linInd])!=0 
+            if signAccum==-1: 
+                deltPaint=self.labArr[self.linInd]
+                newLab=(self.jk_tmpArr + self.labArr[self.linInd])!=0  
+            elif signAccum==1:    
+                deltPaint=(self.jk_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd] 
         elif self.ijkPlane=="IK":
-            self.UIarray[self.linInd]+=signAccum*self.labArr[self.linInd]
-            self.labArr[self.linInd] = (self.ik_tmpArr + self.labArr[self.linInd])!=0 
+            if signAccum==-1: 
+                deltPaint=self.labArr[self.linInd]
+                newLab=(self.ik_tmpArr + self.labArr[self.linInd])!=0  
+            elif signAccum==1:    
+                deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=self.labArr[self.linInd] 
 
+        self.UIarray[self.linInd]+=signAccum*deltPaint
+        self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
-        print(self.UIarray.max())
-        print(self.UIarray.min())
-        
-        #print(self.ij_tmpArr)
-        #print("accumulating")
-        #else       #this logic must be filled in!!!!
+
+
+        print "maximum of User input ☃:" + str(self.UIarray.max())
+        print "minimum of user input ☃:" + str(self.UIarray.min())
+        print "sign of accumulation ☃:"   + str(signAccum)        
+
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       sw = self.swLUT[interactor]
       if not sw:
@@ -501,30 +513,31 @@ by other code without the need for a view context.
 
     if event == "LeftButtonPressEvent":
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-  
+        self.accumInProg=1
         if self.ijkPlane=="IJ":
             self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
-            self.ij_tmpArr=deepcopy(self.labArr[self.linInd])
-            self.labArr[self.linInd]=0             
+            self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
             print(self.ij_tmpArr.shape)
             print(self.ij_tmpArr.max())
             print(self.ij_tmpArr.min())
         elif self.ijkPlane=="JK":
             self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
             self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            self.labArr[self.linInd]=0
             print "shape= " + str(self.jk_tmpArr.shape)
             print(self.jk_tmpArr.max())
             print(self.jk_tmpArr.min())
         elif self.ijkPlane=="IK":
             self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
             self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            self.labArr[self.linInd]=0
             print(self.ik_tmpArr.shape)
             print(self.ik_tmpArr.max())
-            print(self.ik_tmpArr.min())
+            print(self.ik_tmpArr.min())            
+
+        if EditorLib.EditUtil.EditUtil().getLabel()==0:  #need this only if erasing
+            self.labArr[self.linInd]=0   
+
                 
-        self.accumInProg=1
+
        
   def labModByUser(self,caller,event):
     if self.acMod==0 :
