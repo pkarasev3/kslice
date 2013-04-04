@@ -460,13 +460,13 @@ by other code without the need for a view context.
       #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)  #Peter, lets do this all in python for now
       #if (self.ijkPlane_tmp==self.ijkPlane) and (self.currSlice_tmp==self.currSlice):   #is this check necessary, seems not
         if self.ijkPlane=="IJ":
-            self.UIarray[self.linInd]+=self.labArr[self.linInd]#find the next stuff that was painted
+            self.UIarray[self.linInd]-=self.labArr[self.linInd]#find the next stuff that was painted
             self.labArr[self.linInd] = (self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event)          
         elif self.ijkPlane=="JK":
-            self.UIarray[self.linInd]+=self.labArr[self.linInd]
+            self.UIarray[self.linInd]-=self.labArr[self.linInd]
             self.labArr[self.linInd] = (self.jk_tmpArr + self.labArr[self.linInd])!=0 
         elif self.ijkPlane=="IK":
-            self.UIarray[self.linInd]+=self.labArr[self.linInd]
+            self.UIarray[self.linInd]-=self.labArr[self.linInd]
             self.labArr[self.linInd] = (self.ik_tmpArr + self.labArr[self.linInd])!=0 
 
         self.accumInProg=0    #done accumulating
