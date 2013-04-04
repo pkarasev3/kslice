@@ -229,32 +229,29 @@ void interactive_customspeed(double* speedimg, double *img, double *phi, double*
 
 void apply_control_function(LL *Lz,double *phi, double* F,
                             double* U_integral, double *img, int iter, long* dims)
-{ // apply user's time-integrated edits inside the updates
+{ /** \note used when running 2D level set, currently via "s" key */
+  // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
-  double I,dpx,dpy,dpz;
+  double I;
   ll_init(Lz);
   n=0;
-  double gamma        = 1.0 / 50.0; //1.0 / iter;
-
-  while(Lz->curr != NULL){          //loop through list
+  double maxU = -1e99;
+  while(Lz->curr != NULL){ //loop through list
     x = Lz->curr->x;
     y = Lz->curr->y;
     z = Lz->curr->z;
-    idx          = Lz->curr->idx;
-    I            = img[idx];
-    double U     = U_integral[idx];
-    double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
+    idx = Lz->curr->idx;
+    I = img[idx];
+    double U = U_integral[idx];
+    if( U > maxU ) { maxU = U; }
 
-    //kappa not used!?
-    //double kappa = en_kappa_norm_pt(Lz->curr,phi,dims,&dpx,&dpy,&dpz);
-    double f     = gamma * abs(U) * (F[n] - err);
+    double err = tanh(U) - tanh(phi[idx]);
+    double f = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
+    F[n] = F[n] + f;
 
-    F[n]         = F[n] - f;
     ll_step(Lz);
-    n++;       //next point
+    n++; //next point
   }
-
-
 }
 
 void apply_control_function_ext(LL *Lz,double *phi, double* F,

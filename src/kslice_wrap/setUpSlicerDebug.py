@@ -1,12 +1,10 @@
 #get volume 
-<<<<<<< HEAD
 #volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
 volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/ANON0084.mha")
+if not volNode:
+	volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
 
-=======
-volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
->>>>>>> 5d61f7a78baf586e029f91f05aa281abf16ec925
-
+# /u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha");  
 
 #create a label volume, make it active
 volumesLogic = slicer.modules.volumes.logic();

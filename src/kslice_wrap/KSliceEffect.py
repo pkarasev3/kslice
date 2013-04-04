@@ -457,7 +457,7 @@ by other code without the need for a view context.
       print "windowListener => processEvent( " + str(event) +" )"
     if (event=="ModifiedEvent") & (self.accumInProg==1) :
         currLab=EditorLib.EditUtil.EditUtil().getLabel()
-	    signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
+        signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
 
         if self.ijkPlane=="IJ":
             if signAccum==-1:          #this means we're drawing
@@ -486,9 +486,9 @@ by other code without the need for a view context.
         self.accumInProg=0    #done accumulating
 
 
-        print "maximum of User input ☃:" + str(self.UIarray.max())
-        print "minimum of user input ☃:" + str(self.UIarray.min())
-        print "sign of accumulation ☃:"   + str(signAccum)        
+        print "maximum of User input:" + str(self.UIarray.max())
+        print "minimum of user input:" + str(self.UIarray.min())
+        print "sign of accumulation:"   + str(signAccum)        
 
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       sw = self.swLUT[interactor]
@@ -533,7 +533,7 @@ by other code without the need for a view context.
             print(self.ik_tmpArr.max())
             print(self.ik_tmpArr.min())            
 
-        if EditorLib.EditUtil.EditUtil().getLabel()==0:  #need this only if erasing
+        if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
             self.labArr[self.linInd]=0   
 
                 
