@@ -42,7 +42,7 @@ void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  std::vector<double>& maxXYZ, bool numberOnly = false );
 
 /** in-place, copy a slice from index a to index b in volume */
-void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
+void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, const std::string& orient );
 
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,

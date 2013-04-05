@@ -19,6 +19,7 @@ class vtkImageData;
   */
 
 namespace vrcl {
+  enum Orient {SLICE_IJ=0, SLICE_JK=1, SLICE_IK=2};
 
   std::vector<double> get_good_color_0to7( int idx );
 

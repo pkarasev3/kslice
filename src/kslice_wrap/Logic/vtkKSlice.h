@@ -60,7 +60,7 @@ private:
   int FromSlice;
   int ToSlice;
   int CurrLabel;
-
+  std::string Orientation;
 
 };
 #endif

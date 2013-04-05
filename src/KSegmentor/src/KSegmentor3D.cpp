@@ -174,20 +174,19 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
   this->CreateLLs(LL2D);
 
   int dim0=0; int dim1=0; int dim2=0;
-  enum Orient {SLICE_IJ=0, SLICE_JK=1, SLICE_IK=2};
-  Orient sliceView = SLICE_IJ;
+  vrcl::Orient sliceView = vrcl::SLICE_IJ;
   if( m_IJK_orient == "IJ" ) {
     dim0 = mdims[0];
     dim1 = mdims[1];
-    sliceView = SLICE_IJ; dim2=mdims[2];
+    sliceView = vrcl::SLICE_IJ; dim2=mdims[2];
   } else if( m_IJK_orient == "JK" ) {
     dim0 = mdims[1];
     dim1 = mdims[2]; dim2=mdims[0];
-    sliceView = SLICE_JK;
+    sliceView = vrcl::SLICE_JK;
   } else if( m_IJK_orient == "IK" ) {
     dim0 = mdims[0];
     dim1 = mdims[2]; dim2=mdims[1];
-    sliceView = SLICE_IK;
+    sliceView = vrcl::SLICE_IK;
   }
 
   ptrCurrImage        = static_cast< short*>(imageVol->GetScalarPointer());
@@ -215,13 +214,13 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     for (int i=0; i<dim0; i++) {
       switch(sliceView)
       {
-        case SLICE_IJ:
+        case vrcl::SLICE_IJ:
           element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
           break;
-        case SLICE_JK:
+        case vrcl::SLICE_JK:
           element3D    =  j*dim0*dim2 + i*dim2+k;//
           break;
-        case SLICE_IK:
+        case vrcl::SLICE_IK:
           element3D    =  j*dim0*dim2 + k*dim0+i;//
           break;
         default:
@@ -298,13 +297,13 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
       //element3D=this->currSlice*dim1*dim0 +j*dim0+i;
       switch(sliceView)
       {
-        case SLICE_IJ:
+        case vrcl::SLICE_IJ:
           element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
           break;
-        case SLICE_JK:
+        case vrcl::SLICE_JK:
           element3D    =  j*dim0*dim2 + i*dim2+k;//
           break;
-        case SLICE_IK:
+        case vrcl::SLICE_IK:
           element3D    =  j*dim0*dim2 + k*dim0+i;//
           break;
         default:

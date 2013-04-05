@@ -45,6 +45,7 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
  // axial,sagittal,coronal,etc
   std::cout<<"set kslice orientation to " << orient << std::endl;
   this->dataWarehouse->ksegmentor->SetSliceOrientationIJK(orient);
+  this->Orientation=orient;
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
@@ -72,7 +73,7 @@ std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
 
 void vtkKSlice::PasteSlice(int toSlice){
     ToSlice=toSlice;
-    vrcl::copySliceFromTo(LabelVol, FromSlice, ToSlice);
+    vrcl::copySliceFromTo(LabelVol, FromSlice, ToSlice, Orientation);
 }
 
 void vtkKSlice::Initialize(){  // Called on "start bot" button

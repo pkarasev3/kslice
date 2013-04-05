@@ -55,23 +55,70 @@ namespace  vrcl
   }       */
 
 
-  void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo )
+  void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, const std::string& orient )
 {
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
-    int dims[3];
-    label_map->GetDimensions( dims );
-    assert( idxFrom >= 0 && idxTo >= 0 && idxFrom < dims[2] && idxTo < dims[2] );
+    int mdims[3];
+    label_map->GetDimensions( mdims );
+    //assert( idxFrom >= 0 && idxTo >= 0 && idxFrom < mdims[2] && idxTo < mdims[2] );
     int num_changed = 0;
-    for (int i = 0; i < dims[0]; i++)      {
-      for (int j = 0; j < dims[1]; j++)    {
-            long elemNumFrom = idxFrom * dims[0] * dims[1] + j * dims[0] + i;
-            long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[0] + i;
-            short prevVal    = ptrLabel[elemNumTo];
-            short newVal     = ptrLabel[elemNumFrom];
-            ptrLabel[elemNumTo] = newVal;
-            num_changed  +=  ( newVal != prevVal );
+
+
+
+
+    std::cout<<"dims are:"<<mdims[0]<<mdims[1]<<mdims[2]<<std::endl;
+    std::cout<<"slice view is:"<<orient<<std::endl;
+
+    int dim0=0; int dim1=0; int dim2=0;
+    vrcl::Orient sliceView = vrcl::SLICE_IJ;
+    if( orient == "IJ" ) {
+      dim0 = mdims[0];
+      dim1 = mdims[1];
+      sliceView = vrcl::SLICE_IJ; dim2=mdims[2];
+    } else if( orient == "JK" ) {
+      dim0 = mdims[1];
+      dim1 = mdims[2]; dim2=mdims[0];
+      sliceView = vrcl::SLICE_JK;
+    } else if( orient == "IK" ) {
+      dim0 = mdims[0];
+      dim1 = mdims[2]; dim2=mdims[1];
+      sliceView = vrcl::SLICE_IK;
+    }
+
+    long elemNumFrom, elemNumTo;
+    double sumMask, sum_i, sum_j;
+    sumMask=sum_i=sum_j=0;
+
+    for (int j=0; j<dim1; j++)  {
+      for (int i=0; i<dim0; i++) {
+        switch(sliceView)
+        {
+          case vrcl::SLICE_IJ:
+            elemNumFrom = idxFrom *dim1*dim0 +j*dim0+i;
+            elemNumTo   = idxTo   *dim1*dim0 +j*dim0+i;
+            //element3D   =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+            break;
+          case vrcl::SLICE_JK:
+            elemNumFrom = j*dim0*dim2 + i*dim2+idxFrom;
+            elemNumTo   = j*dim0*dim2 + i*dim2+idxTo;
+//            element3D    =  j*dim0*dim2 + i*dim2+k;//
+            break;
+          case vrcl::SLICE_IK:
+            elemNumFrom = j*dim0*dim2 + idxFrom*dim0+i;
+            elemNumTo   = j*dim0*dim2 + idxTo*dim0+i;
+//            element3D    =  j*dim0*dim2 + k*dim0+i;//
+            break;
+          default:
+            assert(0);
+            break;
+        }
+        short prevVal    = ptrLabel[elemNumTo];
+        short newVal     = ptrLabel[elemNumFrom];
+        ptrLabel[elemNumTo] = newVal;
+        num_changed  +=  ( newVal != prevVal );
       }
     }
+
     cout << "copy/paste from " << idxFrom << " to "
          << idxTo << " changed # pixels: " << num_changed << endl;
 }
