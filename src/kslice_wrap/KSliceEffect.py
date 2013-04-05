@@ -551,17 +551,19 @@ by other code without the need for a view context.
       pass
 
   def copyslice(self):
+    self.copySliceView=self.sliceIJKPlane()   #ensure were pasting from within the same view later
     self.computeCurrSlice()
     self.ksliceMod.SetFromSlice(self.currSlice)
     print('copyslice')
 
   def pasteslice(self):
-    self.computeCurrSlice()
-    self.ksliceMod.PasteSlice(self.currSlice)
-    labelImage=self.labelNode.GetImageData()
-    self.labelNode.Modified()
-    labelImage.Modified()
-    print('pasteslice')
+    if self.copySliceView==self.sliceIJKPlane(): #make sure user hasn't move to a different view
+      self.computeCurrSlice()
+      self.ksliceMod.PasteSlice(self.currSlice)
+      labelImage=self.labelNode.GetImageData()
+      self.labelNode.Modified()
+      labelImage.Modified()
+      print('pasteslice')
 
   def computeCurrSliceSmarter(self,ijk):
     ns=-1
