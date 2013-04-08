@@ -38,7 +38,8 @@ public:
   //implemented functionality
   void PasteSlice(int toSlice);
   void Initialize();
-  void runUpdate(bool reInitFromMask);
+  void runUpdate2D(bool reInitFromMask);
+  void runUpdate3D(bool reInitFromMask);
   void PrintEmpty();
   void PrintImage();
 protected:

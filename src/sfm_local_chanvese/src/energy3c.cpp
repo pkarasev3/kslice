@@ -484,16 +484,18 @@ void en_lrbac_destroy()
 {
 
     if(gball!=NULL) {
-        free(gball); gball = NULL; }
-  // Don't delete them, we're caching !
-//    if(Ain!=NULL) {
-//        free(Ain); Ain = NULL; }
-//    if(Aout!=NULL) {
-//        free(Aout); Aout = NULL; }
-//    if(Sin!=NULL) {
-//        free(Sin); Sin = NULL; }
-//    if(Sout!=NULL) {
-//        free(Sout); Sout = NULL; }
+        free(gball);
+        gball = NULL;
+    }
+    // Don't delete them, we're caching !
+    //    if(Ain!=NULL) {
+    //        free(Ain); Ain = NULL; }
+    //    if(Aout!=NULL) {
+    //        free(Aout); Aout = NULL; }
+    //    if(Sin!=NULL) {
+    //        free(Sin); Sin = NULL; }
+    //    if(Sout!=NULL) {
+    //        free(Sout); Sout = NULL; }
 }
 
 //double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)

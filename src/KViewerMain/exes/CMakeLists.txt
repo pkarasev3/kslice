@@ -4,7 +4,15 @@ set(KV_LIBS KSlice QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics
          vtkIO  vtkCommon  ${OpenCV_LIBS} 
  )
 
-#add_executable( KViewer_desktop KViewer_desktop.cpp)
-#target_link_libraries( KViewer_desktop ${KV_LIBS})
+set(KV_SRC      ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/vtkKSlice.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/vtkKSlice.h)
+
+execute_process(COMMAND "echo" ${CMAKE_CURRENT_SOURCE_DIR})
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/
+                     ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/ )
+
+add_executable( KViewer_desktop KViewer_desktop.cpp ${KV_SRC} )
+target_link_libraries( KViewer_desktop ${KV_LIBS})
 
 

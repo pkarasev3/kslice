@@ -27,7 +27,8 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 
         virtual ~KSegmentor3D();
         void initializeData();
-        virtual void Update3D();
+        virtual void Update3DUnknown(bool reInitFromMask); //this function should be deleted
+        virtual void Update3D(bool reInitFromMask);
         virtual void Update2D(bool reInitFromMask);
 
 

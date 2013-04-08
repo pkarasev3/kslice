@@ -1,6 +1,8 @@
 #include "vtkKSlice.h"
 #include <vtkSmartPointer.h>
-
+#include "vtkMetaImageReader.h"
+#include "vtkMetaImageWriter.h"
+#include "vtkImageData.h"
 
 int main(int argc, char** argv) {
 

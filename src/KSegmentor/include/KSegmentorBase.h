@@ -90,7 +90,7 @@ class KSegmentorBase
         void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
         virtual void Update2D(bool reInitFromMask)=0;
-        virtual void Update3D()=0;
+        virtual void Update3D(bool reInitFromMask)=0;
         double GetUmax() { if( m_Umax <= 0 ) { std::cout << "Warning, m_Umax seems wrong!\n"; } return m_Umax; }
 
         /** Compute Chan-Vese (mean difference) Energy LL2D.*/

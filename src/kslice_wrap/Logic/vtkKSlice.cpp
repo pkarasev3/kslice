@@ -85,11 +85,20 @@ void vtkKSlice::Initialize(){  // Called on "start bot" button
     initCorrectFlag=1; //initialization is complete
 }
 
-void vtkKSlice::runUpdate(bool reInitFromMask){      // E key now
+void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
     if(initCorrectFlag==1){ //already initialized
         dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
         dataWarehouse->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
+        //LabelVol->Modified(); //why do we need this??
+    }
+}
+
+void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
+    if(initCorrectFlag==1){ //already initialized
+        dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
+        dataWarehouse->ksegmentor->Update3D(reInitFromMask);
+        std::cout<<"did the update for 3d" <<std::endl;
         //LabelVol->Modified(); //why do we need this??
     }
 }

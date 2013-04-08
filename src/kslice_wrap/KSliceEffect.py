@@ -339,15 +339,17 @@ by other code without the need for a view context.
     self.userMod = 0
 
     #create a key shortcut
-    k = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor
+    s2 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor
+    s3 = qt.QKeySequence(qt.Qt.Key_T) # Press e/E to run segmentor
     cp= qt.QKeySequence(qt.Qt.Key_C) # copy
     ps= qt.QKeySequence(qt.Qt.Key_V) # paste
 
     self.qtkeyconnections = []
-    self.qtkeydefs = [ [k,self.runSegment2D],
-                           [cp,self.copyslice],
-                           [ps,self.pasteslice] ] # like a cell array in matlab
-    for i in [0,1,2]:
+    self.qtkeydefs = [ [s2,self.runSegment2D],
+                       [s3,self.runSegment3D],
+                       [cp,self.copyslice],
+                       [ps,self.pasteslice] ] # like a cell array in matlab
+    for i in [0,1,2,3]:
         keydef = self.qtkeydefs[i]
         s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
@@ -617,7 +619,7 @@ by other code without the need for a view context.
 
 
     #execute a run
-    self.ksliceMod.runUpdate(self.userMod)
+    self.ksliceMod.runUpdate2D(self.userMod)
     #print("1")
 
     #signal to slicer that the label needs to be updated
@@ -629,12 +631,47 @@ by other code without the need for a view context.
     #labelNode.SetModifiedSinceRead(1)
     self.labelNode.Modified()
 
+  def runSegment3D(self):
+    # TODO: clarify this function's name, RunSegment2D
+    #get slider information, a.__dict__ and a.children() are useful commands
+    #imgLayer= self.sliceLogic.GetBackgroundLayer();
+    #imgNode= imgLayer.GetVolumeNode();
+    #labelLogic = self.sliceLogic.GetLabelLayer()
+    #labelNode = labelLogic.GetVolumeNode()
+    lm = slicer.app.layoutManager()
+    
+    
+    self.computeCurrSlice()
+
+    # get the parameters from MRML
+    node = EditUtil.EditUtil().getParameterNode()
+    currRad = int(node.GetParameter("KSliceEffect,radius"))
+
+    #make connections, parameter settings
+    self.ksliceMod.SetCurrSlice(self.currSlice)
+    self.ksliceMod.SetBrushRad(currRad)
+    self.ksliceMod.SetNumIts(50)
+
+    #execute a run
+    self.ksliceMod.runUpdate3D(self.userMod)
+    #print("1")
+
+    #signal to slicer that the label needs to be updated
+    labelImage=self.labelNode.GetImageData()
+
+    self.acMod=1
+
+    labelImage.Modified()
+    #labelNode.SetModifiedSinceRead(1)
+    self.labelNode.Modified()
+
+
   def destroy(self):
     #super(KSliceEffectLogic,self).destroy()
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for i in [0,1,2]:
+    for i in [0,1,2,3]:
         keyfun = self.qtkeydefs[i]
         keydef = self.qtkeyconnections[i]
         print('disconnecting keydef: ')
