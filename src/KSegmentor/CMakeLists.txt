@@ -10,8 +10,5 @@ set( KSEGM_LIBS
   vtkFiltering vtkCommon
 )
 
-add_library(KSegmentor STATIC ${ksegm_headers} ${ksegm_sources})
+add_library(KSegmentor SHARED ${ksegm_headers} ${ksegm_sources})
 target_link_libraries(KSegmentor   sfm_local_chanvese   vrcl ${KSEGM_LIBS} )
-
-#add_subdirectory(tests)
-

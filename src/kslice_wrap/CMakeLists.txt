@@ -1,17 +1,7 @@
-cmake_minimum_required(VERSION 2.8.7)
+
 
 enable_testing()
 
-#-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  set(EXTENSION_NAME KSlice)
-  set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Extensions/KSlice")
-  set(EXTENSION_CATEGORY "Examples")
-  set(EXTENSION_CONTRIBUTORS "Ivan Kolesov Peter Karasev Karl Fritscher")
-  set(EXTENSION_DESCRIPTION " ")
-  set(EXTENSION_ICONURL "http://viewvc.slicer.org/viewvc.cgi/Slicer4/trunk/Extensions/Testing/KSlice/Resources/Icons/KSlice.png?revision=19437&view=co")
-  set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-KSlice-screenshot.png")
-endif()
 
 #-----------------------------------------------------------------------------
 set(MODULE_NAME KSlice)
@@ -20,10 +10,10 @@ set(MODULE_TITLE ${MODULE_NAME})
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
-endif()
+#if(NOT Slicer_SOURCE_DIR)
+#  find_package(Slicer REQUIRED)
+#  include(${Slicer_USE_FILE})
+#endif()
 
 #-----------------------------------------------------------------------------
 add_subdirectory(Logic)
@@ -65,7 +55,6 @@ set(MODULE_RESOURCES
   Resources/qSlicer${MODULE_NAME}Module.qrc
   )
 
-set(KSLICE_LIB_PATH  ${CMAKE_SOURCE_DIR}/../ CACHE PATH "where are vrcl and KSegmentor libraries")
 link_directories(${KSLICE_LIB_PATH})
 
 #-----------------------------------------------------------------------------

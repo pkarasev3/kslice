@@ -58,8 +58,6 @@ int main(int argc, char** argv) {
       uiVol = uiReader->GetOutput();
 
       int* imgDim = imgReader->GetDataExtent();
-      int imin=imgDim[0];             int imax=imgDim[1];            int jmin=imgDim[2];
-      int jmax=imgDim[3];             int kmin=imgDim[4];            int kmax=imgDim[5];
 
       labVol->Update();
       imgVol->Update();
@@ -89,13 +87,13 @@ int main(int argc, char** argv) {
   bbKSlice->Initialize();
 
   //evolve (simulated user)
-  bbKSlice->runUpdate(1);
+  bbKSlice->runUpdate2D(1);
   bbKSlice->SetCurrSlice(currSlice-1);
-  bbKSlice->runUpdate(1);
+  bbKSlice->runUpdate2D(1);
   bbKSlice->SetCurrSlice(currSlice-2);
-  bbKSlice->runUpdate(1);
+  bbKSlice->runUpdate3D(1);
   bbKSlice->SetCurrSlice(currSlice-3);
-  bbKSlice->runUpdate(1);
+  bbKSlice->runUpdate3D(1);
 
   //bbKSlice->PrintImage(std::cout, vtkIndent());
   bbKSlice->PrintImage();

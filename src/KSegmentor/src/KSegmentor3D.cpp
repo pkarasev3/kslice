@@ -254,12 +254,12 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
 
+    ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
     if( (prevSlice == this->currSlice) && !reInitFromMask ) {
         cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
         std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*dim0 * dim1 );
     }else {
         cout <<  "\033[01;42m\033]"<< "first time on slice! " << "\033[00m\033]" << endl;
-        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
     }
 
     prevSlice=currSlice;
