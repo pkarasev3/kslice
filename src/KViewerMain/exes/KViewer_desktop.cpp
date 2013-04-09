@@ -31,6 +31,8 @@ int main(int argc, char** argv) {
     //test if we can read each file
     int canReadImg = imgReader->CanReadFile(imgVolName);
     int canReadLab = labReader->CanReadFile(labVolName);;               // try to read multiple labels later
+    int canReadUI  = uiReader->CanReadFile(labVolName);;               // try to read multiple labels later
+
     std::cout << "can read img and label? " << canReadImg * canReadLab << std::endl;
     if ( canReadLab !=0  )
     {		// can't read label file, try to create a blank one
@@ -57,11 +59,11 @@ int main(int argc, char** argv) {
       imgVol = imgReader->GetOutput();
       uiVol = uiReader->GetOutput();
 
-      int* imgDim = imgReader->GetDataExtent();
 
-      labVol->Update();
-      imgVol->Update();
-      uiVol->Update();
+
+      //labVol->Update();
+      //imgVol->Update();
+      //uiVol->Update();
 
     } else if(canReadImg==0){
       cout<<"Could not read file"<<labVol<<"\n";
@@ -73,6 +75,9 @@ int main(int argc, char** argv) {
    double range[2];
    imgVol->GetScalarRange(range);
    labVol->GetScalarRange(range);
+
+   int dims[3];
+   imgVol->GetDimensions(dims);
 
   //set up the black box
   vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
@@ -87,7 +92,7 @@ int main(int argc, char** argv) {
   bbKSlice->Initialize();
 
   //evolve (simulated user)
-  bbKSlice->runUpdate2D(1);
+  bbKSlice->runUpdate2D(0);
   bbKSlice->SetCurrSlice(currSlice-1);
   bbKSlice->runUpdate2D(1);
   bbKSlice->SetCurrSlice(currSlice-2);

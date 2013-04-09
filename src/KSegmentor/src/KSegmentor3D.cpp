@@ -137,7 +137,6 @@ void KSegmentor3D::initializeData()
   { // empty label; so set the proper range
     labelRange[1] = this->currLabel;
   }
-  //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
   this->imgRange=imgRange;
   ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
@@ -153,6 +152,12 @@ void KSegmentor3D::initializeData()
       }
     }
   }
+
+  this->imgSlice    = NULL;
+  this->maskSlice   = NULL;
+  this->U_I_slice   = NULL;
+  this->labelSlice  = NULL;
+  this->phiSlice    = NULL;
 }
 
 
@@ -172,9 +177,7 @@ namespace {
 
 void KSegmentor3D::Update2D(bool reInitFromMask)
 {
-    //this->integrateUserInput();   //this is being done in python now
-    this->CreateLLs(LL2D);
-
+    //set the orientation
     int dim0=0; int dim1=0; int dim2=0;
     vrcl::Orient sliceView = vrcl::SLICE_IJ;
     if( m_IJK_orient == "IJ" ) {
@@ -195,55 +198,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     ptrCurrLabel        = static_cast< short*>(labelVol->GetScalarPointer());
     ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
-    size_t sz = dim0 * dim1;
-    if( cache_phi.size() != sz ) {
-        cache_phi.resize(sz);
-        reInitFromMask=true; //someone reset the cache phi, i.e. orientation change
-    }
-
-    double* imgSlice          = new double[ dim0 * dim1 ];
-    double* maskSlice         = new double[ dim0 * dim1 ];
-    double* U_I_slice         = new double[ dim0 * dim1 ];
-    double* phiSlice          = new double[ dim0 * dim1 ];
-    double* labelSlice        = new double[ dim0 * dim1 ];
-
-    unsigned int element3D;
-    long elemNum=0;
-    double sumMask, sum_i, sum_j;
-    sumMask=sum_i=sum_j=0;
-    int k = currSlice;
-    for (int j=0; j<dim1; j++)  {
-        for (int i=0; i<dim0; i++) {
-            switch(sliceView)
-            {
-                case vrcl::SLICE_IJ:
-                    element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
-                    break;
-                case vrcl::SLICE_JK:
-                    element3D    =  j*dim0*dim2 + i*dim2+k;//
-                    break;
-                case vrcl::SLICE_IK:
-                    element3D    =  j*dim0*dim2 + k*dim0+i;//
-                    break;
-                default:
-                    assert(0);
-                    break;
-            }
-            imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
-            maskSlice[elemNum]       = (double) ( 0 < ptrCurrLabel[element3D] );
-            U_I_slice[elemNum]       =  this->ptrIntegral_Image[element3D];
-            sumMask+= maskSlice[elemNum];
-            sum_i  += (maskSlice[elemNum])*i;
-            sum_j  += (maskSlice[elemNum])*j;
-            elemNum++;
-        }
-  }
-
-    bool bDebugSliceIdx = true;
-    if(bDebugSliceIdx){
-        double centroid[2]; centroid[0]=sum_i/(sumMask+1e-9); centroid[1]=sum_j/(sumMask+1e-9);
-        cout<<"mask centroid (i,j) = (" << centroid[0] << "," << centroid[1] << ")" << endl;
-    }
 
     std::vector<long> dimsSlice(5);
     dimsSlice[0] = dim0;
@@ -254,18 +208,78 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
 
-    ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
+    long elemNum=0;
+    unsigned int element3D;
+    int k = currSlice;
     if( (prevSlice == this->currSlice) && !reInitFromMask ) {
         cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
-        std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*dim0 * dim1 );
+        ll_init(LL2D.Lz);
+        ll_init(LL2D.Ln1);
+        ll_init(LL2D.Ln2);
+        ll_init(LL2D.Lp1);
+        ll_init(LL2D.Lp2);
     }else {
+        //delete in case anything is left over
+        delete [] this->imgSlice;
+        delete [] this->labelSlice;
+        delete [] this->maskSlice;
+        delete [] this->U_I_slice;
+        delete [] this->phiSlice;
+
+        //allocate new slices, with correct dimensions
+        this->imgSlice          = new double[ dim0 * dim1 ];
+        this->maskSlice         = new double[ dim0 * dim1 ];
+        this->U_I_slice         = new double[ dim0 * dim1 ];
+        this->labelSlice        = new double[ dim0 * dim1 ];
+        this->phiSlice          = new double[ dim0 * dim1 ];
+
+        //copy elements into the slices
+        double sumMask, sum_i, sum_j;
+        sumMask=sum_i=sum_j=0;
+        for (int j=0; j<dim1; j++)  {
+            for (int i=0; i<dim0; i++) {
+                switch(sliceView)
+                {
+                    case vrcl::SLICE_IJ:
+                        element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+                        break;
+                    case vrcl::SLICE_JK:
+                        element3D    =  j*dim0*dim2 + i*dim2+k;//
+                        break;
+                    case vrcl::SLICE_IK:
+                        element3D    =  j*dim0*dim2 + k*dim0+i;//
+                        break;
+                    default:
+                        assert(0);
+                        break;
+                }
+                imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
+                maskSlice[elemNum]       = (double) ( 0 < ptrCurrLabel[element3D] );
+                U_I_slice[elemNum]       =  this->ptrIntegral_Image[element3D];
+                sumMask+= maskSlice[elemNum];
+                sum_i  += (maskSlice[elemNum])*i;
+                sum_j  += (maskSlice[elemNum])*j;
+                elemNum++;
+            }
+        }
+
+        //debug
+        bool bDebugSliceIdx = false;
+        if(bDebugSliceIdx){
+            double centroid[2]; centroid[0]=sum_i/(sumMask+1e-9); centroid[1]=sum_j/(sumMask+1e-9);
+            cout<<"mask centroid (i,j) = (" << centroid[0] << "," << centroid[1] << ")" << endl;
+        }
+
+        //set up the new level set
+        this->CreateLLs(LL2D);
+        ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
         cout <<  "\033[01;42m\033]"<< "first time on slice! " << "\033[00m\033]" << endl;
     }
 
+
     prevSlice=currSlice;
 
-
-
+    //run the active contour
     interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                            iter,rad,lambda*0.5,display);
@@ -296,16 +310,9 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
             elemNum++;
         }
     }
+
+    //clean up, but is m_UpdateVector, m_CoordinatesVector necessary??
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
-
-    // store cached \phi level set func
-    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*sz );
-
-    delete imgSlice;
-    delete labelSlice;
-    delete maskSlice;
-    delete phiSlice;
-    delete U_I_slice;
 
     m_UpdateVector.clear();
     m_CoordinatesVector.clear();
@@ -523,6 +530,10 @@ KSegmentor3D::~KSegmentor3D(){
   delete [] this->label;
 
 
+  delete [] this->imgSlice;
+  delete [] this->maskSlice;
+  delete [] this->U_I_slice;
+  delete [] this->labelSlice;
 
   LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
   LL *Lin2out, *Lout2in,*Lchanged;

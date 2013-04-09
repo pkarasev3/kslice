@@ -116,7 +116,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
     double refval=0.0;
     for( int i=0; i<npts; i++) {
-        refval= ptrIntegral_Image[i]; // seems to initialize as BS, at least in windows
+        refval= ptrIntegral_Image[i]; // seems to initialize as garbage, at least in windows
         ptrIntegral_Image[i] = 0.0;
         ptrU_t_Image[i] = 0.0;
     }

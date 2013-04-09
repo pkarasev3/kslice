@@ -241,11 +241,20 @@ public:
         double *imgRange;    //[minImageVal, maxImageVal]
         double* labelRange;  //[minLabVal, maxLabVal]
 
+        //all the 2D slices
+        double* imgSlice;
+        double* maskSlice;
+        double* phiSlice;
+        double* U_I_slice;
+        double* labelSlice;
+
+
+        //3D variables
         double *img;         // single slice!
         double *mask;        // single slice!
 
-        double* m_CustomSpeedImgPointer;
 
+        double* m_CustomSpeedImgPointer;
         double penaltyAlpha; //regularizer for "user constraints" experiments
         double *seed;        //again, only used in functions for "user constraints" experiments
         bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
