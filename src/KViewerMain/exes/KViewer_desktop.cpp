@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   bbKSlice->SetCurrSlice(currSlice-1);
   bbKSlice->runUpdate2D(1);
   bbKSlice->SetCurrSlice(currSlice-2);
-  bbKSlice->runUpdate3D(1);
+  bbKSlice->runUpdate3D(0);
   bbKSlice->SetCurrSlice(currSlice-3);
   bbKSlice->runUpdate3D(1);
 
