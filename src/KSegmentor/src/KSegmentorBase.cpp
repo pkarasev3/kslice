@@ -51,7 +51,7 @@ void test_OpenMP()
 }
 
 /** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.35;
+double KSegmentorBase::defaultKappaParam = 0.1;
 
 
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,

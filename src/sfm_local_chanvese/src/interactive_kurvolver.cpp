@@ -86,10 +86,10 @@ void interactive_rbchanvese(double *img, double *phi, double* U_integral, double
     /** TODO: currently uses approximation for input observer. port the full double-loop version from
         matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
     // apply controller, modify F in-place
-    apply_control_function( Lz, phi, F, U_integral, img, iter, dims );
+    apply_control_function( Lz, phi, F, U_integral, img, iter, dims );  //TURN THIS BACK ON!!!
 
     //perform iteration
-    ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);
+    ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);  //TURN THIS BACK ON!!!
 
     //update statistics
     en_lrbac_update(img, dims, Lin2out, Lout2in, rad);

@@ -156,8 +156,8 @@ void KSegmentor3D::initializeData()
   for (int k=0; k<=dimx-1; k++) {
     for (int j=0; j<=dimy-1; j++)  {
       for (int i=0; i<=dimz-1; i++,elemNum++) {
-        this->mask[elemNum]=(double) ( 0 < ptrCurrLabel[elemNum] );
-        this->img[elemNum] = (double) ptrCurrImage[elemNum];
+        this->mask[elemNum]= (double) ( 0 < ptrCurrLabel[elemNum] );
+        this->img[elemNum] = (double)       ptrCurrImage[elemNum];
       }
     }
   }
@@ -351,7 +351,9 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ptrCurrLabel[idx] =( (unsigned short) 0 >= phi_val )*this->currLabel;
     }
 
+    cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;
+    cout <<  "Nelements is: "  << Nelements <<endl;
 
     //delete
     m_UpdateVector.clear();

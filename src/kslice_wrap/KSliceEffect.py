@@ -664,7 +664,7 @@ by other code without the need for a view context.
     self.ksliceMod.SetNumIts(50)
 
     #execute a run
-    #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
+    #still doing 3D, user has not drawn => use cache
     useCache= (self.lastModBy=='3D') & (self.userMod==0) 
     
     print "use cache?:" + str(useCache)
