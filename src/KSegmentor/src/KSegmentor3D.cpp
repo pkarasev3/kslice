@@ -321,14 +321,17 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
-    if(reInitFromMask==1) {// do this only if re-making the level set function
+    if( !reInitFromMask ) {// do this only if re-making the level set function
+        cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
+        ll_init(LL3D.Lz);
+        ll_init(LL3D.Ln1);
+        ll_init(LL3D.Ln2);
+        ll_init(LL3D.Lp1);
+        ll_init(LL3D.Lp2); //ensure that Lout2in, Lin2out dont need to be intialized!!
+    }else{
         this->CreateLLs(LL3D);
         ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
     }
-
-    ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
-    ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
     interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
                              LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
@@ -337,7 +340,6 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     //threshold the level set to update the mask
     double phi_val = 0;
     int Nelements = this->dimx * this->dimy * this->dimz;
-
     for (int idx=0;idx<Nelements;idx++)
     {
         phi_val = phi[idx];
