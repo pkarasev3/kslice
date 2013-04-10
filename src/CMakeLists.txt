@@ -13,7 +13,6 @@ set(MODULE_NAME KSlice)
 
 set(KSlice_Build_SlicerWrap TRUE CACHE BOOL TRUE)
 
-execute_process(COMMAND "echo" ${KSlice_Build_SlicerWrap})
 
 if(KSlice_Build_SlicerWrap)
   if(NOT Slicer_SOURCE_DIR)
@@ -37,7 +36,9 @@ message(STATUS " OpenCV_LIBS = ${OpenCV_LIBS} ; you also want to have had libgtk
 SET(BUILD_SHARED_LIBS ON CACHE INTERNAL ON)
 
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
-set(CMAKE_CONFIGURATION_TYPES Debug CACHE STRING "Debug")
+#set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug;Release") #what does this line do??
+
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Debug")
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH "Single Directory for all Executables")
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE PATH "Single Directory for all Libraries")
@@ -47,9 +48,9 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
 else(WIN32)
-  set(CMAKE_C_FLAGS_DEBUG "-g3 -pedantic -Werror" CACHE STRING "extra compiler flags for debug" FORCE )
+  set(CMAKE_C_FLAGS_DEBUG "-pedantic -Werror" CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS "-fPIC -g3 -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
-  set(CMAKE_CXX_FLAGS "-fPIC -g3 -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
+  set(CMAKE_CXX_FLAGS "-fPIC -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
   find_package( Boost COMPONENTS filesystem program_options )
   find_package( OpenMP )
