@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
     vtkImageData* labVol;
     vtkImageData* imgVol;
     vtkImageData* uiVol;
-    int numIts=500;
-    int rad=15;
+    int numIts=10;
+    int rad=5;
     float distWeight=.3;
     int currSlice=50;
 
@@ -92,13 +92,13 @@ int main(int argc, char** argv) {
   bbKSlice->Initialize();
 
   //evolve (simulated user)
-  bbKSlice->runUpdate2D(0);
-  bbKSlice->SetCurrSlice(currSlice-1);
   bbKSlice->runUpdate2D(1);
+  bbKSlice->SetCurrSlice(currSlice-1);
+  bbKSlice->runUpdate2D(0);
   bbKSlice->SetCurrSlice(currSlice-2);
-  bbKSlice->runUpdate3D(0);
-  bbKSlice->SetCurrSlice(currSlice-3);
   bbKSlice->runUpdate3D(1);
+  bbKSlice->SetCurrSlice(currSlice-3);
+  bbKSlice->runUpdate3D(0);
 
   //bbKSlice->PrintImage(std::cout, vtkIndent());
   bbKSlice->PrintImage();

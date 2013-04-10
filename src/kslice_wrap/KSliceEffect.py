@@ -404,6 +404,9 @@ by other code without the need for a view context.
     self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful
 
+    self.lastRunPlane='None' #null setting, meaning we havent done any segmentations yet
+    self.lastModBy='None'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
+
     #create a set of containers to compute changes
     volSize=self.labelImg.GetDimensions()
     volumesLogic = slicer.modules.volumes.logic()
@@ -619,17 +622,25 @@ by other code without the need for a view context.
 
 
     #execute a run
-    self.ksliceMod.runUpdate2D(self.userMod)
+    #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
+    useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
+    
+    print "use cache?:" + str(useCache)
+    self.ksliceMod.runUpdate2D(not useCache)
     #print("1")
 
     #signal to slicer that the label needs to be updated
     labelImage=self.labelNode.GetImageData()
 
+    #save the 'last run state' information
     self.acMod=1
+    self.lastRunPlane=self.ijkPlane
+    self.lastModBy='2D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
 
+    #update vars
     labelImage.Modified()
-    #labelNode.SetModifiedSinceRead(1)
     self.labelNode.Modified()
+    #labelNode.SetModifiedSinceRead(1)
 
   def runSegment3D(self):
     # TODO: clarify this function's name, RunSegment2D
@@ -653,18 +664,24 @@ by other code without the need for a view context.
     self.ksliceMod.SetNumIts(50)
 
     #execute a run
-    self.ksliceMod.runUpdate3D(self.userMod)
+    #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
+    useCache= (self.lastModBy=='3D') & (self.userMod==0) 
+    
+    print "use cache?:" + str(useCache)
+
+    self.ksliceMod.runUpdate3D(not useCache)
     #print("1")
 
     #signal to slicer that the label needs to be updated
     labelImage=self.labelNode.GetImageData()
 
+    #save the 'last run state' information
     self.acMod=1
+    self.lastModBy='3D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
 
     labelImage.Modified()
-    #labelNode.SetModifiedSinceRead(1)
     self.labelNode.Modified()
-
+    #labelNode.SetModifiedSinceRead(1)
 
   def destroy(self):
     #super(KSliceEffectLogic,self).destroy()

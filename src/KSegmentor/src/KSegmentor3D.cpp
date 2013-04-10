@@ -43,12 +43,21 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
     std::cout<<"Initializing user input using label data"<<std::endl;
     this->initializeUserInputImageWithContour();
   }
-  this->initializeData();
+  //this->initializeData(); //this happens in update3D()
   this->CreateLLs(this->LL3D);
   this->CreateLLs(this->LL2D);
   LL* Lztmp = this->LL3D.Lz;
   assert(Lztmp != NULL);
-  this->intializeLevelSet3D();
+
+  //initialize pointers 2D
+  this->imgSlice    = NULL;
+  this->maskSlice   = NULL;
+  this->U_I_slice   = NULL;
+  this->labelSlice  = NULL;
+  this->phiSlice    = NULL;
+
+
+  //this->intializeLevelSet3D(); // dont need this either
 }
 
 
@@ -153,11 +162,6 @@ void KSegmentor3D::initializeData()
     }
   }
 
-  this->imgSlice    = NULL;
-  this->maskSlice   = NULL;
-  this->U_I_slice   = NULL;
-  this->labelSlice  = NULL;
-  this->phiSlice    = NULL;
 }
 
 
@@ -329,6 +333,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ll_init(LL3D.Lp1);
         ll_init(LL3D.Lp2); //ensure that Lout2in, Lin2out dont need to be intialized!!
     }else{
+        this->initializeData();
         this->CreateLLs(LL3D);
         ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
     }

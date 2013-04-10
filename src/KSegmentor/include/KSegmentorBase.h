@@ -250,8 +250,8 @@ public:
 
 
         //3D variables
-        double *img;         // single slice!
-        double *mask;        // single slice!
+        double *img;
+        double *mask;
 
 
         double* m_CustomSpeedImgPointer;
