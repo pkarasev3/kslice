@@ -139,7 +139,6 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
 {
     double *F;
     double scale[1]; scale[0] = 0;
-    int countdown;
 
     //initialize datastructures and statistics
     en_chanvese_init(img,phi,dims);
@@ -231,20 +230,14 @@ void apply_control_function(LL *Lz,double *phi, double* F,
                             double* U_integral, double *img, int iter, long* dims)
 { /** \note used when running 2D level set, currently via "s" key */
   // apply user's time-integrated edits inside the updates
-  int x,y,z,idx,n;
-  double I;
   ll_init(Lz);
-  n=0;
+  int n=0;
+  int idx;
   double maxU = -1e99;
   while(Lz->curr != NULL){ //loop through list
-    x = Lz->curr->x;
-    y = Lz->curr->y;
-    z = Lz->curr->z;
     idx = Lz->curr->idx;
-    I = img[idx];
     double U = U_integral[idx];
     if( U > maxU ) { maxU = U; }
-
     double err = tanh(U) - tanh(phi[idx]);
     double f = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
     F[n] = F[n] + f;
@@ -259,7 +252,6 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
                                 double* normal,double* poP,float distweight )
 { // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;
-  double I;
   ll_init(Lz);
   n=0;
   double gamma        = 10.0 / 50.0; //10.0 / iter;
@@ -285,7 +277,6 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     double mult= exp(-distweight*abs(distance));
 
     idx          = Lz->curr->idx;
-    I            = img[idx];
     double U     = U_integral[idx];
     double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
 

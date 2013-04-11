@@ -58,7 +58,6 @@ std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
 
 
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  double Umod  = Uinit + val; // TODO: this is unsafe! do it in KSegmentor!
 
   // works?
   dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);

@@ -100,25 +100,25 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = UIVol; //vtkSmartPointer<vtkImageData>::New();
-    U_t_image= vtkSmartPointer<vtkImageData>::New();
-
 //    U_Integral_image->SetExtent(image->GetExtent());
 //    U_Integral_image->SetScalarTypeToDouble();
 //    U_Integral_image->SetSpacing(image->GetSpacing());
 //    U_Integral_image->AllocateScalars();
     ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
 
-    U_t_image->SetExtent(image->GetExtent());
-    U_t_image->SetScalarTypeToDouble();
-    U_t_image->SetSpacing(image->GetSpacing());
-    U_t_image->AllocateScalars();
-    int npts  = U_t_image->GetNumberOfPoints();
-    ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
-    double refval=0.0;
+
+//    U_t_image= vtkSmartPointer<vtkImageData>::New();
+//    U_t_image->SetExtent(image->GetExtent());
+//    U_t_image->SetScalarTypeToDouble();
+//    U_t_image->SetSpacing(image->GetSpacing());
+//    U_t_image->AllocateScalars();
+//    int npts  = U_t_image->GetNumberOfPoints();
+//    ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
+
+    int npts=image->GetNumberOfPoints();
     for( int i=0; i<npts; i++) {
-        refval= ptrIntegral_Image[i]; // seems to initialize as garbage, at least in windows
         ptrIntegral_Image[i] = 0.0;
-        ptrU_t_Image[i] = 0.0;
+        //ptrU_t_Image[i] = 0.0;
     }
 
     m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
@@ -152,9 +152,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     dims[3] = dims[0]*dims[1];
     dims[4] = dims[0]*dims[1]*dims[2];
 
-    cout << "; initialized KSegmentor3D with dims[0,1,2] = "
-         << dims[0] << "," << dims[1] << "," << dims[2] << endl;
-
+    cout << "; initialized KSegmentor3D with dims[0,1,2] = "<< dims[0] << "," << dims[1] << "," << dims[2] << endl;
 }
 
 namespace {
@@ -219,88 +217,71 @@ void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
     }
 }
 
-void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
-{
-    if( bForceUpdateAll )
-    {
-        int Nelements = this->dimx * this->dimy * this->dimz;
-        for (int element=0;element<Nelements;element++)
-        {
-            this->mask[element]=(double) ( 0 < ptrCurrLabel[element] );
-        }
-    }
-    else
-    {
-        int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
-        for (int element=0;element<Nelements;element++)
-        {
-            unsigned int el=this->m_UpdateVector[element];
-            this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
-        }
-    }
-}
-//
-//void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
+
+//PKDelete
+//void KSegmentorBase::UpdateMask(bool bForceUpdateAll)
 //{
-//    std::stringstream  ss;
-//    ss << fileName;
-//    bool name_is_png=(0==std::string(".png").compare(fileName.substr(fileName.size()-4,4)) );
-//    if( !name_is_png ) {
-//      ss << ".png" ;
+//    if( bForceUpdateAll )
+//    {
+//        int Nelements = this->dimx * this->dimy * this->dimz;
+//        for (int element=0;element<Nelements;element++)
+//        {
+//            this->mask[element]=(double) ( 0 < ptrCurrLabel[element] );
+//        }
 //    }
-//    string png_name = ss.str();
-//    cout << " reference png file: " << png_name << endl;
-//    cv::Mat source(mdims[1],mdims[0],CV_64F);
-//    memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
-//    cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
-//    double dmin, dmax;
-//    cv::minMaxLoc( source, &dmin, &dmax );
-//    cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
-//    cv::imwrite(png_name, saveImg );
-//    cout<<"wrote to " << png_name << endl;
+//    else
+//    {
+//        int Nelements=this->m_UpdateVector.size(); // compiler may not optimize this out, b/c technically m_UpdateVector could change size in the loop
+//        for (int element=0;element<Nelements;element++)
+//        {
+//            unsigned int el=this->m_UpdateVector[element];
+//            this->mask[el]=(double) ( 0 < ptrCurrLabel[el] );
+//        }
+//    }
 //}
 
-void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
-    this->m_UpdateVector.clear();
-    this->m_CoordinatesVector.clear();
-    unsigned int element=0;
-    std::vector<unsigned int> coord;
-    ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
 
-    for (int i=0; i<=this->dimx-1; i++) {
-        for (int j=0; j<=this->dimy-1; j++)  {
-            for (int k=0; k<=this->dimz-1; k++) {
-                element=k*dimx*dimy +j*dimx+i;
-                if(accumulate)
-                    this->accumulateUserInput((double)ptrCurrLabel[element],element);
-                if(ptrCurrLabel[element]>0)
-                {
-                    this->AddPointToUpdateVector(element);
-                    coord.push_back(i);
-                    coord.push_back(j);
-                    coord.push_back(k);
-                    this->AddPointToCoordinatesVector(coord);
-                    coord.clear();
-                }
-        }
-     }
-  }
-  this->integrateUserInput();
-    double spc[3];
-    this->U_Integral_image->GetSpacing(spc);
+//PKDelete
+//void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){
+//    this->m_UpdateVector.clear();
+//    this->m_CoordinatesVector.clear();
+//    unsigned int element=0;
+//    std::vector<unsigned int> coord;
+//    ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
+//    ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
+//    for (int i=0; i<=this->dimx-1; i++) {
+//        for (int j=0; j<=this->dimy-1; j++)  {
+//            for (int k=0; k<=this->dimz-1; k++) {
+//                element=k*dimx*dimy +j*dimx+i;
+//                if(accumulate)
+//                    this->accumulateUserInput((double)ptrCurrLabel[element],element);
+//                if(ptrCurrLabel[element]>0)
+//                {
+//                    this->AddPointToUpdateVector(element);
+//                    coord.push_back(i);
+//                    coord.push_back(j);
+//                    coord.push_back(k);
+//                    this->AddPointToCoordinatesVector(coord);
+//                    coord.clear();
+//                }
+//        }
+//     }
+//  }
+//  this->integrateUserInput();
+//    double spc[3];
+//    this->U_Integral_image->GetSpacing(spc);
 
-    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
-    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
-    labelWriter->SetFileName( "0-Integral0.mhd");
-    labelWriter->Write();
+//    /*vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
+//    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
+//    labelWriter->SetFileName( "0-Integral0.mhd");
+//    labelWriter->Write();
 
-    labelWriter->SetInput(this->U_Integral_image );
-    labelWriter->SetFileName( "0-IntegralImage0.mhd");
-    labelWriter->Write();*/
-  this->m_UpdateVector.clear();
-  this->m_CoordinatesVector.clear();
-}
+//    labelWriter->SetInput(this->U_Integral_image );
+//    labelWriter->SetFileName( "0-IntegralImage0.mhd");
+//    labelWriter->Write();*/
+//  this->m_UpdateVector.clear();
+//  this->m_CoordinatesVector.clear();
+//}
 
 
 void KSegmentorBase::accumulateUserInput( double value,const unsigned int element){
@@ -325,44 +306,45 @@ void KSegmentorBase::SetCurrentSlice(int currSlice)
     this->currSlice=currSlice;
 }
 
-void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool invert)
-{
-    double spacing_mm[3];
-    this->U_Integral_image->GetSpacing( spacing_mm );
-    this->m_Reslicer->SetInput(this->U_Integral_image);
-    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    this->m_Reslicer->AutoCropOutputOn();
-    this->m_Reslicer->SetOutputOrigin(0,0,0);
-    this->m_Reslicer->SetOutputSpacing(m_Spacing_mm);
-    this->m_Reslicer->SetOutputDimensionality(3);
-    if (invert)
-       this->m_Reslicer->SetResliceTransform(transform->GetInverse());
-    else
-      this->m_Reslicer->SetResliceTransform(transform);
+//PKDelete
+//void KSegmentorBase::TransformUserInputImages(vtkTransform* transform, bool invert)
+//{
+//    double spacing_mm[3];
+//    this->U_Integral_image->GetSpacing( spacing_mm );
+//    this->m_Reslicer->SetInput(this->U_Integral_image);
+//    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+//    this->m_Reslicer->AutoCropOutputOn();
+//    this->m_Reslicer->SetOutputOrigin(0,0,0);
+//    this->m_Reslicer->SetOutputSpacing(m_Spacing_mm);
+//    this->m_Reslicer->SetOutputDimensionality(3);
+//    if (invert)
+//       this->m_Reslicer->SetResliceTransform(transform->GetInverse());
+//    else
+//      this->m_Reslicer->SetResliceTransform(transform);
 
-    this->m_Reslicer->UpdateWholeExtent();
-    this->m_Reslicer->Update();
-    this->m_Reslicer->UpdateInformation();
-    this->m_Reslicer->GetOutput()->UpdateInformation();
+//    this->m_Reslicer->UpdateWholeExtent();
+//    this->m_Reslicer->Update();
+//    this->m_Reslicer->UpdateInformation();
+//    this->m_Reslicer->GetOutput()->UpdateInformation();
 
-    this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
-    this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+//    this->U_Integral_image->DeepCopy(m_Reslicer->GetOutput());
+//    this->ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
 
-     this->U_Integral_image->GetSpacing( spacing_mm );
+//     this->U_Integral_image->GetSpacing( spacing_mm );
 
-    this->m_Reslicer->SetInput(this->U_t_image);
-    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    this->m_Reslicer->Modified();
-    this->m_Reslicer->UpdateWholeExtent();
-    this->m_Reslicer->UpdateInformation();
-    this->m_Reslicer->GetOutput()->UpdateInformation();
+//    this->m_Reslicer->SetInput(this->U_t_image);
+//    this->m_Reslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
+//    this->m_Reslicer->Modified();
+//    this->m_Reslicer->UpdateWholeExtent();
+//    this->m_Reslicer->UpdateInformation();
+//    this->m_Reslicer->GetOutput()->UpdateInformation();
 
-    this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
-    this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
+//    this->U_t_image->DeepCopy(m_Reslicer->GetOutput());
+//    this->ptrU_t_Image = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-    this->UpdateArraysAfterTransform();
+//    this->UpdateArraysAfterTransform();
 
-}
+//}
 
 
 void KSegmentorBase::setCurrLabelArray(vtkImageData *label){
@@ -395,23 +377,25 @@ void KSegmentorBase::CreateLLs(LLset& ll)
     ll.Lchanged =ll_create();
 }
 
-void KSegmentorBase::intializeLevelSet3D(){
 
-//    //IKDebug
-//    std::ofstream maskFile("mask.txt",std::ios_base::out);
-//    for(int i=0;i< dimx*dimy*dimz; i++){
-//        maskFile<<mask[i]<<' ';
-//    }
-//    maskFile.close();
+//PKDelete
+//void KSegmentorBase::intializeLevelSet3D(){
 
-    //initialize lists, phi, and labels
-    ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
-                                    LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
+////    //IKDebug
+////    std::ofstream maskFile("mask.txt",std::ios_base::out);
+////    for(int i=0;i< dimx*dimy*dimz; i++){
+////        maskFile<<mask[i]<<' ';
+////    }
+////    maskFile.close();
+
+//    //initialize lists, phi, and labels
+//    ls_mask2phi3c_ext(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,
+//                                    LL3D.Ln2,LL3D.Lp1,LL3D.Lp2,LL3D.Lchanged);
 
 
-    cout << "initialized levelset 3D. len(lz) = " << LL3D.Lz->length
-         << ", len(Lchanged) = " << LL3D.Lchanged << endl;
-}
+//    cout << "initialized levelset 3D. len(lz) = " << LL3D.Lz->length
+//         << ", len(Lchanged) = " << LL3D.Lchanged << endl;
+//}
 
 void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 {

@@ -86,8 +86,6 @@ namespace  vrcl
     }
 
     long elemNumFrom, elemNumTo;
-    double sumMask, sum_i, sum_j;
-    sumMask=sum_i=sum_j=0;
 
     for (int j=0; j<dim1; j++)  {
       for (int i=0; i<dim0; i++) {

@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     //test if we can read each file
     int canReadImg = imgReader->CanReadFile(imgVolName);
     int canReadLab = labReader->CanReadFile(labVolName);;               // try to read multiple labels later
-    int canReadUI  = uiReader->CanReadFile(labVolName);;               // try to read multiple labels later
+
 
     std::cout << "can read img and label? " << canReadImg * canReadLab << std::endl;
     if ( canReadLab !=0  )
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
       //uiVol->Update();
 
     } else if(canReadImg==0){
-      cout<<"Could not read file"<<labVol<<"\n";
+      cout<<"Could not read file"<<labVolName<<"\n";
       //exit(-1); // Satanic! kills python process.
       return 0;
     }

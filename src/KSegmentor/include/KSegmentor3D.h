@@ -27,7 +27,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 
         virtual ~KSegmentor3D();
         void initializeData();
-        virtual void Update3DUnknown(bool reInitFromMask); //this function should be deleted
+        //virtual void Update3DUnknown(bool reInitFromMask); //this function should be deleted
         virtual void Update3D(bool reInitFromMask);
         virtual void Update2D(bool reInitFromMask);
 
@@ -39,7 +39,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
     private:
         /** internal 'update from input' function */
         void integrateUserInput();
-        void UpdateArraysAfterTransform();
+        //void UpdateArraysAfterTransform();
 };
 
 #endif

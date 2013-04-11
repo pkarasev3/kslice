@@ -86,8 +86,8 @@ class KSegmentorBase
         void SetCurrentSlice(int currSlice);
         void setNumIterations(int itersToRun);
         void setCurrLabelArray(vtkImageData *label);
-        void intializeLevelSet3D();
-        void TransformUserInputImages(vtkTransform* transform, bool invert=false );
+        //void intializeLevelSet3D();
+        //void TransformUserInputImages(vtkTransform* transform, bool invert=false );
         void initializeUserInputImageWithContour(bool accumulate=true);
         virtual void Update2D(bool reInitFromMask)=0;
         virtual void Update3D(bool reInitFromMask)=0;
@@ -197,13 +197,13 @@ class KSegmentorBase
                             bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel);
 
         void InitializeMaskAndImage();
-        void UpdateMask(bool bForceUpdateAll = false);
+        //void UpdateMask(bool bForceUpdateAll = false);
 
         virtual void initializeData()=0;
 
         virtual void integrateUserInput()=0;
 
-        virtual void UpdateArraysAfterTransform()=0;
+        //virtual void UpdateArraysAfterTransform()=0;
 
         void CreateLLs(LLset& ll);
 
