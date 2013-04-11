@@ -30,9 +30,6 @@ if(NOT KSlice_Build_SlicerWrap)
 endif()
 
 
-message(STATUS " OpenCV_LIBS = ${OpenCV_LIBS} ; you also want to have had libgtk2.0-dev *Before* building opencv!" )
-
-
 SET(BUILD_SHARED_LIBS ON CACHE INTERNAL ON)
 
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)

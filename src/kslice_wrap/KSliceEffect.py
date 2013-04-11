@@ -50,17 +50,9 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
       self.botButton.text = "Stop Interactive Segmentor"
     else:
       self.botButton.text = "Start Interactive Segmentor"
+
     self.frame.layout().addWidget(self.botButton)
     self.botButton.connect('clicked()', self.onStartBot)
-
-    #make an "Apply" button
-    #self.apply = qt.QPushButton("Apply", self.frame)
-    #self.apply.setToolTip("Apply the extension operation")
-    ###add the apply button to layout, widgets list
-    #self.frame.layout().addWidget(self.apply)
-    #self.widgets.append(self.apply)
-    #self.apply.connect('clicked()', self.logic.apply)
-    #make radius option
 
     self.locRadFrame = qt.QFrame(self.frame)
     self.locRadFrame.setLayout(qt.QHBoxLayout())
@@ -136,10 +128,10 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     if hasattr(slicer.modules, 'editorBot'):
       slicer.modules.editorBot.stop()
       del(slicer.modules.editorBot)
-      self.botButton.text = "Start Segmentation"
+      self.botButton.text = "Start Interactive Segmentor"
     else:
       KSliceCLBot(self)
-      self.botButton.text = "Stop Segmentation"
+      self.botButton.text = "Stop Interactive Segmentor"
 
   def updateMRMLFromGUI(self):
     if self.updatingGUI:
@@ -192,7 +184,6 @@ so it can access tools if needed.
     labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     if labelMTime > self.labelMTimeAtStart:
       sliceLogic = self.sliceWidget.sliceLogic()
-      print("Should be performing seg")
       self.labelMTimeAtStart = labelMTime
     #self.logic.step(1)
     qt.QTimer.singleShot(self.interval, self.iteration)
@@ -230,9 +221,10 @@ handle events from the render window interactor
       if not orient:
         print "Warning, unexpected view orientation!?"
       values = get_values_at_IJK(ijk,self.sliceWidget)
-      print(values)
+      #print(values)
     if event == 'EnterEvent':
-      print "EnterEvent in KSliceEffect."
+      pass
+      #print "EnterEvent in KSliceEffect."
     else:
       pass
 
@@ -254,7 +246,7 @@ def smart_xyToIJK(xy,sliceWidget):
   ll = sliceWidget.sliceLogic().GetLabelLayer()
   xyToIJK = ll.GetXYToIJKTransform().GetMatrix()
   ijkFloat = xyToIJK.MultiplyPoint(xyz+(1,))[:3]
-  print( ijkFloat )
+  #print( ijkFloat )
   ijk = []
   for element in ijkFloat:
     try:
@@ -272,13 +264,13 @@ def get_values_at_IJK( ijk, sliceWidget):
   if not imageData:
     return "No Label Image"
   dims = imageData.GetDimensions()
-  print "current view dims = " + str(dims)
+  #print "current view dims = " + str(dims)
   wasOutOfFrame = False
   values = {'label':None,'U':None}
   for ele in xrange(3):
     ijk
     if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
-      print "Out of Frame"
+      #print "Out of Frame"
       wasOutOfFrame=True
   if not wasOutOfFrame and volumeNode.GetLabelMap():
     labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
@@ -334,22 +326,26 @@ by other code without the need for a view context.
     self.attributes = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
 
+    self.labVal = EditorLib.EditUtil.EditUtil().getLabel() #this gets set once, user cannot use a different color w/o stopping segmentation, starting over
     #create variables to keep track of how the label changed (automatic part or user input)
     self.acMod = 0
     self.userMod = 0
 
     #create a key shortcut
-    s2 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor
-    s3 = qt.QKeySequence(qt.Qt.Key_T) # Press e/E to run segmentor
-    cp= qt.QKeySequence(qt.Qt.Key_C) # copy
-    ps= qt.QKeySequence(qt.Qt.Key_V) # paste
-
+    s2 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor 2d
+    s3 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 3d
+    tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
+    cp = qt.QKeySequence(qt.Qt.Key_C) # copy
+    ps = qt.QKeySequence(qt.Qt.Key_V) # paste
+    
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
                        [s3,self.runSegment3D],
+                       [tg,self.toggleDrawErase],
                        [cp,self.copyslice],
                        [ps,self.pasteslice] ] # like a cell array in matlab
-    for i in [0,1,2,3]:
+
+    for i in [0,1,2,3,4]:
         keydef = self.qtkeydefs[i]
         s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
@@ -367,10 +363,10 @@ by other code without the need for a view context.
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
     #self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
-    self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
+    #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
+    self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') 
 
     #put test listener on the whole window
-    # Don't think we need this!! This gets called on window resize, change label shown, etc
     self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
 
     # a number of observers for mouse events, bound to the interactors
@@ -379,7 +375,6 @@ by other code without the need for a view context.
   
     #make KSlice class
     print("making a kslice")
-    #import vtkSlicerKSliceModuleLogicPython
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
     ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
     ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
@@ -394,8 +389,8 @@ by other code without the need for a view context.
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
     ksliceMod.SetUIVol( tmpVol )
-    ksliceMod.SetCurrLabel(EditorLib.EditUtil.EditUtil().getLabel())  
-    ksliceMod.Initialize() # kind of heavy-duty
+    ksliceMod.SetCurrLabel(self.labVal)  
+    ksliceMod.Initialize()
     self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
 
     self.UIVol = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
@@ -406,11 +401,14 @@ by other code without the need for a view context.
 
     self.lastRunPlane='None' #null setting, meaning we havent done any segmentations yet
     self.lastModBy='None'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.accumInProg=0       #marker to know that we are accumulating user input   
 
-    #create a set of containers to compute changes
+
+
+    print("Making temporary slice arrays")
     volSize=self.labelImg.GetDimensions()
     volumesLogic = slicer.modules.volumes.logic()
-    ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ij_Tmp')
+    ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-ij_Tmp')
     ij_tmp_imgDat=ij_tmp.GetImageData()
     ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1],1) #use just one slice to keep track of changes
     ij_tmp_imgDat.SetScalarTypeToDouble()
@@ -420,7 +418,8 @@ by other code without the need for a view context.
     self.ij_tmpArr=ij_tmpArr
     
 
-    jk_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-jk_Tmp')
+    jk_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-jk_Tmp')
+    
     jk_tmp_imgDat=jk_tmp.GetImageData()
     jk_tmp_imgDat.SetDimensions(volSize[1], volSize[2], 1) #use just one slice to keep track of changes
     jk_tmp_imgDat.SetScalarTypeToDouble()
@@ -430,7 +429,7 @@ by other code without the need for a view context.
     self.jk_tmpArr=jk_tmpArr
 
 
-    ik_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, slicer.vtkMRMLScalarVolumeNode(), self.backgroundNode.GetName() + '-ik_Tmp')
+    ik_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-ik_Tmp')
     ik_tmp_imgDat=ik_tmp.GetImageData()
     ik_tmp_imgDat.SetDimensions(volSize[0], volSize[2], 1) #use just one slice to keep track of changes
     ik_tmp_imgDat.SetScalarTypeToDouble()
@@ -439,17 +438,16 @@ by other code without the need for a view context.
     ik_tmpArr[:]=0    
     self.ik_tmpArr=ik_tmpArr
     
-    print(volSize)
     self.i_range=arange(0,volSize[0])
     self.j_range=arange(0,volSize[1])
     self.k_range=arange(0,volSize[2])
-
+    print("Done creating temporary slice arrays")
 
 
     #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp=self.ijkPlane
-    self.accumInProg=0                  #marker to know that we are accumulating user input    
+ 
 
 
 
@@ -459,7 +457,8 @@ by other code without the need for a view context.
     if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
-      print "windowListener => processEvent( " + str(event) +" )"
+      pass
+      #print "windowListener => processEvent( " + str(event) +" )"   
     if (event=="ModifiedEvent") & (self.accumInProg==1) :
         currLab=EditorLib.EditUtil.EditUtil().getLabel()
         signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
@@ -511,7 +510,6 @@ by other code without the need for a view context.
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
         self.computeCurrSlice()
-        print(self.currSlice)
         #if 0==vals['label']:
         #self.currSlice = self.computeCurrSliceSmarter(ijk)
         print "smarter curr slice = " + str(self.currSlice)
@@ -522,21 +520,21 @@ by other code without the need for a view context.
         if self.ijkPlane=="IJ":
             self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
             self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
-            print(self.ij_tmpArr.shape)
-            print(self.ij_tmpArr.max())
-            print(self.ij_tmpArr.min())
+            #print(self.ij_tmpArr.shape)
+            #print(self.ij_tmpArr.max())
+            #print(self.ij_tmpArr.min())
         elif self.ijkPlane=="JK":
             self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
             self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            print "shape= " + str(self.jk_tmpArr.shape)
-            print(self.jk_tmpArr.max())
-            print(self.jk_tmpArr.min())
+            #print "shape= " + str(self.jk_tmpArr.shape)
+            #print(self.jk_tmpArr.max())
+            #print(self.jk_tmpArr.min())
         elif self.ijkPlane=="IK":
             self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
             self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            print(self.ik_tmpArr.shape)
-            print(self.ik_tmpArr.max())
-            print(self.ik_tmpArr.min())            
+            #print(self.ik_tmpArr.shape)
+            #print(self.ik_tmpArr.max())
+            #print(self.ik_tmpArr.min())            
 
         if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
             self.labArr[self.linInd]=0   
@@ -554,6 +552,12 @@ by other code without the need for a view context.
       self.userMod=0
       #print("modified by active contour")
       pass
+
+  def toggleDrawErase(self):
+    if EditorLib.EditUtil.EditUtil().getLabel() == self.labVal:
+      EditorLib.EditUtil.EditUtil().setLabel(0)
+    else:
+      EditorLib.EditUtil.EditUtil().setLabel(self.labVal)
 
   def copyslice(self):
     self.copySliceView=self.sliceIJKPlane()   #ensure were pasting from within the same view later
@@ -592,7 +596,7 @@ by other code without the need for a view context.
         cs=int( round( (sliceOffset - originVec[orient[1]])/spacingVec[orient[1]]))
     #self.currSlice=computeCurrSliceSmarter
     self.currSlice = abs(cs) # hacky, is this always the fix if result of above is negative?
-    print "currSlice = " + str(self.currSlice) + ", offset= " + str(sliceOffset)
+    #print "currSlice = " + str(self.currSlice) + ", offset= " + str(sliceOffset)
 
 
   def runSegment2D(self):
@@ -688,7 +692,7 @@ by other code without the need for a view context.
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for i in [0,1,2,3]:
+    for i in [0,1,2,3,4]:
         keyfun = self.qtkeydefs[i]
         keydef = self.qtkeyconnections[i]
         print('disconnecting keydef: ')
