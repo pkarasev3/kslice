@@ -7,17 +7,16 @@
 
 #include "KSegmentorBase.h"
 #include "KViewerOptions.h"
+#include "KSandbox.h"
 
 //For testing
 #include"vtkMetaImageWriter.h"
-//#include <opencv2/core/core.hpp>
 
 
 class vtkImageData;
 
 class vtkTransform;
 struct LL;
-
 
 class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
@@ -30,7 +29,6 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
         //virtual void Update3DUnknown(bool reInitFromMask); //this function should be deleted
         virtual void Update3D(bool reInitFromMask);
         virtual void Update2D(bool reInitFromMask);
-
 
         /** external interface to update at a voxel */
         void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0 );

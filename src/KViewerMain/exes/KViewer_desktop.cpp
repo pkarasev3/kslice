@@ -5,7 +5,6 @@
 #include "vtkImageData.h"
 
 int main(int argc, char** argv) {
-
     //inputs
     char imgVolName[] = "../../data/bbTest/imgVol.mha";
     char labVolName[] = "../../data/bbTest/labVol.mha";
@@ -71,45 +70,57 @@ int main(int argc, char** argv) {
       return 0;
     }
 
-   //debug to make sure we've loaded things correctly
-   double range[2];
-   imgVol->GetScalarRange(range);
-   labVol->GetScalarRange(range);
+    //debug to make sure we've loaded things correctly
+    double range[2];
+    imgVol->GetScalarRange(range);
+    labVol->GetScalarRange(range);
 
-   int dims[3];
-   imgVol->GetDimensions(dims);
+    int dims[3];
+    imgVol->GetDimensions(dims);
 
-  //set up the black box
-  vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
-  //KSlice* bbKSlice=new KSlice();
-  bbKSlice->SetImageVol(imgVol);
-  bbKSlice->SetLabelVol(labVol);
-  bbKSlice->SetUIVol(uiVol);
-  bbKSlice->SetNumIts(numIts);
-  bbKSlice->SetBrushRad(rad);
-  bbKSlice->SetCurrSlice(currSlice);
-  bbKSlice->SetDistWeight(distWeight);
-  bbKSlice->Initialize();
 
-  //evolve (simulated user)
-  bbKSlice->runUpdate2D(1);
-  bbKSlice->SetCurrSlice(currSlice-1);
-  bbKSlice->runUpdate2D(0);
-  bbKSlice->SetCurrSlice(currSlice-2);
-  bbKSlice->runUpdate3D(1);
-  bbKSlice->SetCurrSlice(currSlice-3);
-  bbKSlice->runUpdate3D(0);
+    if ( strcmp(imgVol->GetScalarTypeAsString(),"unsigned short")==0){
+        std::cout<<"found our type"<<std::endl;
+    }
+    std::cout<<imgVol->GetScalarTypeAsString()<<std::endl;
 
-  //bbKSlice->PrintImage(std::cout, vtkIndent());
-  bbKSlice->PrintImage();
 
-  //record the output (FOR TESTING ONLY)
-  vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
-  writer->SetInput(labVol);
-  writer->SetFileName("../../data/bbTest/perturbedLab.mha");
-  writer->Write();
 
-  return 0;
+
+
+
+
+    //set up the black box
+    vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
+    //KSlice* bbKSlice=new KSlice();
+    bbKSlice->SetImageVol(imgVol);
+    bbKSlice->SetLabelVol(labVol);
+    bbKSlice->SetUIVol(uiVol);
+    bbKSlice->SetNumIts(numIts);
+    bbKSlice->SetBrushRad(rad);
+    bbKSlice->SetCurrSlice(currSlice);
+    bbKSlice->SetDistWeight(distWeight);
+    bbKSlice->Initialize();
+
+    //evolve (simulated user)
+    bbKSlice->runUpdate2D(1);
+    bbKSlice->SetCurrSlice(currSlice-1);
+    bbKSlice->runUpdate2D(0);
+    bbKSlice->SetCurrSlice(currSlice-2);
+    bbKSlice->runUpdate3D(1);
+    bbKSlice->SetCurrSlice(currSlice-3);
+    bbKSlice->runUpdate3D(0);
+
+    //bbKSlice->PrintImage(std::cout, vtkIndent());
+    bbKSlice->PrintImage();
+
+    //record the output (FOR TESTING ONLY)
+    vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
+    writer->SetInput(labVol);
+    writer->SetFileName("../../data/bbTest/perturbedLab.mha");
+    writer->Write();
+
+    return 0;
 }
 
 

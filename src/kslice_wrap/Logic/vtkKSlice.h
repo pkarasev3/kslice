@@ -3,9 +3,11 @@
 #define KVIEWER_GUI_H
 
 
-#include "KDataWarehouse.h"
+//#include "KDataWarehouse.h"
 #include "KViewerOptions.h"
 #include "vtkSlicerKSliceModuleLogicExport.h"
+#include "vtkImageData.h"
+#include "KSegmentor3D.h"
 
 class VTK_SLICER_KSLICE_MODULE_LOGIC_EXPORT vtkKSlice : public vtkObject
 {
@@ -45,7 +47,8 @@ public:
 protected:
  vtkKSlice();
   virtual ~vtkKSlice();
-  KDataWarehouse* dataWarehouse; //all storage arrays
+  KSegmentor3D* ksegmentor;
+  //KDataWarehouse* dataWarehouse; //all storage arrays
   //KViewerOptions* ksliceOptions; //app parameters, variables
   bool initCorrectFlag; //if Kslice has been initialized =1, else starts out being 0
   bool m_bUseEdgeBased; //if =1, use edge based energy, else region based (default =0)
@@ -62,6 +65,7 @@ private:
   int ToSlice;
   int CurrLabel;
   std::string Orientation;
+
 
 };
 #endif

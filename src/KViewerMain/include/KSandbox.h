@@ -4,11 +4,14 @@
 
 #include "vtkSmartPointer.h"
 #include "KViewerOptions.h"
-#include "KDataWarehouse.h"
+//#include "KDataWarehouse.h"
 #include "Logger.h"
+#include <assert.h>
+#include "vtkImageData.h"
+#include "vtkLookupTable.h"
+//class vtkLookupTable;
+//class vtkImageData;
 
-class vtkLookupTable;
-class vtkImageData;
 //using cv::Ptr;
 
 /**   KSandbox: a place to temporarily place 'compact  stand alone functions' while
@@ -18,9 +21,11 @@ class vtkImageData;
   *   part of VTK / ITK and trust them more than they should.
   */
 
-namespace vrcl {
-  enum Orient {SLICE_IJ=0, SLICE_JK=1, SLICE_IK=2};
 
+
+namespace vrcl {
+
+  enum Orient {SLICE_IJ=0, SLICE_JK=1, SLICE_IK=2};
   std::vector<double> get_good_color_0to7( int idx );
 
   vtkSmartPointer<vtkImageData> image2ushort( vtkImageData* imageData );
@@ -72,6 +77,123 @@ namespace vrcl {
       }
       return imgvol;
   }
+
+    template<typename T> void convertSliceToDouble(T* array, double *destination,
+                                                   int dim0, int dim1, int dim2, int currSlice, Orient sliceView)
+    {
+        long elemNum=0;
+        unsigned int element3D;
+        int k=currSlice;
+
+        //copy elements into the slices
+        for (int j=0; j<dim1; j++)
+        {
+            for (int i=0; i<dim0; i++)
+            {
+                switch(sliceView)
+                {
+                    case SLICE_IJ:
+                        element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+                        break;
+                    case SLICE_JK:
+                        element3D    =  j*dim0*dim2 + i*dim2+k;//
+                        break;
+                    case SLICE_IK:
+                        element3D    =  j*dim0*dim2 + k*dim0+i;//
+                        break;
+                    default:
+                        assert(0);
+                        break;
+                }
+                destination[elemNum]        = (double) array[element3D];
+                elemNum++;
+            }
+        }
+    }
+
+  template<typename T> void convertDoubleToSlice(T *array, double *source,
+                                                 int dim0, int dim1, int dim2, int currSlice, Orient sliceView, int currLabel)
+  {
+      long elemNum=0;
+      unsigned int element3D;
+      int k=currSlice;
+
+      double phi_val = 0;
+      elemNum=0;
+      for (int j=0; j<dim1; j++)
+      {
+          for (int i=0; i<dim0; i++)
+          {
+              phi_val= source[elemNum];
+              switch(sliceView)
+              {
+                  case SLICE_IJ:
+                      element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+                      break;
+                  case SLICE_JK:
+                      element3D    =  j*dim0*dim2 + i*dim2+k;//
+                      break;
+                  case SLICE_IK:
+                      element3D    =  j*dim0*dim2 + k*dim0+i;//
+                      break;
+                  default:
+                      assert(0);
+                      break;
+              }
+              array[element3D]=   ( (T) 0 >= phi_val )*currLabel;
+              elemNum++;
+          }
+      }
+  }
+
+
+
+
+  template<typename T> void convertImage(T *array, double *destination, int dimx, int dimy, int dimz)
+  {
+      long elemNum=0;
+      for (int k=0; k<=dimx-1; k++)
+      {
+        for (int j=0; j<=dimy-1; j++)
+        {
+            for (int i=0; i<=dimz-1; i++,elemNum++)
+            {
+                destination[elemNum] = (double) array[elemNum];
+            }
+        }
+      }
+  }
+
+  template<typename T> void convertLabel(T *array, double *destination, int dimx, int dimy, int dimz)
+  {
+      long elemNum=0;
+      for (int k=0; k<=dimx-1; k++)
+      {
+        for (int j=0; j<=dimy-1; j++)
+        {
+            for (int i=0; i<=dimz-1; i++,elemNum++)
+            {
+                destination[elemNum]= (double) ( 0 < array[elemNum] );
+            }
+        }
+      }
+  }
+
+
+  template<typename T> void setLabel3D(T *array, double *source, int Nelements, int currLabel)
+  {
+
+      double phi_val = 0;
+      for (int idx=0;idx<Nelements;idx++)
+      {
+          phi_val = source[idx];
+          array[idx] =( (T) 0 >= phi_val )*currLabel;
+      }
+  }
+
+
 }
+
+
 
 #endif

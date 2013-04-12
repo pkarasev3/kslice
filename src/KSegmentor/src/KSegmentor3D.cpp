@@ -3,7 +3,6 @@
 #include "sfm_local_chanvese_mex.h"
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
-#include "KSandbox.h"
 #include <omp.h>
 #include <string>
 #include <sstream>
@@ -131,18 +130,90 @@ void KSegmentor3D::initializeData()
   }
 
   this->imgRange=imgRange;
-  ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
-  ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
+  //ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
+  //ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
 
 
-  long elemNum=0;
-  for (int k=0; k<=dimx-1; k++) {
-    for (int j=0; j<=dimy-1; j++)  {
-      for (int i=0; i<=dimz-1; i++,elemNum++) {
-        this->mask[elemNum]= (double) ( 0 < ptrCurrLabel[elemNum] );
-        this->img[elemNum] = (double)       ptrCurrImage[elemNum];
-      }
-    }
+  int imgType=imageVol->GetScalarType();
+  switch(imgType)
+  {
+  case 0:     //#define VTK_VOID            0
+      assert(0);
+      break;
+  case 1:    //#define VTK_BIT             1
+      vrcl::convertImage( (bool *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 2:    //#define VTK_CHAR            2
+      vrcl::convertImage( (char *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 3:    //#define VTK_UNSIGNED_CHAR   3
+      vrcl::convertImage( (unsigned char *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 4:    //#define VTK_SHORT           4
+      vrcl::convertImage( (short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 5:    //#define VTK_UNSIGNED_SHORT  5
+      vrcl::convertImage( (unsigned short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 6:    //#define VTK_INT             6
+      vrcl::convertImage( (int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 7:    //#define VTK_UNSIGNED_INT    7
+      vrcl::convertImage( (unsigned int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 8:    //#define VTK_LONG            8
+      vrcl::convertImage( (long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 9:    //#define VTK_UNSIGNED_LONG   9
+      vrcl::convertImage( (unsigned long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 10:    //#define VTK_FLOAT          10
+      vrcl::convertImage( (float *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  case 11:    //#define VTK_DOUBLE         11
+      vrcl::convertImage( (double *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
+      break;
+  }
+
+  int labType=labelVol->GetScalarType();
+  switch(labType)
+  {
+  case 0:     //#define VTK_VOID            0
+      assert(0);
+      break;
+  case 1:    //#define VTK_BIT             1
+      vrcl::convertLabel( (bool *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 2:    //#define VTK_CHAR            2
+      vrcl::convertLabel( (char *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 3:    //#define VTK_UNSIGNED_CHAR   3
+      vrcl::convertLabel( (unsigned char *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 4:    //#define VTK_SHORT           4
+      vrcl::convertLabel( (short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 5:    //#define VTK_UNSIGNED_SHORT  5
+      vrcl::convertLabel( (unsigned short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 6:    //#define VTK_INT             6
+      vrcl::convertLabel( (int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 7:    //#define VTK_UNSIGNED_INT    7
+      vrcl::convertLabel( (unsigned int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 8:    //#define VTK_LONG            8
+      vrcl::convertLabel( (long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 9:    //#define VTK_UNSIGNED_LONG   9
+      vrcl::convertLabel( (unsigned long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 10:    //#define VTK_FLOAT          10
+      vrcl::convertLabel( (float *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
+  case 11:    //#define VTK_DOUBLE         11
+      vrcl::convertLabel( (double *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
+      break;
   }
 
 }
@@ -151,6 +222,8 @@ void KSegmentor3D::initializeData()
 void KSegmentor3D::OnUserPaintsLabel() {
   this->prevSlice = -1;
 }
+
+// function template convertDoubleSlice definition
 
 
 void KSegmentor3D::Update2D(bool reInitFromMask)
@@ -172,10 +245,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         sliceView = vrcl::SLICE_IK;
     }
 
-    ptrCurrImage        = static_cast< short*>(imageVol->GetScalarPointer());
-    ptrCurrLabel        = static_cast< short*>(labelVol->GetScalarPointer());
-    ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-
 
     std::vector<long> dimsSlice(5);
     dimsSlice[0] = dim0;
@@ -186,9 +255,8 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
 
-    long elemNum=0;
-    unsigned int element3D;
-    int k = currSlice;
+
+
     if( (prevSlice == this->currSlice) && !reInitFromMask ) {
         cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL2D.Lz);
@@ -211,41 +279,94 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         this->labelSlice        = new double[ dim0 * dim1 ];
         this->phiSlice          = new double[ dim0 * dim1 ];
 
-        //copy elements into the slices
-        double sumMask, sum_i, sum_j;
-        sumMask=sum_i=sum_j=0;
-        for (int j=0; j<dim1; j++)  {
-            for (int i=0; i<dim0; i++) {
-                switch(sliceView)
-                {
-                    case vrcl::SLICE_IJ:
-                        element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
-                        break;
-                    case vrcl::SLICE_JK:
-                        element3D    =  j*dim0*dim2 + i*dim2+k;//
-                        break;
-                    case vrcl::SLICE_IK:
-                        element3D    =  j*dim0*dim2 + k*dim0+i;//
-                        break;
-                    default:
-                        assert(0);
-                        break;
-                }
-                imgSlice[elemNum]        = (double) ptrCurrImage[element3D];
-                maskSlice[elemNum]       = (double) ( 0 < ptrCurrLabel[element3D] );
-                U_I_slice[elemNum]       =  this->ptrIntegral_Image[element3D];
-                sumMask+= maskSlice[elemNum];
-                sum_i  += (maskSlice[elemNum])*i;
-                sum_j  += (maskSlice[elemNum])*j;
-                elemNum++;
-            }
+
+
+        //user input is always double
+        ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+        vrcl::convertSliceToDouble( ptrIntegral_Image, this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
+
+        //copy images based on type
+        int imgType=imageVol->GetScalarType();
+
+        switch(imgType)
+        {
+        case 0:     //#define VTK_VOID            0
+            assert(0);
+            break;
+        case 1:    //#define VTK_BIT             1
+            vrcl::convertSliceToDouble( (bool *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 2:    //#define VTK_CHAR            2
+            vrcl::convertSliceToDouble( (char *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 3:    //#define VTK_UNSIGNED_CHAR   3
+            vrcl::convertSliceToDouble( (unsigned char *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 4:    //#define VTK_SHORT           4
+            vrcl::convertSliceToDouble( (short *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 5:    //#define VTK_UNSIGNED_SHORT  5
+            vrcl::convertSliceToDouble( (unsigned short *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 6:    //#define VTK_INT             6
+            vrcl::convertSliceToDouble( (int *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 7:    //#define VTK_UNSIGNED_INT    7
+            vrcl::convertSliceToDouble( (unsigned int *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 8:    //#define VTK_LONG            8
+            vrcl::convertSliceToDouble( (long *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 9:    //#define VTK_UNSIGNED_LONG   9
+            vrcl::convertSliceToDouble( (unsigned long *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 10:    //#define VTK_FLOAT          10
+            vrcl::convertSliceToDouble( (float *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 11:    //#define VTK_DOUBLE         11
+            vrcl::convertSliceToDouble( (double *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
         }
 
-        //debug
-        bool bDebugSliceIdx = false;
-        if(bDebugSliceIdx){
-            double centroid[2]; centroid[0]=sum_i/(sumMask+1e-9); centroid[1]=sum_j/(sumMask+1e-9);
-            cout<<"mask centroid (i,j) = (" << centroid[0] << "," << centroid[1] << ")" << endl;
+        int labType=labelVol->GetScalarType();
+        switch(labType)
+        {
+        case 0:     //#define VTK_VOID            0
+            assert(0);
+            break;
+        case 1:    //#define VTK_BIT             1
+            vrcl::convertSliceToDouble( (bool *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 2:    //#define VTK_CHAR            2
+            vrcl::convertSliceToDouble( (char *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 3:    //#define VTK_UNSIGNED_CHAR   3
+            vrcl::convertSliceToDouble( (unsigned char *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 4:    //#define VTK_SHORT           4
+            vrcl::convertSliceToDouble( (short *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 5:    //#define VTK_UNSIGNED_SHORT  5
+            vrcl::convertSliceToDouble( (unsigned short *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 6:    //#define VTK_INT             6
+            vrcl::convertSliceToDouble( (int *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 7:    //#define VTK_UNSIGNED_INT    7
+            vrcl::convertSliceToDouble( (unsigned int *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 8:    //#define VTK_LONG            8
+            vrcl::convertSliceToDouble( (long *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 9:    //#define VTK_UNSIGNED_LONG   9
+            vrcl::convertSliceToDouble( (unsigned long *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 10:    //#define VTK_FLOAT          10
+            vrcl::convertSliceToDouble( (float *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
+        case 11:    //#define VTK_DOUBLE         11
+            vrcl::convertSliceToDouble( (double *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+            break;
         }
 
         //set up the new level set
@@ -263,31 +384,48 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
                            iter,rad,lambda*0.5,display);
 
 
-    //threshold phi to find segmentation label, assign it to appropriate range of label!
-    double phi_val = 0;
-    elemNum=0;
-    for (int j=0; j<dim1; j++)  {
-        for (int i=0; i<dim0; i++) {
-            phi_val= phiSlice[elemNum];
-            switch(sliceView)
-            {
-                case vrcl::SLICE_IJ:
-                    element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
-                    break;
-                case vrcl::SLICE_JK:
-                    element3D    =  j*dim0*dim2 + i*dim2+k;//
-                    break;
-                case vrcl::SLICE_IK:
-                    element3D    =  j*dim0*dim2 + k*dim0+i;//
-                    break;
-                default:
-                    assert(0);
-                    break;
-                }
-            ptrCurrLabel[element3D]=   ( (unsigned short) 0 >= phi_val )*this->currLabel;
-            elemNum++;
-        }
+    //threshold phi, set label to appropriate values
+    int labType=labelVol->GetScalarType();
+    switch(labType)
+    {
+    case 0:     //#define VTK_VOID            0
+        assert(0);
+        break;
+    case 1:    //#define VTK_BIT             1
+        vrcl::convertDoubleToSlice( (bool *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 2:    //#define VTK_CHAR            2
+        vrcl::convertDoubleToSlice( (char *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 3:    //#define VTK_UNSIGNED_CHAR   3
+        vrcl::convertDoubleToSlice( (unsigned char *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 4:    //#define VTK_SHORT           4
+        vrcl::convertDoubleToSlice( (short *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 5:    //#define VTK_UNSIGNED_SHORT  5
+        vrcl::convertDoubleToSlice( (unsigned short *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 6:    //#define VTK_INT             6
+        vrcl::convertDoubleToSlice( (int *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 7:    //#define VTK_UNSIGNED_INT    7
+        vrcl::convertDoubleToSlice( (unsigned int *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 8:    //#define VTK_LONG            8
+        vrcl::convertDoubleToSlice( (long *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 9:    //#define VTK_UNSIGNED_LONG   9
+        vrcl::convertDoubleToSlice( (unsigned long *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 10:    //#define VTK_FLOAT          10
+        vrcl::convertDoubleToSlice( (float *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
+    case 11:    //#define VTK_DOUBLE         11
+        vrcl::convertDoubleToSlice( (double *)labelVol->GetScalarPointer(), phiSlice  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+        break;
     }
+
 
     //clean up, but is m_UpdateVector, m_CoordinatesVector necessary??
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
@@ -306,7 +444,9 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ll_init(LL3D.Ln1);
         ll_init(LL3D.Ln2);
         ll_init(LL3D.Lp1);
-        ll_init(LL3D.Lp2); //ensure that Lout2in, Lin2out dont need to be intialized!!
+        ll_init(LL3D.Lp2);
+        ll_init(LL3D.Lout2in);//ensure that Lout2in, Lin2out dont need to be intialized!!
+        ll_init(LL3D.Lin2out);
     }else{
         this->initializeData();
         this->CreateLLs(LL3D);
@@ -317,18 +457,58 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
                              LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                              iter,rad,lambda*0.5,display);
 
+
+
+
+
     //threshold the level set to update the mask
-    double phi_val = 0;
     int Nelements = this->dimx * this->dimy * this->dimz;
-    for (int idx=0;idx<Nelements;idx++)
+    int labType=labelVol->GetScalarType();
+    switch(labType)
     {
-        phi_val = phi[idx];
-        ptrCurrLabel[idx] =( (unsigned short) 0 >= phi_val )*this->currLabel;
+    case 0:     //#define VTK_VOID            0
+        assert(0);
+        break;
+    case 1:    //#define VTK_BIT             1
+        vrcl::setLabel3D((bool *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 2:    //#define VTK_CHAR            2
+        vrcl::setLabel3D((char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 3:    //#define VTK_UNSIGNED_CHAR   3
+        vrcl::setLabel3D((unsigned char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 4:    //#define VTK_SHORT           4
+        vrcl::setLabel3D((short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 5:    //#define VTK_UNSIGNED_SHORT  5
+        vrcl::setLabel3D((unsigned short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 6:    //#define VTK_INT             6
+        vrcl::setLabel3D((int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 7:    //#define VTK_UNSIGNED_INT    7
+        vrcl::setLabel3D((unsigned int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 8:    //#define VTK_LONG            8
+        vrcl::setLabel3D((long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 9:    //#define VTK_UNSIGNED_LONG   9
+        vrcl::setLabel3D((unsigned long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 10:    //#define VTK_FLOAT          10
+        vrcl::setLabel3D((float *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
+    case 11:    //#define VTK_DOUBLE         11
+        vrcl::setLabel3D((double *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
+        break;
     }
+
+
 
     cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;
-    cout <<  "Nelements is: "  << Nelements <<endl;
+
 
     //whats the point of these two variables? after PK cleans up, these will be deleted
     m_UpdateVector.clear();

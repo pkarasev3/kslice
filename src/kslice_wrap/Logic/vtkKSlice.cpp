@@ -4,7 +4,7 @@
 #include "vtkKSlice.h"
 
 #include "KSandbox.h"
-#include "KDataWarehouse.h"
+//#include "KDataWarehouse.h"
 #include "KSegmentorBase.h"
 
 #include "vtkObjectFactory.h"
@@ -22,7 +22,7 @@ vtkKSlice::vtkKSlice( ) {
     LabelVol = NULL;
     UIVol = NULL;
 
-    dataWarehouse= new KDataWarehouse();
+    //dataWarehouse= new KDataWarehouse();
 
     BrushRad=7;
     NumIts=50;
@@ -37,14 +37,14 @@ vtkKSlice::vtkKSlice( ) {
 
 
 vtkKSlice::~vtkKSlice() {
-  delete dataWarehouse;
+  delete this->ksegmentor;
   std::cout<<"KSlice destroyed"<<std::endl;
 }
 
 void vtkKSlice::SetOrientation(const std::string& orient) {
  // axial,sagittal,coronal,etc
   std::cout<<"set kslice orientation to " << orient << std::endl;
-  this->dataWarehouse->ksegmentor->SetSliceOrientationIJK(orient);
+  this->ksegmentor->SetSliceOrientationIJK(orient);
   this->Orientation=orient;
 }
 
@@ -60,10 +60,10 @@ std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
 
   // works?
-  dataWarehouse->ksegmentor->accumulateUserInput(val,i,j,k);
+  this->ksegmentor->accumulateUserInput(val,i,j,k);
 
   //UIVol->DeepCopy(dataWarehouse->ksegmentor->GetUIVol());
-  cout << "same pointer? " << UIVol << ", " << dataWarehouse->ksegmentor->U_Integral_image << std::endl;
+  cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
   double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
  // UIVol->Print(std::cout);
@@ -77,17 +77,17 @@ void vtkKSlice::PasteSlice(int toSlice){
 
 void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
-    dataWarehouse->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
+    this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
                                                 contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
     //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
-    dataWarehouse->ksegmentor->SetDistanceWeight(DistWeight);
+    this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
 
 void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
     if(initCorrectFlag==1){ //already initialized
-        dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
-        dataWarehouse->ksegmentor->Update2D(reInitFromMask);
+        this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
         //LabelVol->Modified(); //why do we need this??
     }
@@ -95,8 +95,8 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
 
 void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
     if(initCorrectFlag==1){ //already initialized
-        dataWarehouse->ksegmentor->SetCurrentSlice(CurrSlice);
-        dataWarehouse->ksegmentor->Update3D(reInitFromMask);
+        this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
         //LabelVol->Modified(); //why do we need this??
     }

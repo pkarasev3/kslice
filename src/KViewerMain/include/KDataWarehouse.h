@@ -6,6 +6,7 @@
 #include "vtkImageData.h"
 #include "KSegmentor3D.h"
 
+
 struct KDataWarehouse
 {
     KDataWarehouse(){

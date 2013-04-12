@@ -70,19 +70,19 @@ namespace  vrcl
     std::cout<<"slice view is:"<<orient<<std::endl;
 
     int dim0=0; int dim1=0; int dim2=0;
-    vrcl::Orient sliceView = vrcl::SLICE_IJ;
+    Orient sliceView = SLICE_IJ;
     if( orient == "IJ" ) {
       dim0 = mdims[0];
       dim1 = mdims[1];
-      sliceView = vrcl::SLICE_IJ; dim2=mdims[2];
+      sliceView = SLICE_IJ; dim2=mdims[2];
     } else if( orient == "JK" ) {
       dim0 = mdims[1];
       dim1 = mdims[2]; dim2=mdims[0];
-      sliceView = vrcl::SLICE_JK;
+      sliceView = SLICE_JK;
     } else if( orient == "IK" ) {
       dim0 = mdims[0];
       dim1 = mdims[2]; dim2=mdims[1];
-      sliceView = vrcl::SLICE_IK;
+      sliceView = SLICE_IK;
     }
 
     long elemNumFrom, elemNumTo;
@@ -91,17 +91,17 @@ namespace  vrcl
       for (int i=0; i<dim0; i++) {
         switch(sliceView)
         {
-          case vrcl::SLICE_IJ:
+          case SLICE_IJ:
             elemNumFrom = idxFrom *dim1*dim0 +j*dim0+i;
             elemNumTo   = idxTo   *dim1*dim0 +j*dim0+i;
             //element3D   =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
             break;
-          case vrcl::SLICE_JK:
+          case SLICE_JK:
             elemNumFrom = j*dim0*dim2 + i*dim2+idxFrom;
             elemNumTo   = j*dim0*dim2 + i*dim2+idxTo;
 //            element3D    =  j*dim0*dim2 + i*dim2+k;//
             break;
-          case vrcl::SLICE_IK:
+          case SLICE_IK:
             elemNumFrom = j*dim0*dim2 + idxFrom*dim0+i;
             elemNumTo   = j*dim0*dim2 + idxTo*dim0+i;
 //            element3D    =  j*dim0*dim2 + k*dim0+i;//
