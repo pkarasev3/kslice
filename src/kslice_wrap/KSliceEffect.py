@@ -462,10 +462,9 @@ by other code without the need for a view context.
         currLabelValue = self.labVal                                             #EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
         signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
         if self.ijkPlane=="IJ":
-            if signAccum==-1:          #this means we're drawing
+            if signAccum==-1:                     #We're drawing
                 deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
-                # scale this by current label value
-                newLab=(self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event) 
+                newLab= (self.ij_tmpArr + self.labArr[self.linInd])!=0
             elif signAccum==1:                       #user is erasing
                 deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd]  
@@ -483,11 +482,10 @@ by other code without the need for a view context.
             elif signAccum==1:    
                 deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd] 
-
+        #TODO: scale by the currLabelValue 
         self.UIarray[self.linInd]+=signAccum*deltPaint
         self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
-
 
         print "maximum of User input:" + str(self.UIarray.max())
         print "minimum of user input:" + str(self.UIarray.min())
@@ -509,9 +507,12 @@ by other code without the need for a view context.
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
         self.computeCurrSlice()
-        #if 0==vals['label']:
-        #self.currSlice = self.computeCurrSliceSmarter(ijk)
         print "smarter curr slice = " + str(self.currSlice)
+
+    if event == "RightButtonPressEvent":
+        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+    
 
     if event == "LeftButtonPressEvent":
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
@@ -541,9 +542,8 @@ by other code without the need for a view context.
         print("modified by user, kslice bot is running")
       self.userMod=1
     else:
-      self.acMod=0 #modification came from active contour, reset variable, prepare to listen to next modification
-      self.userMod=0
-      #print("modified by active contour")
+      self.acMod=0    #modification came from active contour, reset variable, prepare to listen to next modification
+      self.userMod=0  #print("modified by active contour")
       pass
 
   def toggleDrawErase(self):
@@ -591,12 +591,6 @@ by other code without the need for a view context.
 
 
   def runSegment2D(self):
-    # TODO: clarify this function's name, RunSegment2D
-    #get slider information, a.__dict__ and a.children() are useful commands
-    #imgLayer= self.sliceLogic.GetBackgroundLayer();
-    #imgNode= imgLayer.GetVolumeNode();
-    #labelLogic = self.sliceLogic.GetLabelLayer()
-    #labelNode = labelLogic.GetVolumeNode()
     lm = slicer.app.layoutManager()
        
     self.computeCurrSlice()

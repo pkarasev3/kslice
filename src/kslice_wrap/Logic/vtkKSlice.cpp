@@ -49,26 +49,17 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
 }
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
-/*DEPRECATED: this functionality is in python code now*/
 
-std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
-            << i << "," <<j << ", " << k << std::endl;
- // UIVol->Print(std::cout);
-  //
-
-
+  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
+            << i << "," <<j << ", " << k << std::endl; // UIVol->Print(std::cout);
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-
-  // works?
   this->ksegmentor->accumulateUserInput(val,i,j,k);
 
-  //UIVol->DeepCopy(dataWarehouse->ksegmentor->GetUIVol());
   cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
   double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
- // UIVol->Print(std::cout);
-}
+  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl; // UIVol->Print(std::cout);
 
+}
 
 void vtkKSlice::PasteSlice(int toSlice){
     ToSlice=toSlice;
