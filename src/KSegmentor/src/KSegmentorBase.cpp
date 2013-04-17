@@ -10,15 +10,6 @@
 //#include <opencv2/highgui/highgui.hpp>
 
 using std::string;
-//using cv::Mat;
-
-//these global variables are no good, need to fix later
-//extern double ain, aout, auser; // means
-//extern double *pdfin, *pdfout, *pdfuser;
-//extern long numdims;
-//extern double engEval;
-//extern bool UseInitContour;
-//extern double *Ain, *Aout, *Sin, *Sout; //local means
 
 namespace vrcl
 {

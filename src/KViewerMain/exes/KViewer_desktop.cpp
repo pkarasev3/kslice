@@ -31,7 +31,6 @@ int main(int argc, char** argv) {
     int canReadImg = imgReader->CanReadFile(imgVolName);
     int canReadLab = labReader->CanReadFile(labVolName);;               // try to read multiple labels later
 
-
     std::cout << "can read img and label? " << canReadImg * canReadLab << std::endl;
     if ( canReadLab !=0  )
     {		// can't read label file, try to create a blank one

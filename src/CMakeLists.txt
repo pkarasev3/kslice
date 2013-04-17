@@ -45,7 +45,7 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
 else(WIN32)
-  set(CMAKE_C_FLAGS_DEBUG "-pedantic -Werror" CACHE STRING "extra compiler flags for debug" FORCE )
+  set(CMAKE_C_FLAGS_DEBUG "-pedantic " CACHE STRING "extra compiler flags for debug" FORCE )
   set(CMAKE_C_FLAGS "-fPIC -g3 -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS "-fPIC -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
@@ -57,12 +57,7 @@ endif(WIN32)
 
 
 
-set(TOTENKOPF_WERROR FALSE CACHE BOOL FALSE)
-if(${TOTENKOPF_WERROR})
-  set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} "-Werror")
-  set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} "-Werror")
-  message(STATUS "using 'errors are warnings!' flag in gcc..." )
-endif(${TOTENKOPF_WERROR})
+
 
 
 

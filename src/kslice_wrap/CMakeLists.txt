@@ -91,8 +91,6 @@ ctkMacroCompilePythonScript(
   INSTALL_DIR ${Slicer_INSTALL_ROOT}
   )
 
-# argh...
-# add_dependencies(KSliceEffect  ${MODULE_NAME})
 
 #-----------------------------------------------------------------------------
 

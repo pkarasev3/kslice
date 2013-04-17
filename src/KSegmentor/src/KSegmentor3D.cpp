@@ -84,39 +84,6 @@ void KSegmentor3D::integrateUserInput()
   }
 }
 
-//PKDelete
-//void KSegmentor3D::UpdateArraysAfterTransform()
-//{
-//  this->mdims=U_t_image->GetDimensions();
-
-//  //Set dimensions
-//  dimz = (int)mdims[2];
-//  dimy = (int)mdims[1];
-//  dimx = (int)mdims[0];
-
-//  dims[2] = dimz;
-//  dims[1] = dimy;
-//  dims[0] = dimx;
-
-//  dims[3] = dims[0]*dims[1];
-//  dims[4] = dims[0]*dims[1]*dims[2];
-
-//  this->U_Integral_image->GetSpacing( m_Spacing_mm );
-
-//  cout <<  "; updated KSegmentor3D with dims[0,1,2] = "
-//        << dimx << "," << dimy << "," << dimz << endl;
-
-//  this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
-//  this->rad = std::min(7.0,this->rad); // force non-huge radius if the spacing is retarded
-//  this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
-
-//  this->initializeData();
-
-//  this->CreateLLs(LL3D);
-
-//  this->intializeLevelSet3D();
-//}
-
 
 void KSegmentor3D::initializeData()
 {
@@ -255,8 +222,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
 
-
-
     if( (prevSlice == this->currSlice) && !reInitFromMask ) {
         cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL2D.Lz);
@@ -278,8 +243,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         this->U_I_slice         = new double[ dim0 * dim1 ];
         this->labelSlice        = new double[ dim0 * dim1 ];
         this->phiSlice          = new double[ dim0 * dim1 ];
-
-
 
         //user input is always double
         ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
@@ -372,7 +335,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         //set up the new level set
         this->CreateLLs(LL2D);
         ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
-        cout <<  "\033[01;42m\033]"<< "first time on slice! " << "\033[00m\033]" << endl;
+        cout <<  "\033[01;42m\033]"<< "2Dfirst time on slice! " << "\033[00m\033]" << endl;
     }
 
 
@@ -431,7 +394,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
 
     //whats the point of these two variable? after PK cleans up, these will be deleted
-    m_UpdateVector.clear();
+    m_UpdateVector.clear(); // should hook this up for user input accum
     m_CoordinatesVector.clear();
 }
 
@@ -439,7 +402,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
     if( !reInitFromMask ) {// do this only if re-making the level set function
-        cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
+        cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL3D.Lz);
         ll_init(LL3D.Ln1);
         ll_init(LL3D.Ln2);
@@ -456,10 +419,6 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
                              LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                              iter,rad,lambda*0.5,display);
-
-
-
-
 
     //threshold the level set to update the mask
     int Nelements = this->dimx * this->dimy * this->dimz;
@@ -504,11 +463,8 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         break;
     }
 
-
-
     cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;
-
 
     //whats the point of these two variables? after PK cleans up, these will be deleted
     m_UpdateVector.clear();
@@ -576,6 +532,7 @@ KSegmentor3D::~KSegmentor3D(){
 
 
 
+/** за трусость под огнем, расстрел
 
 //void KSegmentor3D::Update3DUnknown(bool reInitFromMask)
 //{
@@ -739,3 +696,37 @@ KSegmentor3D::~KSegmentor3D(){
 //  m_UpdateVector.clear();
 //  m_CoordinatesVector.clear();
 //}
+
+//PKDelete
+//void KSegmentor3D::UpdateArraysAfterTransform()
+//{
+//  this->mdims=U_t_image->GetDimensions();
+
+//  //Set dimensions
+//  dimz = (int)mdims[2];
+//  dimy = (int)mdims[1];
+//  dimx = (int)mdims[0];
+
+//  dims[2] = dimz;
+//  dims[1] = dimy;
+//  dims[0] = dimx;
+
+//  dims[3] = dims[0]*dims[1];
+//  dims[4] = dims[0]*dims[1]*dims[2];
+
+//  this->U_Integral_image->GetSpacing( m_Spacing_mm );
+
+//  cout <<  "; updated KSegmentor3D with dims[0,1,2] = "
+//        << dimx << "," << dimy << "," << dimz << endl;
+
+//  this->rad = 3.0 / std::max( m_Spacing_mm[0],m_Spacing_mm[1] ); // about 3mm in physical units
+//  this->rad = std::min(7.0,this->rad); // force non-huge radius if the spacing is retarded
+//  this->rad = std::max(3.0, this->rad); // force non-tiny radius if the spacing is retarded
+
+//  this->initializeData();
+
+//  this->CreateLLs(LL3D);
+
+//  this->intializeLevelSet3D();
+//}
+*/

@@ -457,15 +457,14 @@ by other code without the need for a view context.
     if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
-      pass
-      #print "windowListener => processEvent( " + str(event) +" )"   
+      pass                                                                       #print "windowListener => processEvent( " + str(event) +" )"   
     if (event=="ModifiedEvent") & (self.accumInProg==1) :
-        currLab=EditorLib.EditUtil.EditUtil().getLabel()
-        signAccum=(-1)*(currLab!=0) + (1)*(currLab==0) #change sign based on drawing/erasing
-
+        currLabelValue = self.labVal                                             #EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
+        signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
         if self.ijkPlane=="IJ":
             if signAccum==-1:          #this means we're drawing
                 deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
+                # scale this by current label value
                 newLab=(self.ij_tmpArr + self.labArr[self.linInd])!=0  #fill label in (return all the points we stored, add the recent paint event) 
             elif signAccum==1:                       #user is erasing
                 deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
@@ -516,26 +515,20 @@ by other code without the need for a view context.
 
     if event == "LeftButtonPressEvent":
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
+        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
         self.accumInProg=1
         if self.ijkPlane=="IJ":
             self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
             self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
-            #print(self.ij_tmpArr.shape)
-            #print(self.ij_tmpArr.max())
-            #print(self.ij_tmpArr.min())
+            
         elif self.ijkPlane=="JK":
             self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
             self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            #print "shape= " + str(self.jk_tmpArr.shape)
-            #print(self.jk_tmpArr.max())
-            #print(self.jk_tmpArr.min())
+            
         elif self.ijkPlane=="IK":
             self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
             self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            #print(self.ik_tmpArr.shape)
-            #print(self.ik_tmpArr.max())
-            #print(self.ik_tmpArr.min())            
-
+            
         if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
             self.labArr[self.linInd]=0   
 
@@ -594,9 +587,7 @@ by other code without the need for a view context.
     for orient in ( ('IJ',2),('JK',0),('IK',1) ):
       if self.ijkPlane == orient[0]:
         cs=int( round( (sliceOffset - originVec[orient[1]])/spacingVec[orient[1]]))
-    #self.currSlice=computeCurrSliceSmarter
     self.currSlice = abs(cs) # hacky, is this always the fix if result of above is negative?
-    #print "currSlice = " + str(self.currSlice) + ", offset= " + str(sliceOffset)
 
 
   def runSegment2D(self):
@@ -607,8 +598,7 @@ by other code without the need for a view context.
     #labelLogic = self.sliceLogic.GetLabelLayer()
     #labelNode = labelLogic.GetVolumeNode()
     lm = slicer.app.layoutManager()
-    
-    
+       
     self.computeCurrSlice()
 
     # get the parameters from MRML
@@ -620,19 +610,12 @@ by other code without the need for a view context.
     self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(50)
 
-    #debug prints: lets see how this went ...
-    #print(self.currSlice)
-    #print(currRad)
-
-
     #execute a run
     #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
     useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
-    
     print "use cache?:" + str(useCache)
     self.ksliceMod.runUpdate2D(not useCache)
-    #print("1")
-
+    
     #signal to slicer that the label needs to be updated
     labelImage=self.labelNode.GetImageData()
 
@@ -647,15 +630,7 @@ by other code without the need for a view context.
     #labelNode.SetModifiedSinceRead(1)
 
   def runSegment3D(self):
-    # TODO: clarify this function's name, RunSegment2D
-    #get slider information, a.__dict__ and a.children() are useful commands
-    #imgLayer= self.sliceLogic.GetBackgroundLayer();
-    #imgNode= imgLayer.GetVolumeNode();
-    #labelLogic = self.sliceLogic.GetLabelLayer()
-    #labelNode = labelLogic.GetVolumeNode()
     lm = slicer.app.layoutManager()
-    
-    
     self.computeCurrSlice()
 
     # get the parameters from MRML
