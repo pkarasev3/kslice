@@ -21,8 +21,8 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   m_EnergyName = GetSupportedEnergyNames()[1];
   this->InitializeVariables(image,label, UIVol, contInit, currSlice, numIts, distWeight, brushRad, currLabel);
 
-
-//  //PKDelete
+// TODO: re-integrate this, check that label value is handled correctly from slicer
+// "set U based on input label", e.g. when input is large complex label that user wants to edit slightly
 //  if(contInit) {
 //    std::cout<<"Initializing user input using label data"<<std::endl;
 //    this->initializeUserInputImageWithContour();
@@ -41,8 +41,6 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->phiSlice    = NULL;
 
 }
-
-
 
 void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
                                                double weight /*=1.0 default */)
@@ -192,6 +190,41 @@ void KSegmentor3D::OnUserPaintsLabel() {
 
 // function template convertDoubleSlice definition
 
+namespace {
+class UeffectException : public std::exception
+{
+public:
+    const char* what() {
+        return "User input caused unexpected behavior internally!";
+    }
+};
+double UmaxConst = 5.0;
+std::vector<double> cached_phi;
+bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
+{    /** ensure that phi does not change sign when
+              U is "sufficiently large" */
+    bool isGood = true;
+    int sz=phi0.size();
+    cout <<  "\033[01;25m\033]" << "checking U effect... " << "\033[00m\033]" << endl;
+    for(int i=0;i<sz;i++) {
+        double Uij = U[i];
+        double phi0_ij = phi0[i];
+        double phi1_ij = phi1[i];
+        bool changedSign = false;
+        if( fabs(Uij) >= UmaxConst ) {
+            changedSign = ( phi0_ij * phi1_ij < 0 ) &&
+                    ( (fabs(phi0_ij)>1e-6)&&(fabs(phi1_ij)>1e-6) );
+            if( changedSign ) {
+                isGood = false;
+                break;
+            }
+        }
+    }
+    return isGood;
+}
+
+
+}
 
 void KSegmentor3D::Update2D(bool reInitFromMask)
 {
@@ -211,7 +244,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         dim1 = mdims[2]; dim2=mdims[1];
         sliceView = vrcl::SLICE_IK;
     }
-
 
     std::vector<long> dimsSlice(5);
     dimsSlice[0] = dim0;
@@ -337,15 +369,19 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         ls_mask2phi3c(maskSlice,phiSlice,labelSlice,&(dimsSlice[0]), LL2D.Lz,LL2D.Ln1,LL2D.Ln2,LL2D.Lp1,LL2D.Lp2);
         cout <<  "\033[01;42m\033]"<< "2Dfirst time on slice! " << "\033[00m\033]" << endl;
     }
-
-
     prevSlice=currSlice;
 
-    //run the active contour
+    // save the phi before levelset, to verify expected behavior
+    cache_phi.resize(dim0*dim1);
+    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*dim0 * dim1 );
+
+    //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
     interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                            iter,rad,lambda*0.5,display);
 
+    bool isGood = check_U_behavior(cache_phi, phiSlice, U_I_slice);
+    if( !isGood ) { throw UeffectException (); }
 
     //threshold phi, set label to appropriate values
     int labType=labelVol->GetScalarType();
@@ -408,7 +444,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ll_init(LL3D.Ln2);
         ll_init(LL3D.Lp1);
         ll_init(LL3D.Lp2);
-        ll_init(LL3D.Lout2in);//ensure that Lout2in, Lin2out dont need to be intialized!!
+        ll_init(LL3D.Lout2in); //ensure that Lout2in, Lin2out dont need to be intialized!!
         ll_init(LL3D.Lin2out);
     }else{
         this->initializeData();
@@ -466,7 +502,8 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;
 
-    //whats the point of these two variables? after PK cleans up, these will be deleted
+    //whats the point of these two variables?
+    // after PK cleans up, these will be clarified
     m_UpdateVector.clear();
     m_CoordinatesVector.clear();
 }

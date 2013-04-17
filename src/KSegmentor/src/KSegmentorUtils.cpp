@@ -63,9 +63,6 @@ namespace  vrcl
     //assert( idxFrom >= 0 && idxTo >= 0 && idxFrom < mdims[2] && idxTo < mdims[2] );
     int num_changed = 0;
 
-
-
-
     std::cout<<"dims are:"<<mdims[0]<<mdims[1]<<mdims[2]<<std::endl;
     std::cout<<"slice view is:"<<orient<<std::endl;
 
@@ -94,17 +91,14 @@ namespace  vrcl
           case SLICE_IJ:
             elemNumFrom = idxFrom *dim1*dim0 +j*dim0+i;
             elemNumTo   = idxTo   *dim1*dim0 +j*dim0+i;
-            //element3D   =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
             break;
           case SLICE_JK:
             elemNumFrom = j*dim0*dim2 + i*dim2+idxFrom;
             elemNumTo   = j*dim0*dim2 + i*dim2+idxTo;
-//            element3D    =  j*dim0*dim2 + i*dim2+k;//
             break;
           case SLICE_IK:
             elemNumFrom = j*dim0*dim2 + idxFrom*dim0+i;
             elemNumTo   = j*dim0*dim2 + idxTo*dim0+i;
-//            element3D    =  j*dim0*dim2 + k*dim0+i;//
             break;
           default:
             assert(0);
@@ -116,7 +110,6 @@ namespace  vrcl
         num_changed  +=  ( newVal != prevVal );
       }
     }
-
     cout << "copy/paste from " << idxFrom << " to "
          << idxTo << " changed # pixels: " << num_changed << endl;
 }

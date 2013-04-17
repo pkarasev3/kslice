@@ -26,12 +26,14 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 
         virtual ~KSegmentor3D();
         void initializeData();
-        //virtual void Update3DUnknown(bool reInitFromMask); //this function should be deleted
+        //virtual void Update3DUnknown(bool reInitFromMask); //this function is badass and makes girls wet their pants
         virtual void Update3D(bool reInitFromMask);
         virtual void Update2D(bool reInitFromMask);
 
         /** external interface to update at a voxel */
-        void accumulateCurrentUserInput( double value,const unsigned int element, double weight=1.0 );
+        void accumulateCurrentUserInput( double value,
+                                         const unsigned int element,
+                                         double weight=1.0 );
         virtual void OnUserPaintsLabel();
 
     private:
@@ -41,3 +43,6 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 };
 
 #endif
+
+
+

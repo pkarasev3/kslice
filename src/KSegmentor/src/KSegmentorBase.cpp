@@ -48,30 +48,26 @@ double KSegmentorBase::defaultKappaParam = 0.1;
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
                                         bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel)
 {
-    m_CustomSpeedImgPointer=NULL;
-    imageVol=image;
-    labelVol=label;
+    this->m_CustomSpeedImgPointer=NULL;
 
-    numberdims=3;
-
-    //set some variables, take the defaults outside
-    //(into ksliceOptions constructor (for example) if desired)
+    //set some variables, take defaults from outside
+    this->imageVol=image;
     this->useContInit=contInit;
     this->currSlice=currSlice;
     this->iter=numIts;
     this->m_DistWeight=distWeight;
     this->rad= brushRad;
     this->currLabel=currLabel;
+    this->labelVol=label;
 
-    m_bUseEdgeBased = false;
-    penaltyAlpha=0;
-    seed=0;
-    display=0;
-
-
-    m_ThreshWeight=0;
-    lambda=defaultKappaParam; // this could/should be user togglable!
-    mdims = new int[3];
+    this->numberdims=3;
+    this->m_bUseEdgeBased = false;
+    this->penaltyAlpha=0;
+    this->seed=0;
+    this->display=0;
+    this->m_ThreshWeight=0;
+    this->lambda=defaultKappaParam; // this could/should be user togglable!
+    this->mdims = new int[3];
     image->GetDimensions( mdims );
 
     LL3D.init();

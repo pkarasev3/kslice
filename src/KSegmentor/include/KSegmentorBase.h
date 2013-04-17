@@ -19,13 +19,6 @@ struct LL;
 namespace vrcl
 {
 
-
-
-//Should these methods be in here??   (Note by PK:  they should be "not in the GUI app" ... maybe in a separate utils folder?
-// they get implemented in "KegmentorUtils.cpp"
-
-
-
 /** write string on top of image data in-place*/
 //void waterMark(const std::string& text, cv::Mat & img);
 
@@ -48,17 +41,13 @@ void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, const std
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
                                                int erode_sz=3, int dilate_sz=5);
 
-
-
 class KSegmentorBase
 {
     public:
-
         struct LLset
         {
             LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
             LL *Lin2out, *Lout2in,*Lchanged;
-
             void init()
             {
                 Lz=NULL;
@@ -207,7 +196,7 @@ class KSegmentorBase
 
         void CreateLLs(LLset& ll);
 
-        //std::vector<double> cache_phi;
+        std::vector<double> cache_phi;
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );
