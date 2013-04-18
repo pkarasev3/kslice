@@ -1,6 +1,8 @@
 #get volume 
 #volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
-volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/ANON0084.mha")
+
+filenameImage="/home/kslice/kslice/data/ANON0084.mha"
+volNode=slicer.util.loadVolume(filenameImage)
 #volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/images/husney.mha")
 if not volNode:
 	volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
@@ -24,14 +26,12 @@ lm = slicer.app.layoutManager()
 paintEffect = EditorLib.PaintEffectOptions()
 paintEffect.setMRMLDefaults()
 paintEffect.__del__()
+
 sliceWidget = lm.sliceWidget('Red')
-#paintTool = EditorLib.PaintEffectTool(sliceWidget)
+paintTool = EditorLib.PaintEffectTool(sliceWidget)
 editUtil.setLabel(1)
-#paintTool.paintAddPoint(100,100)
-#paintTool.paintApply()
-#editUtil.setLabel(2)
-#paintTool.paintAddPoint(450,350)
-#paintTool.paintApply()
-#paintTool.cleanup()
-#paintTool = None
+paintTool.paintAddPoint(450,350)
+paintTool.paintApply()
+paintTool.cleanup()
+paintTool = None
 

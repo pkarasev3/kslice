@@ -113,15 +113,13 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     # # don't update if the parameter node has not got all values yet
     # return
 
-
     self.updatingGUI = True
     super(KSliceEffectOptions,self).updateGUIFromMRML(caller,event)
     self.disconnectWidgets()
     self.locRadSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,radius")) )
     self.connectWidgets()
     self.updatingGUI = False
-
-    print("made the connections")
+    print("made the connections in KSliceEffectOptions")
 
   def onStartBot(self):
     """create the bot for background editing"""
@@ -316,7 +314,6 @@ by other code without the need for a view context.
 
   def __init__(self,sliceLogic):
     self.sliceLogic = sliceLogic
-    #print(self.sliceLogic)
     print("Made a KSliceEffectLogic")
 
     # self.attributes should be tuple of options:
@@ -390,20 +387,21 @@ by other code without the need for a view context.
     tmpVol = steeredVolume.GetImageData()
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
-#    ksliceMod.SetUIVol( tmpVol )
+
+    ksliceMod.SetUIVol( tmpVol )
     ksliceMod.SetCurrLabel(self.labVal)  
-# Do this AFTER setting from UIarray:
-    #                   ksliceMod.Initialize()
+# Do this AFTER setting from UIarray: ???
+    ksliceMod.Initialize()
 
     #self.UIarray=vtk.util.numpy_support.vtk_to_numpy(tmpVol.GetScalars())     
     #self.UIVol  = 
     self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
     self.UIVol  =steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
-    ksliceMod.SetUIVol(self.UIVol)
+#    ksliceMod.SetUIVol(self.UIVol)
     # seems like info propagates  UIarray to UIVol, not the other way
     
     
-    ksliceMod.Initialize()
+#   ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
     self.currSlice= None
     self.ijkPlane='IJ'
@@ -455,19 +453,27 @@ by other code without the need for a view context.
 
     #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
     self.currSlice_tmp=self.currSlice
-    self.ijkPlane_tmp=self.ijkPlane
+    self.ijkPlane_tmp =self.ijkPlane
  
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
-
+    
     if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
       pass                                                                       #print "windowListener => processEvent( " + str(event) +" )"   
-    if (event=="ModifiedEvent") & (self.accumInProg==1) :
-        currLabelValue = self.labVal                                             #EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
-        signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
+
+    # self.labVal doesn't seem to work when erasing
+    currLabelValue = EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
+    signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
+    
+
+    # Ivan: I can't get it to work with both numpy AND c++-managed ...
+    bUseLabelModTrigger = False    
+    if (event=="ModifiedEvent") and (self.accumInProg==1):
+        # Danger: you haven't recalc'd the orientation and currSlice yet        
+        # self.labVal doesn't seem to work when erasing
         if self.ijkPlane=="IJ":
             if signAccum==-1:                     #We're drawing
                 deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
@@ -492,17 +498,17 @@ by other code without the need for a view context.
         #TODO: scale by the currLabelValue 
 
         # Argh, overwrites any changes to underlying vtk volume!?
-        bUpdateFromNP=False 
-        if bUpdateFromNP:
+        if bUseLabelModTrigger:
           self.UIarray[self.linInd]+=signAccum*deltPaint
-
+  
         self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
-
         print "min,max of self.UIarray:" + str(self.UIarray.min()) + ","+ str(self.UIarray.max())
         print "sign of accumulation:"   + str(signAccum)        
 
+
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
+      # IVAN: this should be done first, unless you def think otherwise
       sw = self.swLUT[interactor]
       if not sw:
         print "caller (interactor?) not found in lookup table!"
@@ -522,16 +528,11 @@ by other code without the need for a view context.
     if event == "RightButtonPressEvent":
         print "right mouse ..."
     
-    if event == "LeftButtonPressEvent":
+    if (event == "LeftButtonPressEvent") and (not bUseLabelModTrigger):
+        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-signAccum)
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-        #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
-        U_ijk = self.UIVol.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
-        print 'U at ' + str(ijk) + ' = '+str(U_ijk)
-        U_new = U_ijk - 1.0
-        self.UIVol.SetScalarComponentFromDouble(ijk[0],ijk[1],ijk[2],U_new)
-
-    
-    if event == "LeftButtonPressEvent":
+  
+    if (event == "LeftButtonPressEvent"):
         self.accumInProg=1
         if self.ijkPlane=="IJ":
             self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
@@ -547,6 +548,12 @@ by other code without the need for a view context.
             
         if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
             self.labArr[self.linInd]=0   
+
+# 
+#        U_ijk = self.UIVol.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
+#        print 'U at ' + str(ijk) + ' = '+str(U_ijk)
+#        U_new = U_ijk - 1.0
+#        self.UIVol.SetScalarComponentFromDouble(ijk[0],ijk[1],ijk[2],U_new)
 
        
   def labModByUser(self,caller,event):
@@ -588,7 +595,7 @@ by other code without the need for a view context.
     return ns
 
   def computeCurrSlice(self):
-    # annoying to reset these...
+    # annoying to reset these just for slice #...
     labelLogic = self.sliceLogic.GetLabelLayer()
     self.labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
@@ -615,7 +622,7 @@ by other code without the need for a view context.
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetBrushRad(currRad)
-    self.ksliceMod.SetNumIts(50)
+    self.ksliceMod.SetNumIts(30)
 
     #execute a run
     #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)

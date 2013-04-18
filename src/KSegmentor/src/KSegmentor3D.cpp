@@ -200,14 +200,18 @@ public:
 };
 double UmaxConst = 5.0;
 std::vector<double> cached_phi;
+
 bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
 {    /** ensure that phi does not change sign when
               U is "sufficiently large" */
     bool isGood = true;
     int sz=phi0.size();
+    double Umin = 1e99; double Umax = -1e99;
     cout <<  "\033[01;45m\033]" << "checking U effect... " << "\033[00m\033]" << endl;
     for(int i=0;i<sz;i++) {
         double Uij = U[i];
+        if(Uij<Umin) {Umin = Uij;}
+        if(Uij>Umax) {Umax = Uij;}
         double phi0_ij = phi0[i];
         double phi1_ij = phi1[i];
         bool changedSign = false;
@@ -220,6 +224,7 @@ bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
             }
         }
     }
+    cout << "Umin=" << Umin << ", Umax = " << Umax << endl;
     return isGood;
 }
 
@@ -276,10 +281,6 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         this->labelSlice        = new double[ dim0 * dim1 ];
         this->phiSlice          = new double[ dim0 * dim1 ];
 
-        //user input is always double
-        ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-        vrcl::convertSliceToDouble( ptrIntegral_Image, this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
-
         //copy images based on type
         int imgType=imageVol->GetScalarType();
         vrcl::convertSliceToDouble(imgType, (bool *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
@@ -294,6 +295,12 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         cout <<  "\033[01;42m\033]"<< "2Dfirst time on slice! " << "\033[00m\033]" << endl;
     }
     prevSlice=currSlice;
+
+    /** moved this out of "is cache" portion; always reslice U to maintain sync, whew what a bug-hunt
+    //user input is always double */
+    ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+    vrcl::convertSliceToDouble( ptrIntegral_Image, this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
+
 
     // save the phi before levelset, to verify expected behavior
     cache_phi.resize(dim0*dim1);
@@ -340,6 +347,11 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
     }
 
+    double Urange[2]; // check range; is it getting set right from python?
+    U_Integral_image->GetScalarRange(Urange);
+    std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
+
+    ptrIntegral_Image = static_cast<double*>( U_Integral_image->GetScalarPointer() );
     interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
                              LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                              iter,rad,lambda*0.5,display);

@@ -247,7 +247,7 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     ll_step(Lz);
     n++; //next point
   }
-  std::cout<< minU<<","<<maxU<<" =Min,Max encountered by apply_control_function (2D)"<<std::endl;
+  //std::cout<< minU<<","<<maxU<<" =Min,Max encountered by apply_control_function (2D)"<<std::endl;
 }
 
 void apply_control_function_ext(LL *Lz,double *phi, double* F,
