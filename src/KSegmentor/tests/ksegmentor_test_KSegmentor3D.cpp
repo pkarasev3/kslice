@@ -31,10 +31,10 @@ struct KSegTest2_Options
   {
     po::options_description commands("Allowed options");
     commands.add_options()
-        ("Labels,L",po::value< vector<string> >(&labelFilenames)->multitoken(),
-         "which labels to load, e.g. --Labels=a.mha b.mha c.mha")
-        ("Outputs,O",po::value< vector<string> >(&outputFilenames)->multitoken(),
-         "which labels to write, e.g. --Outputs=a_out.mha b_out.mha c_out.mha")
+        ("Label,L",po::value< string >(&inputFilename),
+         "which labels to load, e.g. --Label=patela.mha (Required)")
+        ("Output,O",po::value< string >(&outputFilename),
+         "which labels to write, e.g. --Output=a_out.mha")
         ("Image,I",po::value<string>(&imageFilename)->default_value(""),
          "image volume file")
         ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(10),
@@ -56,23 +56,20 @@ struct KSegTest2_Options
       exit(1);
     }
 
-    if( ! labelFilenames.empty() )
+    if( ! inputFilename.empty() )
     {
       cout << "attempting to load image: " << imageFilename << endl;
-      cout << "attempting to load labels: " << endl;
-      BOOST_FOREACH(string labelName, labelFilenames)
-          std::cout << labelName << std::endl;
-      cout << "will try to write labels: " << endl;
-      BOOST_FOREACH(string labelName, outputFilenames)
-          std::cout << labelName << std::endl;
+      cout << "attempting to load label: " << inputFilename << std::endl;
+      cout << "will try to write label:  " << outputFilename << endl;
+
     }
   }
 
   int            segmentor_iters;
   double         smoothness_kappa;
   bool           verbose;
-  vector<string> labelFilenames;
-  vector<string> outputFilenames;
+  string         outputFilename;
+  string         inputFilename;
   string         imageFilename;
   string         energyFunctionalName;
 
@@ -112,16 +109,20 @@ int main( int argc, char* argv[] )
   boost::shared_ptr<KSegmentorBase>  kseg;
   int result = -1;
 
-  lblReader->SetFileName(opts.labelFilenames[0].c_str());
-  lblReader->SetDataScalarTypeToUnsignedShort();
+  lblReader->SetFileName(opts.inputFilename.c_str());
+  // lblReader->SetDataScalarTypeToUnsignedShort();
   lblReader->Update();
   if(! lblReader->CanReadFile(lblReader->GetFileName()) ){ return -2; }
 
   image = imgReader->GetOutput();
   label = lblReader->GetOutput();
-  UIVol->DeepCopy(label); // so its not empty
+  { // make an initial UIVol
+    UIVol->DeepCopy(label);
+    UIVol->SetScalarTypeToDouble();
+    UIVol->AllocateScalars();
+  }
 
-  kseg = boost::shared_ptr<KSegmentorBase>(new KSegmentor3D(image,label,UIVol,false,0,50,0.05,3,0));
+  kseg = boost::shared_ptr<KSegmentorBase>(new KSegmentor3D(image,label,UIVol,true,0,50,0.005,3,0));
   kseg->setNumIterations( opts.segmentor_iters );
   kseg->SetEnergyChanVese( );
 
@@ -143,9 +144,9 @@ for( int k=0; k<4; k++ ) {
   if( E < Ebest ) { Ebest = E; }
 }
 
-if( ! opts.outputFilenames.empty() )
+if( ! opts.outputFilename.empty() )
 {   /** Save to file if -O  XXX.mha was given */
-  string outputFilename = opts.outputFilenames[0];
+  string outputFilename = opts.outputFilename;
   SP(lblWriter,vtkMetaImageWriter);
   lblWriter->SetCompression(true);
   lblWriter->SetInput(label);

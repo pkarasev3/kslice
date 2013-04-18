@@ -176,7 +176,7 @@ class KSegmentorBase
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
-        vtkSmartPointer<vtkImageReslice> m_Reslicer;
+
 
         std::vector<unsigned int > m_UpdateVector;
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
@@ -279,6 +279,10 @@ public:
 
 }
 
+#endif
 
 
+#if  0
+vtkSmartPointer<vtkImageReslice> m_Reslicer;
+m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 #endif

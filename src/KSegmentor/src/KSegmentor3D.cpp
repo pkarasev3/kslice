@@ -323,15 +323,16 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
+    ll_init(LL3D.Lz);
+    ll_init(LL3D.Ln1);
+    ll_init(LL3D.Ln2);
+    ll_init(LL3D.Lp1);
+    ll_init(LL3D.Lp2);
+    ll_init(LL3D.Lout2in); //ensure that Lout2in, Lin2out dont need to be intialized!!
+    ll_init(LL3D.Lin2out);
     if( !reInitFromMask ) {// do this only if re-making the level set function
         cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
-        ll_init(LL3D.Lz);
-        ll_init(LL3D.Ln1);
-        ll_init(LL3D.Ln2);
-        ll_init(LL3D.Lp1);
-        ll_init(LL3D.Lp2);
-        ll_init(LL3D.Lout2in); //ensure that Lout2in, Lin2out dont need to be intialized!!
-        ll_init(LL3D.Lin2out);
+
     }else{
         this->initializeData();
         this->CreateLLs(LL3D);

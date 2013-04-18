@@ -86,29 +86,15 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     m_IJK_orient = std::string("IJ");
     cout << "segmentor using ROI size: " << rad << endl;
 
-    U_Integral_image = UIVol; //vtkSmartPointer<vtkImageData>::New();
-//    U_Integral_image->SetExtent(image->GetExtent());
-//    U_Integral_image->SetScalarTypeToDouble();
-//    U_Integral_image->SetSpacing(image->GetSpacing());
-//    U_Integral_image->AllocateScalars();
+    U_Integral_image = UIVol;
+
+    assert(U_Integral_image->GetScalarType()==VTK_DOUBLE); // BUG!!! Assumes UIVol was double
     ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
-
-
-//    U_t_image= vtkSmartPointer<vtkImageData>::New();
-//    U_t_image->SetExtent(image->GetExtent());
-//    U_t_image->SetScalarTypeToDouble();
-//    U_t_image->SetSpacing(image->GetSpacing());
-//    U_t_image->AllocateScalars();
-//    int npts  = U_t_image->GetNumberOfPoints();
-//    ptrU_t_Image = static_cast<double*>(U_t_image->GetScalarPointer());
 
     int npts=image->GetNumberOfPoints();
     for( int i=0; i<npts; i++) {
-        ptrIntegral_Image[i] = 0.0;
-        //ptrU_t_Image[i] = 0.0;
+        ptrIntegral_Image[i] = 0.0;       //ptrU_t_Image[i] = 0.0;
     }
-
-    m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
     imgRange   = new double[2];
     labelRange = new double[2];
