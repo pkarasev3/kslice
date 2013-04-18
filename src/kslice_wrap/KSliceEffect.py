@@ -8,6 +8,7 @@ from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
 from copy import copy, deepcopy
 from numpy import *
+from KUtil import *
 
 #import KSliceEffect_GUI
 
@@ -79,10 +80,11 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     super(KSliceEffectOptions,self).destroy()
     print("Destroy in KSliceOptions has been called")
 
-  # note: this method needs to be implemented exactly as-is
-  # in each leaf subclass so that "self" in the observer
-  # is of the correct type
+  
   def updateParameterNode(self, caller, event):
+    '''# in each leaf subclass so that "self" in the observer
+       # is of the correct type
+    '''
     node = EditUtil.EditUtil().getParameterNode()
     if node != self.parameterNode:
       if self.parameterNode:
@@ -106,13 +108,6 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.parameterNode.SetDisableModifiedEvent(disableState)
 
   def updateGUIFromMRML(self,caller,event):
-    print("making the connections")
-    #params = ("radius",)
-    #for p in params:
-    # if self.parameterNode.GetParameter("KSliceEffect,"+p) == '':
-    # # don't update if the parameter node has not got all values yet
-    # return
-
     self.updatingGUI = True
     super(KSliceEffectOptions,self).updateGUIFromMRML(caller,event)
     self.disconnectWidgets()
@@ -128,7 +123,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
       del(slicer.modules.editorBot)
       self.botButton.text = "Start Interactive Segmentor"
     else:
-      KSliceCLBot(self)
+      KSliceBot(self)
       self.botButton.text = "Stop Interactive Segmentor"
 
   def updateMRMLFromGUI(self):
@@ -143,7 +138,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
 
 
-class KSliceCLBot(object): #stays active even when running the other editor effects
+class KSliceBot(object): #stays active even when running the other editor effects
   """
 Task to run in the background for this effect.
 Receives a reference to the currently active options
@@ -175,6 +170,7 @@ so it can access tools if needed.
   def stop(self):
     self.active = False
     self.logic.destroy()
+    
   def iteration(self):
     """Perform an iteration of the algorithm"""
     if not self.active:
@@ -303,14 +299,8 @@ def bind_view_observers( handlerFunc ):
 
 class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   """
-This class contains helper methods for a given effect
-type. It can be instanced as needed by an KSliceEffectTool
-or KSliceEffectOptions instance in order to compute intermediate
-results (say, for user feedback) or to implement the final
-segmentation editing operation. This class is split
-from the KSliceEffectTool so that the operations can be used
-by other code without the need for a view context.
-"""
+    [concise useful desc]
+  """
 
   def __init__(self,sliceLogic):
     self.sliceLogic = sliceLogic
@@ -349,7 +339,9 @@ by other code without the need for a view context.
         s.connect('activatedAmbiguously()', keydef[1])
         self.qtkeyconnections.append(s)
 
-    #set the image, label nodes (this will not change although the user can alter what is bgrnd/frgrnd in editor)
+    #  TODO: check this claim-  might be causing leaks
+    #     set the image, label nodes (this will not change although the user can
+    #      alter what is bgrnd/frgrnd in editor)
     labelLogic = self.sliceLogic.GetLabelLayer()
     self.labelNode = labelLogic.GetVolumeNode()
     backgroundLogic = self.sliceLogic.GetBackgroundLayer()
@@ -383,75 +375,52 @@ by other code without the need for a view context.
     steeredVolume = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
 
     steeredArray = slicer.util.array(steeredName) #get the numpy array
-    steeredArray[:]=0 #initialize user input
+    steeredArray[:]=0 # Init user input to zeros
     tmpVol = steeredVolume.GetImageData()
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
 
     ksliceMod.SetUIVol( tmpVol )
     ksliceMod.SetCurrLabel(self.labVal)  
-# Do this AFTER setting from UIarray: ???
     ksliceMod.Initialize()
 
-    #self.UIarray=vtk.util.numpy_support.vtk_to_numpy(tmpVol.GetScalars())     
-    #self.UIVol  = 
     self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
     self.UIVol  =steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
-#    ksliceMod.SetUIVol(self.UIVol)
-    # seems like info propagates  UIarray to UIVol, not the other way
+    # Confused about how info propagates UIarray to UIVol, not the other way
+    # NEEDS AUTO TESTS
     
-    
-#   ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
     self.currSlice= None
     self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful
 
-    self.lastRunPlane='None' #null setting, meaning we havent done any segmentations yet
-    self.lastModBy='None'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.accumInProg=0       #marker to know that we are accumulating user input   
-
-
+    self.lastRunPlane ='None'   #null setting, meaning we havent done any segmentations yet
+    self.lastModBy    ='None'   #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.accumInProg    =0        #marker to know that we are accumulating user input   
 
     print("Making temporary slice arrays")
     volSize=self.labelImg.GetDimensions()
-    volumesLogic = slicer.modules.volumes.logic()
-    ij_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-ij_Tmp')
-    ij_tmp_imgDat=ij_tmp.GetImageData()
-    ij_tmp_imgDat.SetDimensions(volSize[0], volSize[1],1) #use just one slice to keep track of changes
-    ij_tmp_imgDat.SetScalarTypeToDouble()
-    ij_tmp_imgDat.AllocateScalars()
-    ij_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ij_Tmp') #get the numpy array
-    ij_tmpArr[:]=0
-    self.ij_tmpArr=ij_tmpArr
+    def createTmpArray( dim0, dim1, nameSuffix ):
+        volumesLogic = slicer.modules.volumes.logic()
+        tmp          =volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + nameSuffix)
+        tmp_imgDat   =tmp.GetImageData()
+        tmp_imgDat.SetDimensions(volSize[dim0], volSize[dim1],1) #use just one slice to keep track of changes
+        tmp_imgDat.SetScalarTypeToDouble()
+        tmp_imgDat.AllocateScalars()
+        tmpArr = slicer.util.array(self.backgroundNode.GetName() + nameSuffix) #get the numpy array
+        tmpArr[:]=0
+        return tmpArr
     
-
-    jk_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-jk_Tmp')
-    
-    jk_tmp_imgDat=jk_tmp.GetImageData()
-    jk_tmp_imgDat.SetDimensions(volSize[1], volSize[2], 1) #use just one slice to keep track of changes
-    jk_tmp_imgDat.SetScalarTypeToDouble()
-    jk_tmp_imgDat.AllocateScalars()
-    jk_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-jk_Tmp') #get the numpy array
-    jk_tmpArr[:]=0
-    self.jk_tmpArr=jk_tmpArr
-
-
-    ik_tmp=volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + '-ik_Tmp')
-    ik_tmp_imgDat=ik_tmp.GetImageData()
-    ik_tmp_imgDat.SetDimensions(volSize[0], volSize[2], 1) #use just one slice to keep track of changes
-    ik_tmp_imgDat.SetScalarTypeToDouble()
-    ik_tmp_imgDat.AllocateScalars()
-    ik_tmpArr = slicer.util.array(self.backgroundNode.GetName() + '-ik_Tmp') #get the numpy array
-    ik_tmpArr[:]=0    
-    self.ik_tmpArr=ik_tmpArr
+    self.ij_tmpArr=createTmpArray(0,1,'-ij_Tmp')
+    self.jk_tmpArr=createTmpArray(1,2,'-jk_Tmp')
+    self.ik_tmpArr=createTmpArray(0,2,'-ik_Tmp')
     
     self.i_range=arange(0,volSize[0])
     self.j_range=arange(0,volSize[1])
     self.k_range=arange(0,volSize[2])
     print("Done creating temporary slice arrays")
 
-    #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
+    # keep track of these vars so plane changes make tmpArr re-init correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp =self.ijkPlane
  
@@ -463,6 +432,24 @@ by other code without the need for a view context.
       pass
     else:
       pass                                                                       #print "windowListener => processEvent( " + str(event) +" )"   
+   
+    if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
+      # should be done first! sets orientation info
+      sw = self.swLUT[interactor]
+      if not sw:
+        print "caller (interactor?) not found in lookup table!"
+        pass
+      else:
+        viewName,orient = get_view_names(sw)
+        xy = interactor.GetEventPosition()
+        ijk = smart_xyToIJK(xy,sw)
+        vals = get_values_at_IJK(ijk,sw)
+        self.sliceLogic = sw.sliceLogic()
+        ijkPlane = self.sliceIJKPlane()
+        self.ksliceMod.SetOrientation(str(ijkPlane))
+        self.ijkPlane = ijkPlane
+        self.computeCurrSlice()
+        print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
 
     # self.labVal doesn't seem to work when erasing
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
@@ -498,33 +485,28 @@ by other code without the need for a view context.
         #TODO: scale by the currLabelValue 
 
         # Argh, overwrites any changes to underlying vtk volume!?
-        if bUseLabelModTrigger:
-          self.UIarray[self.linInd]+=signAccum*deltPaint
-  
+        #if bUseLabelModTrigger: # trying to add this back in
+        
+        self.UIarray[self.linInd]+=signAccum*deltPaint
         self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
-        print "min,max of self.UIarray:" + str(self.UIarray.min()) + ","+ str(self.UIarray.max())
-        print "sign of accumulation:"   + str(signAccum)        
-
-
-    if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
-      # IVAN: this should be done first, unless you def think otherwise
-      sw = self.swLUT[interactor]
-      if not sw:
-        print "caller (interactor?) not found in lookup table!"
-        pass
-      else:
-        viewName,orient = get_view_names(sw)
-        xy = interactor.GetEventPosition()
-        ijk = smart_xyToIJK(xy,sw)
-        vals = get_values_at_IJK(ijk,sw)
-        self.sliceLogic = sw.sliceLogic()
-        ijkPlane = self.sliceIJKPlane()
-        self.ksliceMod.SetOrientation(str(ijkPlane))
-        self.ijkPlane = ijkPlane
-        self.computeCurrSlice()
-        print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
-
+        
+        def check_U_sync( ):
+          range_UIVol = self.UIVol.GetScalarRange()
+          range_UIArr = [self.UIarray.min(),self.UIarray.max()]
+          strInfo="min,max of UIVol and UIArr = "+str(range_UIVol)+";  "+str(range_UIArr)+", sign(uk)= " + str(signAccum)
+          isGood = True
+          if max( [abs(range_UIArr[0]-range_UIVol[0]),
+                   abs(range_UIArr[1]-range_UIVol[1])]  )>0.5:
+            Print_Bad( "FAIL SYNC! "+strInfo )
+            isGood = False
+          else:
+            Print_Good(strInfo)
+          return isGood
+          
+        passedTest = check_U_sync()
+        
+    
     if event == "RightButtonPressEvent":
         print "right mouse ..."
     
