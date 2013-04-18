@@ -424,6 +424,18 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp =self.ijkPlane
  
+  def check_U_sync(self):
+    range_UIVol = self.UIVol.GetScalarRange()
+    range_UIArr = [self.UIarray.min(),self.UIarray.max()]
+    strInfo="min,max of UIVol and UIArr = "+str(range_UIVol)+";  "+str(range_UIArr)+", sign(uk)= "
+    isGood = True
+    if max( [abs(range_UIArr[0]-range_UIVol[0]),
+             abs(range_UIArr[1]-range_UIVol[1])]  )>0.5:
+      Print_Bad( "FAIL SYNC! "+strInfo )
+      isGood = False
+    else:
+      Print_Good(strInfo)
+    return isGood
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
@@ -486,25 +498,15 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
         # Argh, overwrites any changes to underlying vtk volume!?
         #if bUseLabelModTrigger: # trying to add this back in
+
+        ''' If you Enable this, It must pass the U Sync check! '''
+        # self.UIarray[self.linInd]+=signAccum*deltPaint
+
         
-        self.UIarray[self.linInd]+=signAccum*deltPaint
         self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
-        
-        def check_U_sync( ):
-          range_UIVol = self.UIVol.GetScalarRange()
-          range_UIArr = [self.UIarray.min(),self.UIarray.max()]
-          strInfo="min,max of UIVol and UIArr = "+str(range_UIVol)+";  "+str(range_UIArr)+", sign(uk)= " + str(signAccum)
-          isGood = True
-          if max( [abs(range_UIArr[0]-range_UIVol[0]),
-                   abs(range_UIArr[1]-range_UIVol[1])]  )>0.5:
-            Print_Bad( "FAIL SYNC! "+strInfo )
-            isGood = False
-          else:
-            Print_Good(strInfo)
-          return isGood
-          
-        passedTest = check_U_sync()
+                 
+        self.check_U_sync()
         
     
     if event == "RightButtonPressEvent":
@@ -596,7 +598,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     lm = slicer.app.layoutManager()
        
     self.computeCurrSlice()
-
+    
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
@@ -619,7 +621,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.acMod=1
     self.lastRunPlane=self.ijkPlane
     self.lastModBy='2D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
-
+    self.check_U_sync()
+    
     #update vars
     labelImage.Modified()
     self.labelNode.Modified()
@@ -628,7 +631,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   def runSegment3D(self):
     lm = slicer.app.layoutManager()
     self.computeCurrSlice()
-
+    
     # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
@@ -651,6 +654,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #save the 'last run state' information
     self.acMod=1
     self.lastModBy='3D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.check_U_sync()
 
     labelImage.Modified()
     self.labelNode.Modified()

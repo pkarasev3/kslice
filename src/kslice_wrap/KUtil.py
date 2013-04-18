@@ -32,10 +32,10 @@ class bcolors:
         self.ENDC = ''
 
 def Print_Bad( strInput ):
-  print bcolors.FAIL + strInput + bcolors.ENDC
+  print bcolors.FAIL +  "(FAIL) " + strInput + bcolors.ENDC
   
 def Print_Good( strInput ):
-  print bcolors.OKGREEN + strInput + bcolors.ENDC  
+  print bcolors.OKGREEN +"(OK)   "+ strInput + bcolors.ENDC  
 
 #To use code like this, you can do something like
 #
