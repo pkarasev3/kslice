@@ -147,6 +147,13 @@ inline double Delta( double z )
 }
 
 }
+int KSegmentorBase::GetLzLength() const
+{
+    if(NULL==LL3D.Lz)
+        return -1;
+    else
+        return LL3D.Lz->length;
+}
 
 double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
 {
@@ -167,10 +174,10 @@ double KSegmentorBase::evalChanVeseCost( double& mu_i, double& mu_o ) const
     mu_o = integral_I_zpH / (integral_zero_plus_H +1e-12);
 
 //    cout << "mu_i = " << mu_i << ", mu_o = " << mu_o << endl;
-//    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
-//    {
-//        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
-//    }
+    for (int voxel_idx = 0; voxel_idx < Nelements; voxel_idx++ )
+    {
+        E +=  pow( (img[voxel_idx]-mu_i),2.0 ) + pow( (img[voxel_idx]-mu_o),2.0 );
+    }
 
     return (E/2.0);
 }
@@ -181,9 +188,9 @@ void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
     bool jk =  (0 == ijk_str.compare("JK") );
     bool ik =  (0 == ijk_str.compare("IK") );
     if( ij || jk || ik ) {
-      //if( ijk_str.compare(m_IJK_orient) ) {
-      //  cache_phi.clear(); std::cout << "changed orientation!" << std::endl;
-      //}
+      if( ijk_str.compare(m_IJK_orient) ) {
+          std::cout << "changed orientation to " << ijk_str << ".. ";
+      }
         this->m_IJK_orient = ijk_str;
     } else {
         std::cout << "invalid IJK orientation in KSegmentorBase! ignoring " << ijk_str << endl;

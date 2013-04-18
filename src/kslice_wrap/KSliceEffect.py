@@ -364,6 +364,8 @@ by other code without the need for a view context.
     self.labelImg=labelImg
     #self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
     #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
+    
+    #TODO: prevents other-named labels?
     self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') 
 
     #put test listener on the whole window
@@ -379,8 +381,8 @@ by other code without the need for a view context.
     ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
     ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
 
-    volumesLogic = slicer.modules.volumes.logic()
-    steeredName = self.backgroundNode.GetName() + '-steered'
+    volumesLogic  = slicer.modules.volumes.logic()
+    steeredName   = self.backgroundNode.GetName() + '-UserInput'
     steeredVolume = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
 
     steeredArray = slicer.util.array(steeredName) #get the numpy array
@@ -388,12 +390,20 @@ by other code without the need for a view context.
     tmpVol = steeredVolume.GetImageData()
     tmpVol.SetScalarTypeToDouble()
     tmpVol.AllocateScalars()
-    ksliceMod.SetUIVol( tmpVol )
+#    ksliceMod.SetUIVol( tmpVol )
     ksliceMod.SetCurrLabel(self.labVal)  
-    ksliceMod.Initialize()
-    self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
+# Do this AFTER setting from UIarray:
+    #                   ksliceMod.Initialize()
 
-    self.UIVol = steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    #self.UIarray=vtk.util.numpy_support.vtk_to_numpy(tmpVol.GetScalars())     
+    #self.UIVol  = 
+    self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
+    self.UIVol  =steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    ksliceMod.SetUIVol(self.UIVol)
+    # seems like info propagates  UIarray to UIVol, not the other way
+    
+    
+    ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
     self.currSlice= None
     self.ijkPlane='IJ'
@@ -443,13 +453,10 @@ by other code without the need for a view context.
     self.k_range=arange(0,volSize[2])
     print("Done creating temporary slice arrays")
 
-
     #need to keep track of these two variables so when plane changes, the tmpArr get re-initialized correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp=self.ijkPlane
  
-
-
 
   def testWindowListener(self, caller, event):
     interactor=caller # should be called by the slice interactor...
@@ -483,12 +490,16 @@ by other code without the need for a view context.
                 deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd] 
         #TODO: scale by the currLabelValue 
-        self.UIarray[self.linInd]+=signAccum*deltPaint
+
+        # Argh, overwrites any changes to underlying vtk volume!?
+        bUpdateFromNP=False 
+        if bUpdateFromNP:
+          self.UIarray[self.linInd]+=signAccum*deltPaint
+
         self.labArr[self.linInd] = newLab   
         self.accumInProg=0    #done accumulating
 
-        print "maximum of User input:" + str(self.UIarray.max())
-        print "minimum of user input:" + str(self.UIarray.min())
+        print "min,max of self.UIarray:" + str(self.UIarray.min()) + ","+ str(self.UIarray.max())
         print "sign of accumulation:"   + str(signAccum)        
 
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
@@ -503,20 +514,24 @@ by other code without the need for a view context.
         vals = get_values_at_IJK(ijk,sw)
         self.sliceLogic = sw.sliceLogic()
         ijkPlane = self.sliceIJKPlane()
-        print "ijk plane is: " + str(ijkPlane)
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
         self.computeCurrSlice()
-        print "smarter curr slice = " + str(self.currSlice)
+        print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
 
     if event == "RightButtonPressEvent":
-        print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        print "right mouse ..."
     
-
     if event == "LeftButtonPressEvent":
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
-        self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        #self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],+1.0)
+        U_ijk = self.UIVol.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
+        print 'U at ' + str(ijk) + ' = '+str(U_ijk)
+        U_new = U_ijk - 1.0
+        self.UIVol.SetScalarComponentFromDouble(ijk[0],ijk[1],ijk[2],U_new)
+
+    
+    if event == "LeftButtonPressEvent":
         self.accumInProg=1
         if self.ijkPlane=="IJ":
             self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
@@ -532,8 +547,6 @@ by other code without the need for a view context.
             
         if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
             self.labArr[self.linInd]=0   
-
-                
 
        
   def labModByUser(self,caller,event):
@@ -634,17 +647,15 @@ by other code without the need for a view context.
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetBrushRad(currRad)
-    self.ksliceMod.SetNumIts(50)
+    self.ksliceMod.SetNumIts(10) # should be less than 2D!
 
     #execute a run
     #still doing 3D, user has not drawn => use cache
     useCache= (self.lastModBy=='3D') & (self.userMod==0) 
-    
     print "use cache?:" + str(useCache)
 
     self.ksliceMod.runUpdate3D(not useCache)
-    #print("1")
-
+    
     #signal to slicer that the label needs to be updated
     labelImage=self.labelNode.GetImageData()
 

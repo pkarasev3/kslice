@@ -42,28 +42,28 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
 
 }
 
-void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
-                                               double weight /*=1.0 default */)
-{
-  double Umax  = 1.0;
-  Umax         = this->GetUmax(); assert(Umax>0);
-  double Ustep = weight * (Umax)/2.0;
-  if( fabs(Ustep) < 0.01 ) {
-    /*cout <<"whoa something is *messed up*, check Umax " << endl;*/ assert(1); }
+//void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
+//                                               double weight /*=1.0 default */)
+//{
+//  double Umax  = 1.0;
+//  Umax         = this->GetUmax(); assert(Umax>0);
+//  double Ustep = weight * (Umax)/2.0;
+//  if( fabs(Ustep) < 0.01 ) {
+//    /*cout <<"whoa something is *messed up*, check Umax " << endl;*/ assert(1); }
 
-  double user_input      = -Ustep * ( value > 0.5 ) +
-      Ustep * ( value <= 0.5 );
+//  double user_input      = -Ustep * ( value > 0.5 ) +
+//      Ustep * ( value <= 0.5 );
 
-  this->ptrU_t_Image[element] = user_input;
+//  this->ptrU_t_Image[element] = user_input;
 
-  if( ptrIntegral_Image[element] < -Umax ) {
-    ptrIntegral_Image[element] = -Umax;
-  } else if( ptrIntegral_Image[element] > Umax ) {
-    ptrIntegral_Image[element] = Umax;
-  }
+//  if( ptrIntegral_Image[element] < -Umax ) {
+//    ptrIntegral_Image[element] = -Umax;
+//  } else if( ptrIntegral_Image[element] > Umax ) {
+//    ptrIntegral_Image[element] = Umax;
+//  }
 
-  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
-}
+//  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
+//}
 
 void KSegmentor3D::integrateUserInput()
 {
@@ -198,7 +198,7 @@ public:
         return "User input caused unexpected behavior internally!";
     }
 };
-double UmaxConst = 1.0;
+double UmaxConst = 5.0;
 std::vector<double> cached_phi;
 bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
 {    /** ensure that phi does not change sign when
@@ -300,6 +300,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*dim0 * dim1 );
 
     //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
+    // Why does the U_I_slice keep seeming like zeros when clicking??
     interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                            iter,rad,lambda*0.5,display);
@@ -323,16 +324,16 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
-    ll_init(LL3D.Lz);
-    ll_init(LL3D.Ln1);
-    ll_init(LL3D.Ln2);
-    ll_init(LL3D.Lp1);
-    ll_init(LL3D.Lp2);
-    ll_init(LL3D.Lout2in); //ensure that Lout2in, Lin2out dont need to be intialized!!
-    ll_init(LL3D.Lin2out);
+
     if( !reInitFromMask ) {// do this only if re-making the level set function
         cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
-
+        ll_init(LL3D.Lz);
+        ll_init(LL3D.Ln1);
+        ll_init(LL3D.Ln2);
+        ll_init(LL3D.Lp1);
+        ll_init(LL3D.Lp2);
+        ll_init(LL3D.Lout2in); //ensure that Lout2in, Lin2out dont need to be intialized!!
+        ll_init(LL3D.Lin2out);
     }else{
         this->initializeData();
         this->CreateLLs(LL3D);

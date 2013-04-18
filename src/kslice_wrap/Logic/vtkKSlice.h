@@ -17,7 +17,7 @@ class VTK_SLICER_KSLICE_MODULE_LOGIC_EXPORT vtkKSlice : public vtkObject
 public:
   static vtkKSlice* New();
   vtkTypeRevisionMacro(vtkKSlice,vtkObject);
-  
+
   void PrintSelf(ostream &os, vtkIndent indent);
 
   vtkSetObjectMacro(ImageVol, vtkImageData); //void SetImage(vtkImageData* image);
@@ -48,8 +48,7 @@ protected:
  vtkKSlice();
   virtual ~vtkKSlice();
   KSegmentor3D* ksegmentor;
-  //KDataWarehouse* dataWarehouse; //all storage arrays
-  //KViewerOptions* ksliceOptions; //app parameters, variables
+
   bool initCorrectFlag; //if Kslice has been initialized =1, else starts out being 0
   bool m_bUseEdgeBased; //if =1, use edge based energy, else region based (default =0)
   bool contInit; //flag for initializing the

@@ -18,11 +18,10 @@ vtkStandardNewMacro(vtkKSlice); //for the new() macro
 
 
 vtkKSlice::vtkKSlice( ) {
-    ImageVol = NULL;
-    LabelVol = NULL;
-    UIVol = NULL;
-
-    //dataWarehouse= new KDataWarehouse();
+    ImageVol   = NULL;
+    LabelVol   = NULL;
+    UIVol      = NULL;
+    ksegmentor = NULL;
 
     BrushRad=7;
     NumIts=50;
@@ -54,11 +53,11 @@ void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
             << i << "," <<j << ", " << k << std::endl; // UIVol->Print(std::cout);
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   this->ksegmentor->accumulateUserInput(val,i,j,k);
-
+  //UIVol->DeepCopy(ksegmentor->U_Integral_image);
   cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
   double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl; // UIVol->Print(std::cout);
-
+  UIVol->Modified();
 }
 
 void vtkKSlice::PasteSlice(int toSlice){
@@ -70,7 +69,6 @@ void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
     this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
                                                 contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
-    //dataWarehouse->ksegmentor->SetUseEdgeBasedEnergy( m_bUseEdgeBased );
     this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
@@ -80,7 +78,7 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
-        //LabelVol->Modified(); //why do we need this??
+        LabelVol->Modified(); //why do we need this??
     }
 }
 
@@ -89,7 +87,7 @@ void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
-        //LabelVol->Modified(); //why do we need this??
+        LabelVol->Modified(); //why do we need this??
     }
 }
 

@@ -129,6 +129,7 @@ class KSegmentorBase
             for (int i=0;i<3;i++)
                 spacing[i]=m_Spacing_mm[i];
         }
+        int GetLzLength() const;
 
         void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {

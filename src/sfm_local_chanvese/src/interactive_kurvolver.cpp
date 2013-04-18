@@ -234,17 +234,20 @@ void apply_control_function(LL *Lz,double *phi, double* F,
   int n=0;
   int idx;
   double maxU = -1e99;
+  double minU =  1e99;
   while(Lz->curr != NULL){ //loop through list
     idx = Lz->curr->idx;
     double U = U_integral[idx];
     if( U > maxU ) { maxU = U; }
+    if( U < minU ) { minU = U; }
     double err = tanh(U) - tanh(phi[idx]);
-    double f = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
+    double f = pow(U/3.0,2.0) * err * (0.1+fabs(F[n]));
     F[n] = F[n] + f;
 
     ll_step(Lz);
     n++; //next point
   }
+  std::cout<< minU<<","<<maxU<<" =Min,Max encountered by apply_control_function (2D)"<<std::endl;
 }
 
 void apply_control_function_ext(LL *Lz,double *phi, double* F,
