@@ -3,7 +3,7 @@ file( GLOB ksegm_headers include/*.h  )
 
 # MACOSX_BUNDLE
 
-set( KSEGM_LIBS 
+set( KSEGM_LIBS
   ${OpenCV_LIBS}
   vtkRendering  vtkGraphics
   vtkHybrid vtkImaging vtkIO
@@ -12,3 +12,5 @@ set( KSEGM_LIBS
 
 add_library(KSegmentor SHARED ${ksegm_headers} ${ksegm_sources})
 target_link_libraries(KSegmentor   sfm_local_chanvese   vrcl ${KSEGM_LIBS} )
+
+add_subdirectory(tests)
