@@ -1,5 +1,4 @@
 import os
-from __main__ import vtk, qt, ctk, slicer
 from copy import copy, deepcopy
 
 class KUtil:
@@ -7,6 +6,8 @@ class KUtil:
   This class is the 'hook' for slicer to detect and recognize the extension
   """
   def __init__(self, parent):
+    from __main__ import vtk, qt, ctk, slicer # hide the import here so 
+                                              #the rest can be tested easily w/o all heavy libs
     parent.title = "KUtil"
     parent.categories = [""]
     parent.contributors = [""]
@@ -20,7 +21,7 @@ class bcolors:
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
-    FAIL = '\033[91m'
+    FAIL = '\033[101m'
     ENDC = '\033[0m'
 
     def disable(self):
