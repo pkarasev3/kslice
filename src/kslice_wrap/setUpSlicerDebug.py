@@ -3,7 +3,8 @@
 
 filenameImage="/home/kslice/kslice/data/ANON0084.mha"
 volNode=slicer.util.loadVolume(filenameImage)
-#volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/images/husney.mha")
+
+volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/images/husney.mha")
 if not volNode:
 	volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
 

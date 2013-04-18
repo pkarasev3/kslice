@@ -57,7 +57,7 @@ void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
   cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
   double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl; // UIVol->Print(std::cout);
-  UIVol->Modified();
+  UIVol->Update();
 }
 
 void vtkKSlice::PasteSlice(int toSlice){
@@ -78,7 +78,7 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
-        LabelVol->Modified(); //why do we need this??
+        //LabelVol->Modified(); //why do we need this??
     }
 }
 
@@ -87,7 +87,7 @@ void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
-        LabelVol->Modified(); //why do we need this??
+        //LabelVol->Modified(); //why do we need this??
     }
 }
 

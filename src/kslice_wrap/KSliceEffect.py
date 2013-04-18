@@ -7,7 +7,7 @@ from EditorLib import EditUtil
 from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
 from copy import copy, deepcopy
-from numpy import *
+import numpy as np
 from KUtil import *
 
 #import KSliceEffect_GUI
@@ -315,6 +315,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     self.labVal = EditorLib.EditUtil.EditUtil().getLabel() #this gets set once, user cannot use a different color w/o stopping segmentation, starting over
     #create variables to keep track of how the label changed (automatic part or user input)
+    Print_Good("Init KSliceLogic with Label Fixed to " + str(self.labVal) )
     self.acMod = 0
     self.userMod = 0
 
@@ -351,9 +352,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelImg=self.labelNode.GetImageData()
     self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
     self.labelImg=labelImg
-    #self.labArr=vtk.util.numpy_support.vtk_to_numpy(labelImg.GetPointData().GetScalars()) 
-    #keep reference for easy computation of accumulation BUT this is a hacked version of getting the underlying array 
-    
+   
     #TODO: prevents other-named labels?
     self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') 
 
@@ -401,30 +400,29 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     print("Making temporary slice arrays")
     volSize=self.labelImg.GetDimensions()
     def createTmpArray( dim0, dim1, nameSuffix ):
-        volumesLogic = slicer.modules.volumes.logic()
-        tmp          =volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + nameSuffix)
-        tmp_imgDat   =tmp.GetImageData()
-        tmp_imgDat.SetDimensions(volSize[dim0], volSize[dim1],1) #use just one slice to keep track of changes
-        tmp_imgDat.SetScalarTypeToDouble()
-        tmp_imgDat.AllocateScalars()
-        tmpArr = slicer.util.array(self.backgroundNode.GetName() + nameSuffix) #get the numpy array
-        tmpArr[:]=0
-        return tmpArr
+        Print_Good( "making array " + nameSuffix )
+        return np.zeros([volSize[dim0],volSize[dim1],1])   #tmpArr
+               
     
     self.ij_tmpArr=createTmpArray(0,1,'-ij_Tmp')
     self.jk_tmpArr=createTmpArray(1,2,'-jk_Tmp')
     self.ik_tmpArr=createTmpArray(0,2,'-ik_Tmp')
     
-    self.i_range=arange(0,volSize[0])
-    self.j_range=arange(0,volSize[1])
-    self.k_range=arange(0,volSize[2])
+    self.i_range=np.arange(0,volSize[0])
+    self.j_range=np.arange(0,volSize[1])
+    self.k_range=np.arange(0,volSize[2])
+    self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range)
     print("Done creating temporary slice arrays")
 
     # keep track of these vars so plane changes make tmpArr re-init correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp =self.ijkPlane
+    
+    range_img = self.backgroundNode.GetImageData().GetScalarRange()
+    Print_Good( str(range_img) )
  
   def check_U_sync(self):
+    #self.UIVol.Update()
     range_UIVol = self.UIVol.GetScalarRange()
     range_UIArr = [self.UIarray.min(),self.UIarray.max()]
     strInfo="min,max of UIVol and UIArr = "+str(range_UIVol)+";  "+str(range_UIArr)+", sign(uk)= "
@@ -443,7 +441,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if event == "MouseMoveEvent": # this a verbose event, dont print
       pass
     else:
-      pass                                                                       #print "windowListener => processEvent( " + str(event) +" )"   
+      pass  #print "windowListener => processEvent( " + str(event) +" )"   
    
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       # should be done first! sets orientation info
@@ -467,8 +465,25 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
     signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
     
+    
+    if event == "LeftButtonPressEvent":
+      self.accumInProg=1
+      if self.ijkPlane=="IJ":
+          self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range)
+          self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
+          
+      elif self.ijkPlane=="JK":
+          self.linInd=np.ix_(self.k_range, self.j_range, [self.currSlice])
+          self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
+          
+      elif self.ijkPlane=="IK":
+          self.linInd=np.ix_(self.k_range,  [self.currSlice], self.i_range)
+          self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
+          
+      if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
+          self.labArr[self.linInd]=0
+          
 
-    # Ivan: I can't get it to work with both numpy AND c++-managed ...
     bUseLabelModTrigger = False    
     if (event=="ModifiedEvent") and (self.accumInProg==1):
         # Danger: you haven't recalc'd the orientation and currSlice yet        
@@ -500,10 +515,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         #if bUseLabelModTrigger: # trying to add this back in
 
         ''' If you Enable this, It must pass the U Sync check! '''
-        # self.UIarray[self.linInd]+=signAccum*deltPaint
-
+        self.UIarray[self.linInd]+=signAccum*deltPaint
         
-        self.labArr[self.linInd] = newLab   
+        self.labArr[self.linInd] = self.labVal * newLab   
         self.accumInProg=0    #done accumulating
                  
         self.check_U_sync()
@@ -516,22 +530,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.ksliceMod.applyUserIncrement(ijk[0],ijk[1],ijk[2],-signAccum)
         print "Accumulate User Input! "+str(ijk)+str(orient)+" ("+str(viewName)+")"
   
-    if (event == "LeftButtonPressEvent"):
-        self.accumInProg=1
-        if self.ijkPlane=="IJ":
-            self.linInd=ix_([self.currSlice],  self.j_range, self.i_range)
-            self.ij_tmpArr=deepcopy(self.labArr[self.linInd])            
-            
-        elif self.ijkPlane=="JK":
-            self.linInd=ix_(self.k_range, self.j_range, [self.currSlice])
-            self.jk_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            
-        elif self.ijkPlane=="IK":
-            self.linInd=ix_(self.k_range,  [self.currSlice], self.i_range)
-            self.ik_tmpArr=deepcopy(self.labArr[self.linInd]) 
-            
-        if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
-            self.labArr[self.linInd]=0   
+      
 
 # 
 #        U_ijk = self.UIVol.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
@@ -624,7 +623,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.check_U_sync()
     
     #update vars
-    labelImage.Modified()
+    labelImage.Modified()      # This triggers a Modified Event on Label => windowListener call
     self.labelNode.Modified()
     #labelNode.SetModifiedSinceRead(1)
 

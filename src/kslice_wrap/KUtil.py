@@ -38,6 +38,17 @@ def Print_Bad( strInput ):
 def Print_Good( strInput ):
   print bcolors.OKGREEN +"(OK)   "+ strInput + bcolors.ENDC  
 
+# Gulag 
+ #volumesLogic = slicer.modules.volumes.logic()
+        #tmp          =volumesLogic.CreateAndAddLabelVolume(slicer.mrmlScene, self.backgroundNode, self.backgroundNode.GetName() + nameSuffix)
+        #tmp_imgDat   =tmp.GetImageData()
+        #tmp_imgDat.SetDimensions(volSize[dim0], volSize[dim1],1) #use just one slice to keep track of changes
+        #tmp_imgDat.SetScalarTypeToDouble()
+        #tmp_imgDat.AllocateScalars()
+        #tmpArr = slicer.util.array(self.backgroundNode.GetName() + nameSuffix) #get the numpy array
+        #tmpArr[:]=0
+        #tmpArr = 
+        
 #To use code like this, you can do something like
 #
 #print bcolors.WARNING + "Warning: No active frommets remain. Continue?" 

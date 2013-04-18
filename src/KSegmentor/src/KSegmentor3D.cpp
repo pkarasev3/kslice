@@ -95,12 +95,9 @@ void KSegmentor3D::initializeData()
   }
 
   this->imgRange=imgRange;
-  //ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
-  //ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
-
 
   int imgType=imageVol->GetScalarType();
-  switch(imgType)
+  switch(imgType)  /** This can definitely be done only once after initial setup!*/
   {
   case 0:     //#define VTK_VOID            0
       assert(0);
@@ -352,9 +349,16 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
 
     ptrIntegral_Image = static_cast<double*>( U_Integral_image->GetScalarPointer() );
+
     interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
                              LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                              iter,rad,lambda*0.5,display);
+
+//    m_DistWeight=0.0; // need to use orientation and currslice to set plane normal and center
+//    interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+//                                 LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+//                                 iter,0.5*lambda,display,this->m_PlaneNormalVector,
+//                                 this->m_PlaneCenter,this->m_DistWeight);
 
     //threshold the level set to update the mask
     int Nelements = this->dimx * this->dimy * this->dimz;
