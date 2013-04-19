@@ -40,6 +40,8 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->labelSlice  = NULL;
   this->phiSlice    = NULL;
 
+  this->firstPassInit = true; // have not done initializeData() yet
+
 }
 
 //void KSegmentor3D::accumulateCurrentUserInput( double value,const unsigned int element,
@@ -87,96 +89,24 @@ void KSegmentor3D::initializeData()
 {
   currSlice=0;
   prevSlice=-1; //this will never be true
-  imageVol->GetScalarRange( imgRange );
-  labelVol->GetScalarRange( labelRange );
-  if( abs(labelRange[1]) < 1e-3 )
-  { // empty label; so set the proper range
-    labelRange[1] = this->currLabel;
-  }
 
-  this->imgRange=imgRange;
-
-  int imgType=imageVol->GetScalarType();
-  switch(imgType)  /** This can definitely be done only once after initial setup!*/
-  {
-  case 0:     //#define VTK_VOID            0
-      assert(0);
-      break;
-  case 1:    //#define VTK_BIT             1
-      vrcl::convertImage( (bool *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 2:    //#define VTK_CHAR            2
-      vrcl::convertImage( (char *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 3:    //#define VTK_UNSIGNED_CHAR   3
-      vrcl::convertImage( (unsigned char *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 4:    //#define VTK_SHORT           4
-      vrcl::convertImage( (short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 5:    //#define VTK_UNSIGNED_SHORT  5
-      vrcl::convertImage( (unsigned short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 6:    //#define VTK_INT             6
-      vrcl::convertImage( (int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 7:    //#define VTK_UNSIGNED_INT    7
-      vrcl::convertImage( (unsigned int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 8:    //#define VTK_LONG            8
-      vrcl::convertImage( (long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 9:    //#define VTK_UNSIGNED_LONG   9
-      vrcl::convertImage( (unsigned long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 10:    //#define VTK_FLOAT          10
-      vrcl::convertImage( (float *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 11:    //#define VTK_DOUBLE         11
-      vrcl::convertImage( (double *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
+  if( firstPassInit ) {
+      imageVol->GetScalarRange( imgRange );
+      labelVol->GetScalarRange( labelRange );
+      if( abs(labelRange[1]) < 1e-3 )
+      { // empty label; so set the proper range
+        labelRange[1] = this->currLabel;
+      }
+      this->imgRange=imgRange;
+      int imgType=imageVol->GetScalarType();
+      vrcl::convertImage( imgType,imageVol->GetScalarPointer(),img, dimx, dimy, dimz);
+      firstPassInit = false;
+  } else {
+      // callgrind claims that this range calc takes a big chunk o time
   }
 
   int labType=labelVol->GetScalarType();
-  switch(labType)
-  {
-  case 0:     //#define VTK_VOID            0
-      assert(0);
-      break;
-  case 1:    //#define VTK_BIT             1
-      vrcl::convertLabel( (bool *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 2:    //#define VTK_CHAR            2
-      vrcl::convertLabel( (char *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 3:    //#define VTK_UNSIGNED_CHAR   3
-      vrcl::convertLabel( (unsigned char *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 4:    //#define VTK_SHORT           4
-      vrcl::convertLabel( (short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 5:    //#define VTK_UNSIGNED_SHORT  5
-      vrcl::convertLabel( (unsigned short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 6:    //#define VTK_INT             6
-      vrcl::convertLabel( (int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 7:    //#define VTK_UNSIGNED_INT    7
-      vrcl::convertLabel( (unsigned int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 8:    //#define VTK_LONG            8
-      vrcl::convertLabel( (long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 9:    //#define VTK_UNSIGNED_LONG   9
-      vrcl::convertLabel( (unsigned long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 10:    //#define VTK_FLOAT          10
-      vrcl::convertLabel( (float *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 11:    //#define VTK_DOUBLE         11
-      vrcl::convertLabel( (double *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  }
+  vrcl::convertLabel(labType,labelVol->GetScalarPointer(), mask, dimx, dimy, dimz);
 
 }
 

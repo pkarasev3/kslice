@@ -206,6 +206,49 @@ namespace vrcl {
       }
   }
 
+  template<typename T> void convertImage(int imgType, T *array, double *destination, int dimx, int dimy, int dimz)
+  {
+      switch(imgType)
+      {
+      case 0:     //#define VTK_VOID            0
+          assert(0);
+          break;
+      case 1:    //#define VTK_BIT             1
+          vrcl::convertImage( (bool *) array, destination, dimx, dimy, dimz);
+          break;
+      case 2:    //#define VTK_CHAR            2
+          vrcl::convertImage( (char *) array, destination, dimx, dimy, dimz);
+          break;
+      case 3:    //#define VTK_UNSIGNED_CHAR   3
+          vrcl::convertImage( (unsigned char *)array, destination, dimx, dimy, dimz);
+          break;
+      case 4:    //#define VTK_SHORT           4
+          vrcl::convertImage( (short *)array, destination, dimx, dimy, dimz);
+          break;
+      case 5:    //#define VTK_UNSIGNED_SHORT  5
+          vrcl::convertImage( (unsigned short *)array, destination, dimx, dimy, dimz);
+          break;
+      case 6:    //#define VTK_INT             6
+          vrcl::convertImage( (int *)array, destination, dimx, dimy, dimz);
+          break;
+      case 7:    //#define VTK_UNSIGNED_INT    7
+          vrcl::convertImage( (unsigned int *)array, destination, dimx, dimy, dimz);
+          break;
+      case 8:    //#define VTK_LONG            8
+          vrcl::convertImage( (long *)array, destination, dimx, dimy, dimz);
+          break;
+      case 9:    //#define VTK_UNSIGNED_LONG   9
+          vrcl::convertImage( (unsigned long *)array, destination, dimx, dimy, dimz);
+          break;
+      case 10:    //#define VTK_FLOAT          10
+          vrcl::convertImage( (float *)array, destination, dimx, dimy, dimz);
+          break;
+      case 11:    //#define VTK_DOUBLE         11
+          vrcl::convertImage( (double *)array, destination, dimx, dimy, dimz);
+          break;
+      }
+  }
+
   template<typename T> void convertLabel(T *array, double *destination, int dimx, int dimy, int dimz)
   {
       long elemNum=0;
@@ -218,6 +261,50 @@ namespace vrcl {
                 destination[elemNum]= (double) ( 0 < array[elemNum] );
             }
         }
+      }
+  }
+
+  template<typename T> void convertLabel(int labType, T *array, double *destination,
+                                         int dimx, int dimy, int dimz)
+  {
+      switch(labType)
+      {
+      case 0:     //#define VTK_VOID            0
+          assert(0);
+          break;
+      case 1:    //#define VTK_BIT             1
+          vrcl::convertLabel( (bool *) array, destination, dimx, dimy, dimz);
+          break;
+      case 2:    //#define VTK_CHAR            2
+          vrcl::convertLabel( (char *) array, destination, dimx, dimy, dimz);
+          break;
+      case 3:    //#define VTK_UNSIGNED_CHAR   3
+          vrcl::convertLabel( (unsigned char *)array, destination, dimx, dimy, dimz);
+          break;
+      case 4:    //#define VTK_SHORT           4
+          vrcl::convertLabel( (short *)array, destination, dimx, dimy, dimz);
+          break;
+      case 5:    //#define VTK_UNSIGNED_SHORT  5
+          vrcl::convertLabel( (unsigned short *)array, destination, dimx, dimy, dimz);
+          break;
+      case 6:    //#define VTK_INT             6
+          vrcl::convertLabel( (int *)array, destination, dimx, dimy, dimz);
+          break;
+      case 7:    //#define VTK_UNSIGNED_INT    7
+          vrcl::convertLabel( (unsigned int *)array, destination, dimx, dimy, dimz);
+          break;
+      case 8:    //#define VTK_LONG            8
+          vrcl::convertLabel( (long *)array, destination, dimx, dimy, dimz);
+          break;
+      case 9:    //#define VTK_UNSIGNED_LONG   9
+          vrcl::convertLabel( (unsigned long *)array, destination, dimx, dimy, dimz);
+          break;
+      case 10:    //#define VTK_FLOAT          10
+          vrcl::convertLabel( (float *)array, destination, dimx, dimy, dimz);
+          break;
+      case 11:    //#define VTK_DOUBLE         11
+          vrcl::convertLabel( (double *)array, destination, dimx, dimy, dimz);
+          break;
       }
   }
 

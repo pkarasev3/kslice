@@ -695,7 +695,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for keyfun,keydef in self.qtkeydefs,qtkeyconnections:
+    for keyfun,keydef in self.qtkeydefs,self.qtkeyconnections:
         print('disconnecting keydef: ')
         print(keyfun)
         keydef.disconnect('activated()', keyfun[1])

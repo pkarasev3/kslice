@@ -36,12 +36,12 @@ if(GetWebData)
 endif()
 
 # Case 1: many inner loop iters
-set(CITERS_LONG  "100")
-set(NITERS_LONG  "5")
+set(CITERS_LONG  "20")
+set(NITERS_LONG  "3")
 
 # Case 2:  many  key presess etc
-set(CITERS_SHORT "10"  )
-set(NITERS_SHORT "10"  )
+set(CITERS_SHORT "3"  )
+set(NITERS_SHORT "2"  )
 
 macro(kseg3d_testGen  TEST_NAME ENERGY_TYPE      CITERS     NITERS)
 add_test( ${TEST_NAME}

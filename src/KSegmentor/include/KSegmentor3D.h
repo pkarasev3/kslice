@@ -40,6 +40,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
     private:
         /** internal 'update from input' function */
         void integrateUserInput();
+        bool firstPassInit; // only load image to double *once*
         //void UpdateArraysAfterTransform();
 };
 
