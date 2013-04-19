@@ -15,8 +15,8 @@
 #include "vtkSmartPointer.h"
 #include "vtkImageData.h"
 #include "KSegmentor3D.h"
-
-//#include <initializer_list>
+#include "boost/current_function.hpp"
+#include <initializer_list>
 
 namespace po = boost::program_options;
 using namespace std;
@@ -24,6 +24,9 @@ using namespace std;
 #define SP( Y, X )  vtkSmartPointer<X> Y = vtkSmartPointer<X>::New()
 
 namespace {
+
+// wow c++0x is pretty l337
+vector<string> validEnergyNames({"ChanVese","LocalCV"});
 
 struct KSegTest2_Options
 {
@@ -37,14 +40,18 @@ struct KSegTest2_Options
                  "which labels to write, e.g. --Output=a_out.mha")
                 ("Image,I",po::value<string>(&imageFilename)->default_value(""),
                  "image volume file")
-                ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(10),
+                ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(50),
                  "# of curve evolution update iterations")
+                ("OuterIters,N",po::value<int>(&outer_iters)->default_value(10),
+                 "# of click-like update iterations")
                 ("SmoothnessKappa,k",po::value<double>(&smoothness_kappa)->default_value(0.5),
                  "smoothness weight, between 0 and a reasonably small integer")
                 ("verbose,v",po::value<bool>(&verbose)->default_value(false),
                  "verbosity, higher to display more crap")
-                ("EnergyName,E",po::value<string>(&energyFunctionalName)->default_value("chanvese"),
-                 "name of energy function to test, e.g. chanvese or kappa. ")
+                ("radiusLRBAC,r",po::value<int>(&rad)->default_value(5),
+                 "radius of ball-integrals in lrbac")
+                ("EnergyName,E",po::value<string>(&energyFunctionalName)->default_value(validEnergyNames[0]),
+                 "name of energy function to test, e.g. ChanVese or kappa. ")
                 ("help","print help");
 
         po::variables_map vm;
@@ -64,8 +71,9 @@ struct KSegTest2_Options
 
         }
     }
-
+    int            rad; // for LocalCV (?)
     int            segmentor_iters;
+    int            outer_iters;
     double         smoothness_kappa;
     bool           verbose;
     string         outputFilename;
@@ -73,24 +81,24 @@ struct KSegTest2_Options
     string         imageFilename;
     string         energyFunctionalName;
 
-
 };
-
-string static_energyFunctionalName;
 
 
 }
-
+#include "boost/timer.hpp"
 int main( int argc, char* argv[] )
 {
     using namespace vrcl;
-
+    boost::timer Clk;
+    Clk.restart();
     cout << " Sample usage: "
          << argv[0] << "-I ./data/emorySE06.mha -L  LabelXYZ.mha  " << endl;
 
     // Create and Initialize Segmentor.
     KSegTest2_Options  opts(argc,argv);
-    static_energyFunctionalName = opts.energyFunctionalName;
+    int index_of_Ename = std::count( validEnergyNames.begin(),validEnergyNames.end(),opts.energyFunctionalName );
+    if( !index_of_Ename ) { cout << opts.energyFunctionalName << " is invalid energy name! "  << endl; exit(1); }
+    else                  { cout << "using E named: " << opts.energyFunctionalName << endl; }
 
     SP(image,vtkImageData);
     SP(label,vtkImageData);
@@ -99,52 +107,55 @@ int main( int argc, char* argv[] )
     SP(lblReader,vtkMetaImageReader);
 
     imgReader->SetFileName(opts.imageFilename.c_str());
-    //imgReader->SetDataScalarTypeToUnsignedShort();
     imgReader->Update();
 
     if(! imgReader->CanReadFile(imgReader->GetFileName()) ){ return -1; }
 
     double Ebest = 1e99;
     double Efirst;
-    boost::shared_ptr<KSegmentor3D>  kseg; /** Correct Storage?? */
-    int result = -1;
+    boost::shared_ptr<KSegmentor3D>  kseg;
+    int result = 0;//-1;
 
     lblReader->SetFileName(opts.inputFilename.c_str());
-    // lblReader->SetDataScalarTypeToUnsignedShort();
     lblReader->Update();
     if(! lblReader->CanReadFile(lblReader->GetFileName()) ){ return -2; }
 
     image = imgReader->GetOutput();
     label = lblReader->GetOutput();
-    { // make an initial UIVol
-        UIVol->DeepCopy(label);
+    int itersToCopy = 50*opts.outer_iters;
+    for( int i=0;i<itersToCopy;i++){
+        UIVol->DeepCopy(label); // make an initial UIVol and copy for timing info
         UIVol->SetScalarTypeToDouble();
         UIVol->AllocateScalars();
-    }
 
+    }
+    cout << itersToCopy << "re-deepCopy'd volume; time = " << Clk.elapsed() << endl;
     kseg = boost::shared_ptr<KSegmentor3D>(
-                new KSegmentor3D(image,label,UIVol,true,0,50,0.005,3/*brush rad*/,1/**label value*/));
+                new KSegmentor3D(image,label,UIVol,true,0,50,0.005,opts.rad/*brush rad*/,1/**label value*/));
     kseg->setNumIterations( opts.segmentor_iters );
-    kseg->SetEnergyChanVese( );
+    if(        0 == opts.energyFunctionalName.compare("ChanVese") ) {
+      kseg->SetEnergyChanVese();
+    } else if( 0 == opts.energyFunctionalName.compare("LocalCV") ) {
+      kseg->SetEnergyLocalCV();
+    }
 
     vector<double> defaultPlaneCenter(3,0.0);
     vector<double> defaultPlaneNormal({1.0,1.0,1.0});
     vector<int> Lz_len; // look at length as correctness check
 
-    for( int k=0; k<10; k++ ) {
+    for( int k=0; k<opts.outer_iters; k++ ) {
         kseg->setCurrIndex( 2 ); // slice index
         kseg->PrintUpdateInfo();
 
         double val = 1.0;
-        int x = 16; int y = 16; int z = k; // use better indices!
+        int x = 16; int y = 16; int z = 16; // use better indices!
         kseg->accumulateUserInput(val,x,y,z);  // make sure something calls this!
 
         kseg->SetPlaneCenter(&(defaultPlaneCenter[0]));
         kseg->SetPlaneNormalVector(&(defaultPlaneNormal[0]));
 
         kseg->Update3D( (k==0)/*is it first time run?*/ );
-       // kseg->Update2D( 1 );
-        Lz_len.push_back( kseg->GetLzLength() );
+               Lz_len.push_back( kseg->GetLzLength() );
         double mu_in,mu_out;
         double E = kseg->evalChanVeseCost(mu_in,mu_out);
         cout << "Iter of Update3D()  = " <<k<<", E= " <<E<<", mu_i = " << mu_in << ", mu_o = " << mu_out << endl;
@@ -164,10 +175,12 @@ int main( int argc, char* argv[] )
     } else { cout<<"No output filename(s) given with -O flag; Not saving final MHA."
                 << endl; }
     if(Ebest < Efirst) {
-        result = 0; // [All Good] code for running with "make test" or "ctest -V"
+       // result = 0; // [All Good] code for running with "make test" or "ctest -V"
     }else if( Lz_len.back() <= Lz_len[1] ) {
-        result = 0; // contour should only expand here!
+      //  result = 0; // contour should only expand here!
     }
+
+    cout <<"\033[96m Total Time for " << argv[0] << "is:   " << "\033[92m" << Clk.elapsed() << "\033[0m" << endl;
 
     return result;
 

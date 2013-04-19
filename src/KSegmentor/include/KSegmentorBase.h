@@ -170,15 +170,14 @@ class KSegmentorBase
         }
         vtkImageData* GetUIVol() { return U_Integral_image; }
 
-        //vtkSmartPointer<vtkImageData>
         vtkImageData* U_Integral_image;
 
         virtual void OnUserPaintsLabel()=0;
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
-
-
+        /** two arrays for storing the location of user edits; Vanya: it !!DRAMATICALLY!!
+                                                   improves speed and thus pracical usability*/
         std::vector<unsigned int > m_UpdateVector;
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
@@ -217,9 +216,6 @@ class KSegmentorBase
         SFM_vars* m_SFM_vars;
 
 public:
-        //short  *ptrCurrImage; //ptr to current image slice
-        //short  *ptrCurrLabel; //ptr to current label slice
-
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
 

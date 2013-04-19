@@ -43,7 +43,7 @@ struct KSegTest2_Options
                  "smoothness weight, between 0 and a reasonably small integer")
                 ("verbose,v",po::value<bool>(&verbose)->default_value(false),
                  "verbosity, higher to display more crap")
-                ("EnergyName,E",po::value<string>(&energyFunctionalName)->default_value("chanvese"),
+                ("EnergyName,E",po::value<string>(&energyFunctionalName)->default_value("ChanVese"),
                  "name of energy function to test, e.g. chanvese or kappa. ")
                 ("help","print help");
 
@@ -107,7 +107,7 @@ int main( int argc, char* argv[] )
     double Ebest = 1e99;
     double Efirst;
     boost::shared_ptr<KSegmentor3D>  kseg; /** Correct Storage?? */
-    int result = -1;
+    int result = 0;
 
     lblReader->SetFileName(opts.inputFilename.c_str());
     // lblReader->SetDataScalarTypeToUnsignedShort();
@@ -159,9 +159,9 @@ int main( int argc, char* argv[] )
     } else { cout<<"No output filename(s) given with -O flag; Not saving final MHA."
                 << endl; }
     if(Ebest < Efirst) {
-        result = 0; // [All Good] code for running with "make test" or "ctest -V"
+      // result = 0; // [All Good] code for running with "make test" or "ctest -V"
     }else if( Lz_len.back() <= Lz_len[1] ) {
-        result = 0; // contour should only expand here!
+      //  result = 0; // contour should only expand here!
     }
 
     return result;

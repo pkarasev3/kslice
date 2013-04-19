@@ -350,15 +350,29 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
 
     ptrIntegral_Image = static_cast<double*>( U_Integral_image->GetScalarPointer() );
 
-    interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
-                             LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
-                             iter,rad,lambda*0.5,display);
-
-//    m_DistWeight=0.0; // need to use orientation and currslice to set plane normal and center
-//    interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
-//                                 LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
-//                                 iter,0.5*lambda,display,this->m_PlaneNormalVector,
-//                                 this->m_PlaneCenter,this->m_DistWeight);
+    cout << "m_EnergyName = " << m_EnergyName << endl;
+    if( 0 == m_EnergyName.compare("ChanVese") )
+    { cout << " run basic chan-vese on it "<< endl;
+      interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+                               LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                               iter,0.5*lambda,display,this->m_PlaneNormalVector,
+                               this->m_PlaneCenter,this->m_DistWeight);
+      bool bDisplayChanVeseCost = false;
+      if( bDisplayChanVeseCost ) { double u0,u1;
+                                   double cv_cost = this->evalChanVeseCost(u0,u1);
+                                   cout << "chan vese cost = " << cv_cost << endl;
+      }
+    }
+    else if( 0 == m_EnergyName.compare("LocalCV") )
+    { cout <<" run localized like a pimp " << endl;
+      interactive_rbchanvese(    /* TODO: compute this energy!*/
+                                 img, phi, ptrIntegral_Image, label, dims,
+                                 LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
+                                 iter,rad,lambda*0.5,display );
+    }
+    else {
+      cout << "Error, unsupported energy name! " << m_EnergyName << endl;
+    }
 
     //threshold the level set to update the mask
     int Nelements = this->dimx * this->dimy * this->dimz;
