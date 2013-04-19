@@ -49,15 +49,18 @@ void vtkKSlice::SetOrientation(const std::string& orient) {
 
 void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
 
-  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
-            << i << "," <<j << ", " << k << std::endl; // UIVol->Print(std::cout);
+  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  " << i << "," <<j << ", " << k << std::endl;
   double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
   this->ksegmentor->accumulateUserInput(val,i,j,k);
-  //UIVol->DeepCopy(ksegmentor->U_Integral_image);
-  cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
+  assert( UIVol == this->ksegmentor->U_Integral_image );
+
   double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+<<<<<<< HEAD
   cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl; // UIVol->Print(std::cout);
   UIVol->Update();
+=======
+  UIVol->Modified();
+>>>>>>> 7a7a23bb4252f985dc097c891573002f48d6d6b5
 }
 
 void vtkKSlice::PasteSlice(int toSlice){
@@ -98,15 +101,9 @@ void vtkKSlice::PrintSelf(ostream &os, vtkIndent indent)
 
 void vtkKSlice::PrintEmpty()
 {
-    std::cout<<"This empty print works" <<std::endl;
+    std::cout<<"vtkKSlice::PrintEmpty() called" <<std::endl;
 }
-//void vtkKSlice::CollectRevisions(std::ostream&){
-//}
 
-//void vtkKSlice::PrintImage(ostream &os, vtkIndent indent)
-//{
-//    this->ImageVol->PrintSelf(os, indent);
-//}
 
 void vtkKSlice::PrintImage()
 {
@@ -115,3 +112,15 @@ void vtkKSlice::PrintImage()
     this->ImageVol->GetScalarRange(imgRange);
     std::cout<<imgRange[0]<<"-"<<imgRange[1]<<std::endl;
 }
+
+// shtraf-bat
+/**
+  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
+//void vtkKSlice::CollectRevisions(std::ostream&){
+//}
+
+//void vtkKSlice::PrintImage(ostream &os, vtkIndent indent)
+//{
+//    this->ImageVol->PrintSelf(os, indent);
+//}
+  */
