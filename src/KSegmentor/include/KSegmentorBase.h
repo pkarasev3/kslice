@@ -140,12 +140,12 @@ class KSegmentorBase
             }
         }
 
-        void SetPlaneCenter(double* center)
+        void SetPlaneCenter(const std::vector<double>& center)
         {
-            this->m_PlaneCenter=center;
+            m_PlaneCenter=center;
         }
 
-        void SetPlaneNormalVector(double* normal)
+        void SetPlaneNormalVector(const std::vector<double>& normal)
         {
             this->m_PlaneNormalVector=normal;
         }
@@ -204,7 +204,7 @@ class KSegmentorBase
         /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
-        double* m_PlaneNormalVector, *m_PlaneCenter;
+        std::vector<double> m_PlaneNormalVector, m_PlaneCenter;
         float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;

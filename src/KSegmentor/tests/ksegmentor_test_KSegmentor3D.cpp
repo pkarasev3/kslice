@@ -135,8 +135,8 @@ int main( int argc, char* argv[] )
         kseg->setCurrIndex( 2 ); // slice index
         kseg->PrintUpdateInfo();
 
-        kseg->SetPlaneCenter(&(defaultPlaneCenter[0]));
-        kseg->SetPlaneNormalVector(&(defaultPlaneNormal[0]));
+        kseg->SetPlaneCenter(defaultPlaneCenter);
+        kseg->SetPlaneNormalVector(defaultPlaneNormal);
 
         kseg->Update3D( (k==0)/*is it first time run?*/ );
         Lz_len.push_back( kseg->GetLzLength() );

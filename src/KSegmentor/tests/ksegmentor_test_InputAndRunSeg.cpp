@@ -151,8 +151,8 @@ int main( int argc, char* argv[] )
         int x = 16; int y = 16; int z = 16; // use better indices!
         kseg->accumulateUserInput(val,x,y,z);  // make sure something calls this!
 
-        kseg->SetPlaneCenter(&(defaultPlaneCenter[0]));
-        kseg->SetPlaneNormalVector(&(defaultPlaneNormal[0]));
+        kseg->SetPlaneCenter(defaultPlaneCenter);
+        kseg->SetPlaneNormalVector(defaultPlaneNormal);
 
         kseg->Update3D( (k==0)/*is it first time run?*/ );
                Lz_len.push_back( kseg->GetLzLength() );

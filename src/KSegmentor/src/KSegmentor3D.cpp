@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <assert.h>
-
+#include <initializer_list>
 
 using std::string;
 
@@ -325,6 +325,22 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     m_CoordinatesVector.clear();
 }
 
+void KSegmentor3D::CalcViewPlaneParams( )
+{
+    /** should this use physical spacing instead of slice steps? */
+    if( m_IJK_orient == "IJ" ) {
+        m_PlaneNormalVector = {0.0,0.0,1.0};
+        m_PlaneCenter       = {0.0,0.0,(double)currSlice};
+    }else if( m_IJK_orient == "JK" ) {
+        m_PlaneNormalVector = {1.0,0.0,0.0};
+        m_PlaneCenter       = {(double)currSlice,0.0,0.0};
+    }else if( m_IJK_orient == "IK" ) {
+        m_PlaneNormalVector = {0.0,1.0,0.0};
+        m_PlaneCenter       = {0.0,(double)currSlice,0.0};
+    }else {
+        cout << "Bad, invalid orientation!?" << endl;
+    }
+}
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
@@ -353,18 +369,19 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     cout << "m_EnergyName = " << m_EnergyName << endl;
     if( 0 == m_EnergyName.compare("ChanVese") )
     { cout << " run basic chan-vese on it "<< endl;
+        CalcViewPlaneParams(); assert(m_PlaneNormalVector.size()==3);
       interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
-                               iter,0.5*lambda,display,this->m_PlaneNormalVector,
-                               this->m_PlaneCenter,this->m_DistWeight);
-      bool bDisplayChanVeseCost = false;
+                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
+                               m_PlaneCenter.data(),this->m_DistWeight);
+      bool bDisplayChanVeseCost = true;
       if( bDisplayChanVeseCost ) { double u0,u1;
                                    double cv_cost = this->evalChanVeseCost(u0,u1);
                                    cout << "chan vese cost = " << cv_cost << endl;
       }
     }
     else if( 0 == m_EnergyName.compare("LocalCV") )
-    { cout <<" run localized like a pimp " << endl;
+    { cout <<" run localized func " << endl;
       interactive_rbchanvese(    /* TODO: compute this energy!*/
                                  img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,

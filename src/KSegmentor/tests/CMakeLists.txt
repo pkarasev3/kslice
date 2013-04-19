@@ -5,11 +5,11 @@ include_directories ( ${Boost_INCLUDE_DIRS} )
 
 
 add_executable(ksegmentor_test_KSeg3D  ksegmentor_test_KSegmentor3D.cpp)
-target_link_libraries(ksegmentor_test_KSeg3D  ${Boost_LIBRARIES}
+target_link_libraries(ksegmentor_test_KSeg3D  -lboost_program_options ${Boost_LIBRARIES}
                       KSegmentor vrcl ${KSEGM_LIBS} )
 
 add_executable(ksegmentor_test_InputAndRunSeg  ksegmentor_test_InputAndRunSeg.cpp)
-target_link_libraries(ksegmentor_test_InputAndRunSeg  ${Boost_LIBRARIES}
+target_link_libraries(ksegmentor_test_InputAndRunSeg  -lboost_program_options ${Boost_LIBRARIES}
                       KSegmentor vrcl ${KSEGM_LIBS} )
 
 

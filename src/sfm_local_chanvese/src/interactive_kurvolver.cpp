@@ -271,10 +271,18 @@ void apply_control_function_ext(LL *Lz,double *phi, double* F,
     diff[1]=y-poP[1];
     diff[2]=z-poP[2];
 
+    if (0==n) {
+        printf("\033[105m first Lz point x=%d,y=%d,z=%d\nppx=$%3.2f,ppy=%3.2f,ppz=%3.2f\033[0m\n",
+                x,y,z,poP[0],poP[1],poP[2]);
+        printf("\033[105m normal vector: x=%3.2f,y=%3.2f,z=%3.2f\033[0m\n",
+                normal[0],normal[1],normal[2]);
+    }
+
     for (int i=0;i<3;i++)
     {
         distance+=diff[i]*normal[i];
     }
+    // TODO: see if this is more useful with slice spacing; probably matters for scans like ~512x512x40
     // weight the update by distance from view-plane
     // to prevent updates far from where user is looking/editing
     double mult= exp(-distweight*abs(distance));

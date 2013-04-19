@@ -25,7 +25,7 @@ vtkKSlice::vtkKSlice( ) {
     BrushRad=7;
     NumIts=50;
     CurrSlice=1;
-    DistWeight=.3;
+    DistWeight=.2;
     m_bUseEdgeBased=0;
     contInit=0;        //is doing init from contour
     initCorrectFlag=0; //should not run updates before this flag is set to 1
@@ -77,12 +77,23 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
     }
 }
 
-void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
+void vtkKSlice::runUpdate2p5D(bool reInitFromMask){      // U key now
     if(initCorrectFlag==1){ //already initialized
+        this->ksegmentor->SetEnergyChanVese();
+        this->ksegmentor->SetDistanceWeight(DistWeight);
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
+    }
+}
 
+
+void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
+    if(initCorrectFlag==1){ //already initialized
+        this->ksegmentor->SetEnergyLocalCV();
+        this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->Update3D(reInitFromMask);
+        std::cout<<"did the update for 3d" <<std::endl;
     }
 }
 

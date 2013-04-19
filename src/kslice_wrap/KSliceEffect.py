@@ -322,6 +322,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #create a key shortcut
     s2 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor 2d
     s3 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 3d
+    s4 = qt.QKeySequence(qt.Qt.Key_U) # Press u/U to run segmentor 2.5d
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
@@ -329,12 +330,12 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
                        [s3,self.runSegment3D],
+                       [s4,self.runSegment2p5D],
                        [tg,self.toggleDrawErase],
                        [cp,self.copyslice],
                        [ps,self.pasteslice] ] # like a cell array in matlab
 
-    for i in [0,1,2,3,4]:
-        keydef = self.qtkeydefs[i]
+    for keydef in self.qtkeydefs:
         s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
         s.connect('activatedAmbiguously()', keydef[1])
@@ -510,7 +511,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
                 deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd] 
         #TODO: scale by the currLabelValue 
-
+        #D'oh, weird bug with having to dual-event after changing label
+        
         # Argh, overwrites any changes to underlying vtk volume!?
         #if bUseLabelModTrigger: # trying to add this back in
 
@@ -628,7 +630,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #labelNode.SetModifiedSinceRead(1)
 
   def runSegment3D(self):
-    lm = slicer.app.layoutManager()
+    #lm = slicer.app.layoutManager()
     self.computeCurrSlice()
     
     # get the parameters from MRML
@@ -659,14 +661,41 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.labelNode.Modified()
     #labelNode.SetModifiedSinceRead(1)
 
+  def runSegment2p5D(self):
+    self.computeCurrSlice()
+
+    node = EditUtil.EditUtil().getParameterNode()
+    currRad = int(node.GetParameter("KSliceEffect,radius"))
+
+    self.ksliceMod.SetCurrSlice(self.currSlice)
+    self.ksliceMod.SetBrushRad(currRad)
+    self.ksliceMod.SetNumIts(20)      # should be less than 2D!
+    self.ksliceMod.SetDistWeight(0.2) # weight evolution by distancef rom view-plane
+
+    #still doing 3D, user has not drawn => use cache
+    useCache= (self.lastModBy=='3D') & (self.userMod==0) 
+    print "use cache?:" + str(useCache)
+
+    self.ksliceMod.runUpdate2p5D(not useCache)
+    
+    
+    labelImage=self.labelNode.GetImageData()
+
+    #save the 'last run state' information
+    self.acMod=1
+    self.lastModBy='3D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.check_U_sync()
+    
+    labelImage.Modified() #signal to slicer that the label needs to be updated
+    self.labelNode.Modified()
+
+
   def destroy(self):
     #super(KSliceEffectLogic,self).destroy()
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for i in [0,1,2,3,4]:
-        keyfun = self.qtkeydefs[i]
-        keydef = self.qtkeyconnections[i]
+    for keyfun,keydef in self.qtkeydefs,qtkeyconnections:
         print('disconnecting keydef: ')
         print(keyfun)
         keydef.disconnect('activated()', keyfun[1])

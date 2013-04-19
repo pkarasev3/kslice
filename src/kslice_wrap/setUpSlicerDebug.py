@@ -1,10 +1,11 @@
 #get volume 
 #volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
 
-filenameImage="/home/kslice/kslice/data/ANON0084.mha"
+filenameImage="../../data/DS004.mha" # /home/kslice/kslice/data/ANON0084.mha"
+# Let's try to use one that's in git, or a few downloadable by URL
 volNode=slicer.util.loadVolume(filenameImage)
 
-volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/images/husney.mha")
+#volNode=slicer.util.loadVolume("/home/kslice/source/kslice/data/images/husney.mha")
 if not volNode:
 	volNode=slicer.util.loadVolume("/u4/home/ikolesov3/Data/AdaptRadioData/origMHA/ANON0084/ANON0084.mha")
 
@@ -12,7 +13,7 @@ if not volNode:
 
 #create a label volume, make it active
 volumesLogic = slicer.modules.volumes.logic();
-imgNode = getNode('ANON0084');
+imgNode = getNode('DS004.mha');
 labNode = volumesLogic.CreateAndAddLabelVolume( slicer.mrmlScene, imgNode, imgNode.GetName() + '-label' );
 selectionNode = slicer.app.applicationLogic().GetSelectionNode()
 selectionNode.SetReferenceActiveVolumeID( imgNode.GetID() )
