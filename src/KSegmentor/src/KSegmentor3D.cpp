@@ -91,8 +91,9 @@ void KSegmentor3D::initializeData()
   prevSlice=-1; //this will never be true
 
   if( firstPassInit ) {
-      imageVol->GetScalarRange( imgRange );
-      labelVol->GetScalarRange( labelRange );
+      std::cout<<"Initializing data in c++"<<std::endl;
+      //imageVol->GetScalarRange( imgRange );
+      //labelVol->GetScalarRange( labelRange );
       if( abs(labelRange[1]) < 1e-3 )
       { // empty label; so set the proper range
         labelRange[1] = this->currLabel;

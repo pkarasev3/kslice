@@ -320,7 +320,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.userMod = 0
 
     #create a key shortcut
-    s2 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor 2d
+    s2 = qt.QKeySequence(qt.Qt.Key_W) # Press w/W to run segmentor 2d
     s3 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 3d
     s4 = qt.QKeySequence(qt.Qt.Key_U) # Press u/U to run segmentor 2.5d
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
@@ -340,6 +340,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         s.connect('activated()', keydef[1])
         s.connect('activatedAmbiguously()', keydef[1])
         self.qtkeyconnections.append(s)
+        print(s)
 
     #  TODO: check this claim-  might be causing leaks
     #     set the image, label nodes (this will not change although the user can
@@ -522,7 +523,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.labArr[self.linInd] = self.labVal * newLab   
         self.accumInProg=0    #done accumulating
                  
-        self.check_U_sync()
+        #self.check_U_sync()
         
     
     if event == "RightButtonPressEvent":
@@ -596,6 +597,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
   def runSegment2D(self):
+    print("doing 2D segmentation")
     lm = slicer.app.layoutManager()
        
     self.computeCurrSlice()
@@ -622,7 +624,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.acMod=1
     self.lastRunPlane=self.ijkPlane
     self.lastModBy='2D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.check_U_sync()
+    #self.check_U_sync()   #turn the debug off
     
     #update vars
     labelImage.Modified()      # This triggers a Modified Event on Label => windowListener call
@@ -630,6 +632,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #labelNode.SetModifiedSinceRead(1)
 
   def runSegment3D(self):
+    print("doing 3D segmentation")
     #lm = slicer.app.layoutManager()
     self.computeCurrSlice()
     
@@ -662,6 +665,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #labelNode.SetModifiedSinceRead(1)
 
   def runSegment2p5D(self):
+    print("doing 2.5D segmentation")
     self.computeCurrSlice()
 
     node = EditUtil.EditUtil().getParameterNode()
@@ -695,11 +699,18 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for keyfun,keydef in self.qtkeydefs,self.qtkeyconnections:
+    for i in range(len(self.qtkeydefs)):
+        keyfun = self.qtkeydefs[i]
+        keydef = self.qtkeyconnections[i]
         print('disconnecting keydef: ')
-        print(keyfun)
-        keydef.disconnect('activated()', keyfun[1])
-        keydef.disconnect('activatedAmbiguously()', keyfun[1])
+        print(keydef)
+        test1=keydef.disconnect('activated()', keyfun[1])
+        test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
+        #why is this necessary for full disconnect (if removed, get the error that more and more keypresses are required if module is repetedly erased and created
+        keydef.delete() 
+        print "disconnected 'activated'?:" + str(test1)
+        print "disconnected 'activatedAmbiguously'?:" + str(test2)                
+
 
     #***delete steeredArray
     for style,tag in self.mouse_obs:
