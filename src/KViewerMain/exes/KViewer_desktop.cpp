@@ -14,9 +14,9 @@ int main(int argc, char** argv) {
               << labVolName << ", " << uiVolName << std::endl;
 
     //create two readers one for the image and one for the labels
-    vtkMetaImageReader* labReader       = vtkMetaImageReader::New();
-    vtkMetaImageReader* imgReader       = vtkMetaImageReader::New();
-    vtkMetaImageReader* uiReader        = vtkMetaImageReader::New();
+    vtkSmartPointer<vtkMetaImageReader> labReader       = vtkSmartPointer<vtkMetaImageReader>::New();
+    vtkSmartPointer<vtkMetaImageReader> imgReader       = vtkSmartPointer<vtkMetaImageReader>::New();
+    vtkSmartPointer<vtkMetaImageReader> uiReader        = vtkSmartPointer<vtkMetaImageReader>::New();
 
     //one instance of a call to KSlice
     vtkImageData* labVol;
@@ -42,15 +42,15 @@ int main(int argc, char** argv) {
       }
 
       imgReader->SetFileName(imgVolName);
-      imgReader->SetDataScalarTypeToUnsignedShort();
+      //imgReader->SetDataScalarTypeToUnsignedShort();
       imgReader->Update();
 
       labReader->SetFileName(labVolName);
-      labReader->SetDataScalarTypeToUnsignedShort();
+      //labReader->SetDataScalarTypeToUnsignedShort();
       labReader->Update();
 
       uiReader->SetFileName(uiVolName);
-      uiReader->SetDataScalarTypeToUnsignedShort();
+      //uiReader->SetDataScalarTypeToUnsignedShort();
       uiReader->Update();
 
       labVol = labReader->GetOutput();
@@ -118,6 +118,7 @@ int main(int argc, char** argv) {
     writer->SetInput(labVol);
     writer->SetFileName("../../data/bbTest/perturbedLab.mha");
     writer->Write();
+
 
     return 0;
 }

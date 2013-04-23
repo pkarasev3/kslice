@@ -11,7 +11,7 @@ namespace
 
 }
 
-void ls_iteration(double *F, double *phi, double* label, long* dims,
+void ls_iteration(double *F, float *phi, short *label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in){
   int x,y,z,i,idx;
@@ -263,9 +263,9 @@ void ls_iteration(double *F, double *phi, double* label, long* dims,
 }
 
 
-void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
+void ls_iteration_ext(double *F, float *phi, short *label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
-                  LL *Lin2out, LL* Lout2in,LL* Lchanged){
+                  LL *Lin2out, LL* Lout2in, LL* Lchanged){
     /** this function is mostly the same as ls_iteration, except it
         also assigned Lchanged, and doesn't free F
       */
@@ -522,7 +522,7 @@ void ls_iteration_ext(double *F, double *phi, double* label, long* dims,
   ll_destroy(Sp2);
 }
 
-double ls_max_hood_onlevel(int idx, long x, long y, long z, long *dims, double *phi, double *label, double level){
+double ls_max_hood_onlevel(int idx, long x, long y, long z, long *dims, float *phi, short *label, double level){
   double pmax = -3;
   if(((y+1)<DIMY) && (label[idx+OFFY]>=level) && (phi[idx+OFFY]>pmax)) pmax = phi[idx+OFFY];
   if(((y-1)>=0  ) && (label[idx-OFFY]>=level) && (phi[idx-OFFY]>pmax)) pmax = phi[idx-OFFY];
@@ -533,7 +533,7 @@ double ls_max_hood_onlevel(int idx, long x, long y, long z, long *dims, double *
   return pmax;
 }
 
-double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, double *phi, double *label, double level){
+double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, float *phi, short *label, double level){
   double pmin = 3;
   if(((y+1)<DIMY) && (label[idx+OFFY]<=level) && (phi[idx+OFFY]<pmin)) pmin = phi[idx+OFFY];
   if(((y-1)>=0  ) && (label[idx-OFFY]<=level) && (phi[idx-OFFY]<pmin)) pmin = phi[idx-OFFY];
@@ -544,7 +544,7 @@ double ls_min_hood_onlevel(int idx, long x, long y, long z, long *dims, double *
   return pmin;
 }
 
-void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
+void ls_mask2phi3c(short* mask, float *phi, short *label, long* dims,
                    LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2)
 {
   int x,y,z,idx;
@@ -715,7 +715,7 @@ void ls_mask2phi3c(double* mask, double* phi, double* label, long* dims,
 }
 
 
-void ls_mask2phi3c_ext(double* mask, double* phi, double* label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL *Lchanged){
+void ls_mask2phi3c_ext(short* mask, float *phi, short *label, long* dims, LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2, LL *Lchanged){
   int x,y,z,idx;
   int  flag=0;
 
@@ -906,8 +906,8 @@ void ls_mask2phi3c_ext(double* mask, double* phi, double* label, long* dims, LL 
 
 void ls_mask2phi3c_update(const std::vector< unsigned int >& updateVector,
                           const std::vector< std::vector<unsigned int> >& coordVector,
-                          double* mask, double* phi, double* label, long* dims,
-                          LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2,LL* Lchanged){
+                          short* mask, float *phi, short *label, long* dims,
+                          LL *Lz, LL *Ln1, LL *Ln2, LL *Lp1, LL *Lp2, LL* Lchanged){
   int x,y,z,idx;
   int  flag=0;
   //only update in locations that have been changed

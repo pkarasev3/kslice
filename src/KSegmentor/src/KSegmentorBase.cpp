@@ -88,16 +88,14 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
     U_Integral_image = UIVol;
 
-    assert(U_Integral_image->GetScalarType()==VTK_DOUBLE); // BUG!!! Assumes UIVol was double
-    ptrIntegral_Image = static_cast<double*>(U_Integral_image->GetScalarPointer());
 
-    int npts=image->GetNumberOfPoints();
-    for( int i=0; i<npts; i++) {
-        ptrIntegral_Image[i] = 0.0;       //ptrU_t_Image[i] = 0.0;
-    }
+//    int npts=image->GetNumberOfPoints();
+//    for( int i=0; i<npts; i++) {
+//        ptrIntegral_Image[i] = 0.0;       //ptrU_t_Image[i] = 0.0;
+//    }
 
-    imgRange   = new double[2];
-    labelRange = new double[2];
+    //imgRange   = new double[2];
+    //labelRange = new double[2];
 
     cout << "I think the # of rows is: " << mdims[1] << ", # of cols is: " << mdims[0] << endl;
 
@@ -108,9 +106,9 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     dimx = (int) mdims[0];
 
     try {
-      this->phi        = new double[dimx*dimy*dimz];
-      this->label      = new double[dimx*dimy*dimz];
-      this->mask       = new double[dimx*dimy*dimz];
+      this->phi        = new float[dimx*dimy*dimz];
+      this->label      = new short[dimx*dimy*dimz];
+      this->mask       = new short[dimx*dimy*dimz];
       this->img        = new double[dimx*dimy*dimz];
     } catch ( const std::bad_alloc& e) {
       std::cout << "Failed to allocate KSegmentorBase pointers! ";
@@ -264,10 +262,10 @@ void KSegmentorBase::SetSliceOrientationIJK(const std::string& ijk_str)
 //}
 
 
-void KSegmentorBase::accumulateUserInput( double value,const unsigned int element){
-    double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
-    this->ptrU_t_Image[element]=user_input;
-}
+//void KSegmentorBase::accumulateUserInput( double value,const unsigned int element){
+//    double user_input      = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );
+//    this->ptrU_t_Image[element]=user_input;
+//}
 
 void KSegmentorBase::accumulateUserInput( double value, int i, int j, int k) {
     double user_input = -1.0 * ( value > 0.5 ) + 1.0 * ( value <= 0.5 );

@@ -18,7 +18,7 @@ using std::string;
 
 //[phi C L] = ls_sparse(img,mask,iterations,display,lam,rad,dthresh);
 
-void lrbac_vessel_yz(double *img, double *phi, double *label, long *dims,
+void lrbac_vessel_yz(double *img, float *phi, short *label, long *dims,
                      LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                      int iter, double rad, double lambda, double dthresh, short *plhs,
                      int display){
@@ -40,7 +40,7 @@ void lrbac_vessel_yz(double *img, double *phi, double *label, long *dims,
   en_lrbac_destroy();
 }
 
-void lrbac_vessel_cv(double *img, double *phi, double *label, long *dims,
+void lrbac_vessel_cv(double *img, float *phi, short *label, long *dims,
                      LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                      int iter, double rad, double lambda, double dthresh, short *plhs,
                      int display){
@@ -64,7 +64,7 @@ void lrbac_vessel_cv(double *img, double *phi, double *label, long *dims,
   en_lrbac_destroy();
 }
 
-void lrbac_chanvese(double *img, double *phi, double *label, long *dims,
+void lrbac_chanvese(double *img, float *phi, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                     int iter, double rad, double lambda,  short *plhs,int display){
   double *F;
@@ -89,7 +89,7 @@ void lrbac_chanvese(double *img, double *phi, double *label, long *dims,
   en_lrbac_destroy();
 }
 
-void chanvese(double *img, double *phi, double *label, long *dims,
+void chanvese(double *img, float *phi, short *label, long *dims,
               LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
               int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -115,7 +115,7 @@ void chanvese(double *img, double *phi, double *label, long *dims,
 }
 
 
-void user_chanvese(double *img, double *phi,double penaltyAlpha, double *seed, double *label, long *dims,
+void user_chanvese(double *img, float *phi,double penaltyAlpha, double *seed, short *label, long *dims,
               LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
               int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -141,7 +141,7 @@ void user_chanvese(double *img, double *phi,double penaltyAlpha, double *seed, d
   }
 }
 
-void lrbac_user_chanvese(double *img, double *phi,double penaltyAlpha, double *seed, double *label, long *dims,
+void lrbac_user_chanvese(double *img, float *phi,double penaltyAlpha, double *seed, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                     int iter, double rad, double lambda,  short *plhs,int display){
   double *F;
@@ -190,7 +190,7 @@ void lrbac_user_chanvese(double *img, double *phi,double penaltyAlpha, double *s
 
 
 
-void meanvar(double *img, double *phi, double *label, long *dims,
+void meanvar(double *img, float *phi, short *label, long *dims,
              LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
              int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -211,7 +211,7 @@ void meanvar(double *img, double *phi, double *label, long *dims,
   }
 }
 
-void bhattacharyya(double *img, double *phi, double *label, long *dims,
+void bhattacharyya(double *img, float *phi, short *label, long *dims,
                    LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                    int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -236,7 +236,7 @@ void bhattacharyya(double *img, double *phi, double *label, long *dims,
 
 
 
-void user_bhattacharyya(double *img, double *phi, double penaltyAlpha, double *seed, double *label, long *dims,
+void user_bhattacharyya(double *img, float *phi, double penaltyAlpha, double *seed, short *label, long *dims,
                    LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                    int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -269,7 +269,7 @@ void user_bhattacharyya(double *img, double *phi, double penaltyAlpha, double *s
   en_user_bhattacharyya_destroy();
 }
 
-void yezzi(double *img, double *phi, double *label, long *dims,
+void yezzi(double *img, float *phi, short *label, long *dims,
            LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
            int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -290,7 +290,7 @@ void yezzi(double *img, double *phi, double *label, long *dims,
   }
 }
 
-void grow(double *img, double *phi, double *label, long *dims,
+void grow(double *img, float *phi, short *label, long *dims,
            LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
           int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -308,7 +308,7 @@ void grow(double *img, double *phi, double *label, long *dims,
   }
 }
 
-void shrink(double *img, double *phi, double *label, long *dims,
+void shrink(double *img, float *phi, short *label, long *dims,
             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
             int iter,double rad,double lambda, short *plhs,int display){
   double *F;
@@ -330,7 +330,7 @@ void shrink(double *img, double *phi, double *label, long *dims,
   en_lrbac_destroy();
 }
 
-void kappa(double *img, double *phi, double *label, long *dims,
+void kappa(double *img, float *phi, short *label, long *dims,
            LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
            int iter,double lambda,  short *plhs,int display){
   double *F;
@@ -348,7 +348,7 @@ void kappa(double *img, double *phi, double *label, long *dims,
   }
 }
 
-void prep_C_output(LL *Lz,long *dims,double *phi, short **iList, short **jList, long &lengthZLS){
+void prep_C_output(LL *Lz,long *dims,float *phi, short **iList, short **jList, long &lengthZLS){
   int n = 0;
   ll_init(Lz);
 

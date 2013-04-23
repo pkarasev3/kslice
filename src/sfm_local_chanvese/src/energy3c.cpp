@@ -39,7 +39,7 @@ bool UseInitContour=1;
 
 
 
-double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
+double *en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -80,7 +80,7 @@ double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, 
     return F;
 }
 
-void en_lrbac_vessel_yz_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
+void en_lrbac_vessel_yz_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -180,7 +180,7 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(uout>0) uout = sumout/aout;
 }
 
-double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
+double *en_lrbac_vessel_cv_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -219,7 +219,7 @@ double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, 
     return F;
 }
 
-void en_lrbac_vessel_cv_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
+void en_lrbac_vessel_cv_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -355,7 +355,7 @@ namespace {
     }
 }
 
-void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
+void en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double rad){
     int i;
 
     //create ball
@@ -386,7 +386,7 @@ void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
     }
 }
 
-void en_lrbac_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad){
+void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -498,7 +498,7 @@ void en_lrbac_destroy()
     //        free(Sout); Sout = NULL; }
 }
 
-//double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
+//double *en_custom_compute(LL* Lz, double* speedimg,float *phi,  long *dims,double *scale, double lam)
 //{
 //    int x,y,z,idx;
 //    double *F, *kappa;
@@ -533,7 +533,7 @@ void en_lrbac_destroy()
 //}
 
 
-double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
+double *en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
@@ -631,7 +631,7 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
 
 
 
-double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
+double *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
                          double *scale, double lam, double rad )
 {
     int x,y,z,idx;
@@ -711,7 +711,7 @@ double *en_lrbac_gball(double rad){
     return gball;
 }
 
-double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam){
+double *en_yezzi_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam){
     int idx,n,j;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -784,7 +784,7 @@ double *en_yezzi_compute(LL *Lz,double *phi, double *img, long *dims, double *sc
     return F;
 }
 
-void en_yezzi_init(LL* Lz, double *img, double *phi, long *dims){
+void en_yezzi_init(LL* Lz, double *img, float *phi, long *dims){
     int idx;
     double Gamuu, Gamuv, sumuu, sumuv, Ibar, I2bar;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
@@ -842,7 +842,7 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     if(uout>0) uout = sumout/aout;
 }
 
-double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam, double dthresh){
+double *en_grow_compute(LL *Lz, double *img, float *phi, long *dims, double lam, double dthresh){
     double *F,*kappa;
     int n = 0;
     F = (double*)malloc(Lz->length*sizeof(double));
@@ -866,7 +866,7 @@ double *en_grow_compute(LL *Lz, double *img, double* phi, long *dims, double lam
     return F;
 }
 
-double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad, double lam, double *scale){
+double *en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, double rad, double lam, double *scale){
     double *F, *kappa;
     double dx,dy,dz,fmax;
     int x,y,z,idx,n;//,idxN;
@@ -910,7 +910,7 @@ double *en_shrink_compute(LL *Lz,double *img, double* phi,long *dims, double rad
 
 
 
-double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
+double *en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -958,7 +958,7 @@ double *en_chanvese_compute(LL *Lz, double *phi, double *img, long *dims, double
 }
 
 
-void en_lrbac_user_init(LL *Lz,double *img,double *phi, long *dims, double rad, double* seed){
+void en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, double* seed){
     int i;
     double I;
     auser=0;
@@ -1002,7 +1002,7 @@ void en_lrbac_user_init(LL *Lz,double *img,double *phi, long *dims, double rad, 
     std::cout<<"The auser is : "<<auser<<std::endl;
 }
 
-double *en_lrbac_user_compute(LL *Lz,double *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad){
+double *en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -1056,7 +1056,7 @@ double *en_lrbac_user_compute(LL *Lz,double *phi, double *img,double penaltyAlph
     return F;
 }
 
-void en_chanvese_init(double* img, double* phi, long *dims){
+void en_chanvese_init(double* img, float *phi, long *dims){
     double I;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
     uin = 0; uout = 0; du_orig = 0;
@@ -1077,7 +1077,7 @@ void en_chanvese_init(double* img, double* phi, long *dims){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_user_chanvese_compute(LL *Lz, double *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam)
+double *en_user_chanvese_compute(LL *Lz, float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -1110,7 +1110,7 @@ double *en_user_chanvese_compute(LL *Lz, double *phi, double *img,double penalty
 
 
 
-void en_user_chanvese_init(double* img, double* phi, long *dims, double* seed){
+void en_user_chanvese_init(double* img, float *phi, long *dims, double* seed){
     double I;
     sumin = 0; sumout = 0; sumuser=0;ain = 0; aout = 0; auser=0;
     uin = 0; uout = 0; du_orig = 0;
@@ -1171,7 +1171,7 @@ void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_meanvar_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
+double *en_meanvar_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -1202,7 +1202,7 @@ double *en_meanvar_compute(LL *Lz, double *phi, double *img, long *dims, double 
     return F;
 }
 
-void en_meanvar_init(double* img, double* phi, long *dims){
+void en_meanvar_init(double* img, float *phi, long *dims){
     double I;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
     sum2in=0; sum2out=0; varin = 0; varout = 0;
@@ -1263,7 +1263,7 @@ void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_bhattacharyya_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
+double *en_bhattacharyya_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int i,idx,n;
     double *F, *kappa, *lookup;
@@ -1326,7 +1326,7 @@ double *en_bhattacharyya_compute(LL *Lz, double *phi, double *img, long *dims, d
     return F;
 }
 
-void en_bhattacharyya_init(double* img, double* phi, long *dims){
+void en_bhattacharyya_init(double* img, float *phi, long *dims){
     int I;
     nbins = 256;
 
@@ -1380,7 +1380,7 @@ void findMinMax(double *img,long *dims){
 
 }
 
-double *en_user_bhattacharyya_compute(LL *Lz, double *phi, double *img, double penaltyAlpha, long *dims, double *scale, double lam)
+double *en_user_bhattacharyya_compute(LL *Lz, float *phi, double *img, double penaltyAlpha, long *dims, double *scale, double lam)
 {
     int i,idx,n;
     double *F, *kappa, *lookup, *lookupUser;
@@ -1486,7 +1486,7 @@ double *en_user_bhattacharyya_compute(LL *Lz, double *phi, double *img, double p
     return F;
 }
 
-void en_user_bhattacharyya_init(double* img, double* phi, long *dims, double* seed){
+void en_user_bhattacharyya_init(double* img, float *phi, long *dims, double* seed){
     int I;
 
     pdfin  = (double*)malloc(nbins*sizeof(double)); if(pdfin ==NULL) return;
@@ -1582,12 +1582,12 @@ void en_bhattacharyya_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double en_kappa_pt(PT* p, double *phi, long *dims){
+double en_kappa_pt(PT* p, float *phi, long *dims){
     double dx,dy,dz;
     return en_kappa_norm_pt(p, phi, dims, &dx, &dy, &dz);
 }
 
-double *en_kappa_compute(LL *Lz, double *phi, long *dims)
+double *en_kappa_compute(LL *Lz, float *phi, long *dims)
 {
     double *kappa;
     int n = 0;
@@ -1603,7 +1603,7 @@ double *en_kappa_compute(LL *Lz, double *phi, long *dims)
     return kappa;
 }
 
-double en_kappa_norm_pt(PT* p, double *phi, long *dims, double *pdx, double *pdy, double *pdz){
+double en_kappa_norm_pt(PT* p, float *phi, long *dims, double *pdx, double *pdy, double *pdz){
     double kappa;
     double dx,dy,dz,dxx,dyy,dzz,dxy,dxz,dyz,dx2,dy2,dz2;
     int idx,x,y,z;
@@ -1812,7 +1812,7 @@ std::vector<double> ain_rgb(3,0.0);
 std::vector<double> aout_rgb(3,0.0);
 }
 
-void en_chanvese_rgb_init(double* img, double* phi, long *dims)
+void en_chanvese_rgb_init(double* img, float *phi, long *dims)
 {
     double I;
     int sz = (int) uin_rgb.size();
@@ -1843,7 +1843,7 @@ void en_chanvese_rgb_init(double* img, double* phi, long *dims)
 
 }
 
-double *en_chanvese_rgb_compute(LL *Lz, double *phi, double *img, long *dims, double *scale, double lam)
+double *en_chanvese_rgb_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;

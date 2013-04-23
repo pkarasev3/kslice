@@ -78,53 +78,18 @@ namespace vrcl {
       return imgvol;
   }
 
-    template<typename T> void convertSliceToDouble(T* array, double *destination,
-                                                   int dim0, int dim1, int dim2, int currSlice, Orient sliceView)
-    {
-        long elemNum=0;
-        unsigned int element3D;
-        int k=currSlice;
 
-        //copy elements into the slices
-        for (int j=0; j<dim1; j++)
-        {
-            for (int i=0; i<dim0; i++)
-            {
-                switch(sliceView)
-                {
-                    case SLICE_IJ:
-                        element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
-                        break;
-                    case SLICE_JK:
-                        element3D    =  j*dim0*dim2 + i*dim2+k;//
-                        break;
-                    case SLICE_IK:
-                        element3D    =  j*dim0*dim2 + k*dim0+i;//
-                        break;
-                    default:
-                        assert(0);
-                        break;
-                }
-                destination[elemNum]        = (double) array[element3D];
-                elemNum++;
-            }
-        }
-    }
-
-  template<typename T> void convertDoubleToSlice(T *array, double *source,
-                                                 int dim0, int dim1, int dim2, int currSlice, Orient sliceView, int currLabel)
+  template<typename T> void convertSliceToDouble(T* array, double *destination, int dim0, int dim1, int dim2, int currSlice, Orient sliceView)
   {
       long elemNum=0;
       unsigned int element3D;
       int k=currSlice;
 
-      double phi_val = 0;
-      elemNum=0;
+      //copy elements into the slices
       for (int j=0; j<dim1; j++)
       {
           for (int i=0; i<dim0; i++)
           {
-              phi_val= source[elemNum];
               switch(sliceView)
               {
                   case SLICE_IJ:
@@ -140,7 +105,7 @@ namespace vrcl {
                       assert(0);
                       break;
               }
-              array[element3D]=   ( (T) 0 >= phi_val )*currLabel;
+              destination[elemNum]        = (double) array[element3D];
               elemNum++;
           }
       }
@@ -182,13 +147,199 @@ namespace vrcl {
           vrcl::convertSliceToDouble( (unsigned long *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
           break;
       case 10:    //#define VTK_FLOAT          10
-          vrcl::convertSliceToDouble( (float *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          vrcl::convertSliceToDouble( (float *)array, destination , dim0, dim1, dim2, currSlice, sliceView );
           break;
       case 11:    //#define VTK_DOUBLE         11
-          vrcl::convertSliceToDouble( (double *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          vrcl::convertSliceToDouble( (double *)array, destination , dim0, dim1, dim2, currSlice, sliceView );
           break;
       }
   }
+
+
+
+
+
+
+
+
+  template<typename T> void convertSliceToShort(T* array, short *destination,
+                                                 int dim0, int dim1, int dim2, int currSlice, Orient sliceView)
+  {
+      long elemNum=0;
+      unsigned int element3D;
+      int k=currSlice;
+
+      //copy elements into the slices
+      for (int j=0; j<dim1; j++)
+      {
+          for (int i=0; i<dim0; i++)
+          {
+              switch(sliceView)
+              {
+                  case SLICE_IJ:
+                      element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+                      break;
+                  case SLICE_JK:
+                      element3D    =  j*dim0*dim2 + i*dim2+k;//
+                      break;
+                  case SLICE_IK:
+                      element3D    =  j*dim0*dim2 + k*dim0+i;//
+                      break;
+                  default:
+                      assert(0);
+                      break;
+              }
+              destination[elemNum]        = (short) array[element3D];
+              elemNum++;
+          }
+      }
+  }
+
+
+  template<typename T> void convertSliceToShort(int labType, T* array, short *destination,
+                                                 int dim0, int dim1, int dim2, int currSlice, Orient sliceView)
+  {
+      switch(labType)
+      {
+      case 0:     //#define VTK_VOID            0
+          assert(0);
+          break;
+      case 1:    //#define VTK_BIT             1
+          vrcl::convertSliceToShort( (bool *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 2:    //#define VTK_CHAR            2
+          vrcl::convertSliceToShort( (char *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 3:    //#define VTK_UNSIGNED_CHAR   3
+          vrcl::convertSliceToShort( (unsigned char *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 4:    //#define VTK_SHORT           4
+          vrcl::convertSliceToShort( (short *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 5:    //#define VTK_UNSIGNED_SHORT  5
+          vrcl::convertSliceToShort( (unsigned short *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 6:    //#define VTK_INT             6
+          vrcl::convertSliceToShort( (int *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 7:    //#define VTK_UNSIGNED_INT    7
+          vrcl::convertSliceToShort( (unsigned int *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 8:    //#define VTK_LONG            8
+          vrcl::convertSliceToShort( (long *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 9:    //#define VTK_UNSIGNED_LONG   9
+          vrcl::convertSliceToShort( (unsigned long *)array, destination  , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 10:    //#define VTK_FLOAT          10
+          vrcl::convertSliceToShort( (float *)array, destination , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      case 11:    //#define VTK_DOUBLE         11
+          vrcl::convertSliceToShort( (double *)array, destination , dim0, dim1, dim2, currSlice, sliceView );
+          break;
+      }
+  }
+
+
+
+  template<typename T> void convertFloatToSlice(T *array, float *source,
+                                                 int dim0, int dim1, int dim2, int currSlice, Orient sliceView, int currLabel)
+  {
+      long elemNum=0;
+      unsigned int element3D;
+      int k=currSlice;
+
+      float phi_val = 0;
+      elemNum=0;
+      for (int j=0; j<dim1; j++)
+      {
+          for (int i=0; i<dim0; i++)
+          {
+              phi_val= source[elemNum];
+              switch(sliceView)
+              {
+                  case SLICE_IJ:
+                      element3D    =  k*dim1*dim0 +j*dim0+i;// wrong for non-IJ orientations!
+                      break;
+                  case SLICE_JK:
+                      element3D    =  j*dim0*dim2 + i*dim2+k;//
+                      break;
+                  case SLICE_IK:
+                      element3D    =  j*dim0*dim2 + k*dim0+i;//
+                      break;
+                  default:
+                      assert(0);
+                      break;
+              }
+              array[element3D]=   ( (T) 0 >= phi_val )*currLabel;
+              elemNum++;
+          }
+      }
+  }
+
+
+
+  template<typename T> void convertFloatToSlice( int labType, T* array, float *source,
+                             int dim0, int dim1, int dim2,int currSlice, Orient sliceView, int currLabel)
+  {
+      switch(labType)
+      {
+      case 0:     //#define VTK_VOID            0
+          assert(0);
+          break;
+      case 1:    //#define VTK_BIT             1
+          vrcl::convertFloatToSlice( (bool *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 2:    //#define VTK_CHAR            2
+          vrcl::convertFloatToSlice( (char *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 3:    //#define VTK_UNSIGNED_CHAR   3
+          vrcl::convertFloatToSlice( (unsigned char *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 4:    //#define VTK_SHORT           4
+          vrcl::convertFloatToSlice( (short *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 5:    //#define VTK_UNSIGNED_SHORT  5
+          vrcl::convertFloatToSlice( (unsigned short *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 6:    //#define VTK_INT             6
+          vrcl::convertFloatToSlice( (int *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 7:    //#define VTK_UNSIGNED_INT    7
+          vrcl::convertFloatToSlice( (unsigned int *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 8:    //#define VTK_LONG            8
+          vrcl::convertFloatToSlice( (long *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 9:    //#define VTK_UNSIGNED_LONG   9
+          vrcl::convertFloatToSlice( (unsigned long *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 10:    //#define VTK_FLOAT          10
+          vrcl::convertFloatToSlice( (float *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      case 11:    //#define VTK_DOUBLE         11
+          vrcl::convertFloatToSlice( (double *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
+          break;
+      default:
+          std::cout<< "Invalid Type!\n";
+          break;
+      }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   template<typename T> void convertImage(T *array, double *destination, int dimx, int dimy, int dimz)
@@ -249,7 +400,8 @@ namespace vrcl {
       }
   }
 
-  template<typename T> void convertLabel(T *array, double *destination, int dimx, int dimy, int dimz)
+
+  template<typename T> void convertLabel(T *array, short *destination, int dimx, int dimy, int dimz)
   {
       long elemNum=0;
       for (int k=0; k<=dimx-1; k++)
@@ -258,13 +410,13 @@ namespace vrcl {
         {
             for (int i=0; i<=dimz-1; i++,elemNum++)
             {
-                destination[elemNum]= (double) ( 0 < array[elemNum] );
+                destination[elemNum]= (short) ( 0 < array[elemNum] );
             }
         }
       }
   }
 
-  template<typename T> void convertLabel(int labType, T *array, double *destination,
+  template<typename T> void convertLabel(int labType, T *array, short *destination,
                                          int dimx, int dimy, int dimz)
   {
       switch(labType)
@@ -309,9 +461,10 @@ namespace vrcl {
   }
 
 
-  template<typename T> void setLabel3D(T *array, double *source, int Nelements, int currLabel)
+
+  template<typename T> void setLabel3D(T *array, float *source, int Nelements, int currLabel)
   {
-      double phi_val = 0;
+      float phi_val = 0;
       for (int idx=0;idx<Nelements;idx++)
       {
           phi_val = source[idx];
@@ -319,52 +472,7 @@ namespace vrcl {
       }
   }
 
-  template<typename T> void convertDoubleToSlice( int labType, T* array, double *source,
-                             int dim0, int dim1, int dim2,int currSlice, Orient sliceView, int currLabel)
-  {
-      switch(labType)
-      {
-      case 0:     //#define VTK_VOID            0
-          assert(0);
-          break;
-      case 1:    //#define VTK_BIT             1
-          vrcl::convertDoubleToSlice( (bool *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 2:    //#define VTK_CHAR            2
-          vrcl::convertDoubleToSlice( (char *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 3:    //#define VTK_UNSIGNED_CHAR   3
-          vrcl::convertDoubleToSlice( (unsigned char *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 4:    //#define VTK_SHORT           4
-          vrcl::convertDoubleToSlice( (short *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 5:    //#define VTK_UNSIGNED_SHORT  5
-          vrcl::convertDoubleToSlice( (unsigned short *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 6:    //#define VTK_INT             6
-          vrcl::convertDoubleToSlice( (int *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 7:    //#define VTK_UNSIGNED_INT    7
-          vrcl::convertDoubleToSlice( (unsigned int *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 8:    //#define VTK_LONG            8
-          vrcl::convertDoubleToSlice( (long *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 9:    //#define VTK_UNSIGNED_LONG   9
-          vrcl::convertDoubleToSlice( (unsigned long *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 10:    //#define VTK_FLOAT          10
-          vrcl::convertDoubleToSlice( (float *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      case 11:    //#define VTK_DOUBLE         11
-          vrcl::convertDoubleToSlice( (double *)array, source  , dim0, dim1, dim2, currSlice, sliceView, currLabel );
-          break;
-      default:
-          std::cout<< "Invalid Type!\n";
-          break;
-      }
-  }
+
 
 
 

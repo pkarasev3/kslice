@@ -364,12 +364,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # a number of observers for mouse events, bound to the interactors
     self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
-  
-    #make KSlice class
-    print("making a kslice")
-    ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
-    ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
-    ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
+ 
 
     volumesLogic  = slicer.modules.volumes.logic()
     steeredName   = self.backgroundNode.GetName() + '-UserInput'
@@ -377,20 +372,26 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     steeredArray = slicer.util.array(steeredName) #get the numpy array
     steeredArray[:]=0 # Init user input to zeros
-    tmpVol = steeredVolume.GetImageData()
-    tmpVol.SetScalarTypeToDouble()
-    tmpVol.AllocateScalars()
-
-    ksliceMod.SetUIVol( tmpVol )
-    ksliceMod.SetCurrLabel(self.labVal)  
-    ksliceMod.Initialize()
+    #tmpVol = steeredVolume.GetImageData()
+    #tmpVol.SetScalarTypeToDouble()
+    #tmpVol.AllocateScalars()
 
     self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
     self.UIVol  =steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+
+ 
+    #make KSlice class
+    print("making a kslice")
+    ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
+    ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
+    ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
+    ksliceMod.SetUIVol( self.UIVol )
+    ksliceMod.SetCurrLabel(self.labVal)  
+    ksliceMod.Initialize()
+    self.ksliceMod= ksliceMod;
+
     # Confused about how info propagates UIarray to UIVol, not the other way
     # NEEDS AUTO TESTS
-    
-    self.ksliceMod= ksliceMod;
     self.currSlice= None
     self.ijkPlane='IJ'
     self.computeCurrSlice() #initialize the current slice to something meaningful

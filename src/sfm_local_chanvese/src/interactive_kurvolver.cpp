@@ -7,7 +7,7 @@ using std::cout;
 
  //
 
-void interactive_edgebased(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_edgebased(double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                     int iter, double rad, double lambda, int display, double ImgMin, double ImgMax )
 {
@@ -38,7 +38,7 @@ void interactive_edgebased(double *img, double *phi, double* U_integral, double 
     en_lrbac_destroy();
 }
 
-void interactive_edgebased_ext(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_edgebased_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                     int iter, double rad, double lambda, int display, double ImgMin, double ImgMax, double* normvec, double* pointonplane,float distweight)
 {
@@ -70,7 +70,7 @@ void interactive_edgebased_ext(double *img, double *phi, double* U_integral, dou
 }
 
 
-void interactive_rbchanvese(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_rbchanvese(double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display)
 {
@@ -98,10 +98,10 @@ void interactive_rbchanvese(double *img, double *phi, double* U_integral, double
   if( display > 0 )
     cout << "done sfls iters: " << iter << endl;
 
-  //en_lrbac_destroy();
+   en_lrbac_destroy();
 }
 
-void interactive_rbchanvese_ext(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_rbchanvese_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL*Lchanged,
                           int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight)
 {
@@ -133,7 +133,7 @@ void interactive_rbchanvese_ext(double *img, double *phi, double* U_integral, do
 }
 
 
-void interactive_chanvese(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_chanvese(double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display)
 {
@@ -162,7 +162,7 @@ void interactive_chanvese(double *img, double *phi, double* U_integral, double *
     }
 }
 
-void interactive_chanvese_ext(double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_chanvese_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                           int iter, double lambda, int display, double* normvec, double* pointonplane,float distWeight)
 {
@@ -191,7 +191,7 @@ void interactive_chanvese_ext(double *img, double *phi, double* U_integral, doub
 }
 
 /*
-void interactive_customspeed(double* speedimg, double *img, double *phi, double* U_integral, double *label, long *dims,
+void interactive_customspeed(double* speedimg, double *img, float *phi, short *U_integral, short *label, long *dims,
                              LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                              int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight)
 
@@ -226,8 +226,8 @@ void interactive_customspeed(double* speedimg, double *img, double *phi, double*
 */
 
 
-void apply_control_function(LL *Lz,double *phi, double* F,
-                            double* U_integral, double *img, int iter, long* dims)
+void apply_control_function(LL *Lz,float *phi, double* F,
+                            short *U_integral, double *img, int iter, long* dims)
 { /** \note used when running 2D level set, currently via "s" key */
   // apply user's time-integrated edits inside the updates
   ll_init(Lz);
@@ -250,8 +250,8 @@ void apply_control_function(LL *Lz,double *phi, double* F,
   //std::cout<< minU<<","<<maxU<<" =Min,Max encountered by apply_control_function (2D)"<<std::endl;
 }
 
-void apply_control_function_ext(LL *Lz,double *phi, double* F,
-                                double* U_integral, double *img, int iter, long* dims,
+void apply_control_function_ext(LL *Lz,float *phi, double* F,
+                                short *U_integral, double *img, int iter, long* dims,
                                 double* normal,double* poP,float distweight )
 { // apply user's time-integrated edits inside the updates
   int x,y,z,idx,n;

@@ -30,8 +30,10 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
 
   this->CreateLLs(this->LL3D);
   this->CreateLLs(this->LL2D);
-  LL* Lztmp = this->LL3D.Lz;
-  assert(Lztmp != NULL);
+  //LL* Lztmp = this->LL3D.Lz;
+  //assert(Lztmp != NULL);
+
+
 
   //initialize pointers 2D
   this->imgSlice    = NULL;
@@ -39,7 +41,9 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->U_I_slice   = NULL;
   this->labelSlice  = NULL;
   this->phiSlice    = NULL;
-
+  this->m_IJK_orient=vrcl::SLICE_IJ;
+  this->prevSlice   =-1;
+  this->currSlice   =-1;
   this->firstPassInit = true; // have not done initializeData() yet
 
 }
@@ -67,22 +71,22 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
 //  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
 //}
 
-void KSegmentor3D::integrateUserInput()
-{
-  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-  ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
+//void KSegmentor3D::integrateUserInput()
+//{
+//  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+//  ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-  int pos=0;
-  int Nelements=this->m_UpdateVector.size();
-  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N = "
-       << Nelements << endl;
-  for (int element=0;element<Nelements;element++)
-  {
-    pos=this->m_UpdateVector[element];
-    this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
-    this->ptrU_t_Image[pos]       = 0;
-  }
-}
+//  int pos=0;
+//  int Nelements=this->m_UpdateVector.size();
+//  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N = "
+//       << Nelements << endl;
+//  for (int element=0;element<Nelements;element++)
+//  {
+//    pos=this->m_UpdateVector[element];
+//    this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
+//    this->ptrU_t_Image[pos]       = 0;
+//  }
+//}
 
 
 void KSegmentor3D::initializeData()
@@ -94,11 +98,11 @@ void KSegmentor3D::initializeData()
       std::cout<<"Initializing data in c++"<<std::endl;
       //imageVol->GetScalarRange( imgRange );
       //labelVol->GetScalarRange( labelRange );
-      if( abs(labelRange[1]) < 1e-3 )
-      { // empty label; so set the proper range
-        labelRange[1] = this->currLabel;
-      }
-      this->imgRange=imgRange;
+      //if( abs(labelRange[1]) < 1e-3 )
+      //{ // empty label; so set the proper range
+      //  labelRange[1] = this->currLabel;
+      //}
+      //this->imgRange=imgRange;
       int imgType=imageVol->GetScalarType();
       vrcl::convertImage( imgType,imageVol->GetScalarPointer(),img, dimx, dimy, dimz);
       firstPassInit = false;
@@ -129,7 +133,7 @@ public:
 double UmaxConst = 5.0;
 std::vector<double> cached_phi;
 
-bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
+bool check_U_behavior(const std::vector<float>& phi0, float* phi1, short* U )
 {    /** ensure that phi does not change sign when
               U is "sufficiently large" */
     bool isGood = true;
@@ -204,18 +208,18 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
         //allocate new slices, with correct dimensions
         this->imgSlice          = new double[ dim0 * dim1 ];
-        this->maskSlice         = new double[ dim0 * dim1 ];
-        this->U_I_slice         = new double[ dim0 * dim1 ];
-        this->labelSlice        = new double[ dim0 * dim1 ];
-        this->phiSlice          = new double[ dim0 * dim1 ];
+        this->maskSlice         = new short[ dim0 * dim1 ];
+        this->U_I_slice         = new short[ dim0 * dim1 ];
+        this->labelSlice        = new short[ dim0 * dim1 ];
+        this->phiSlice          = new float[ dim0 * dim1 ];
 
         //copy images based on type
         int imgType=imageVol->GetScalarType();
-        vrcl::convertSliceToDouble(imgType, (bool *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+        vrcl::convertSliceToDouble(imgType, imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
 
         //copy labels based on type
         int labType=labelVol->GetScalarType();
-        vrcl::convertSliceToDouble(labType,(double *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+        vrcl::convertSliceToShort(labType, labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
 
         //set up the new level set
         this->CreateLLs(LL2D);
@@ -224,15 +228,15 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     }
     prevSlice=currSlice;
 
-    /** moved this out of "is cache" portion; always reslice U to maintain sync, whew what a bug-hunt
+    /** moved this out of "is cache" portion; always reslice U to maintain sync, whew what a bug-hunt (This does not make sense)
     //user input is always double */
-    ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-    vrcl::convertSliceToDouble( ptrIntegral_Image, this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
+    int uiType=U_Integral_image->GetScalarType();
+    vrcl::convertSliceToShort(uiType, U_Integral_image->GetScalarPointer(), this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
 
 
     // save the phi before levelset, to verify expected behavior
     cache_phi.resize(dim0*dim1);
-    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*dim0 * dim1 );
+    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(float)*dim0 * dim1 );
 
     //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
     // Why does the U_I_slice keep seeming like zeros when clicking??
@@ -245,13 +249,12 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     //threshold phi, set label to appropriate values
     int labType=labelVol->GetScalarType();
-    vrcl::convertDoubleToSlice( labType, labelVol->GetScalarPointer(), phiSlice,
-                                dim0, dim1, dim2, currSlice, sliceView, currLabel );
+    vrcl::convertFloatToSlice( labType, labelVol->GetScalarPointer(), phiSlice, dim0, dim1, dim2, currSlice, sliceView, currLabel );
 
     //clean up, but is m_UpdateVector, m_CoordinatesVector necessary??
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
 
-    //whats the point of these two variable? awesomeness
+    //whats the point of these two variable? awesomeness (please clarify)
     m_UpdateVector.clear(); // should hook this up for user input accum
     m_CoordinatesVector.clear();
 }
@@ -291,11 +294,12 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
     }
 
+    //supposedly, U_Integral_image->GetScalarRange(Urange) is a time consuming operation
     double Urange[2]; // check range; is it getting set right from python?
     U_Integral_image->GetScalarRange(Urange);
     std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
 
-    ptrIntegral_Image = static_cast<double*>( U_Integral_image->GetScalarPointer() );
+    ptrIntegral_Image = static_cast<short*>( U_Integral_image->GetScalarPointer() );
 
     cout << "m_EnergyName = " << m_EnergyName << endl;
     if( 0 == m_EnergyName.compare("ChanVese") )
@@ -377,20 +381,21 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
 
 
 KSegmentor3D::~KSegmentor3D(){
-
+  std::cout<<"deallocating kslice 3d"<<std::endl;
   //delete [] this->mdims;//Causes trouble! Haveto find out why!!
   delete [] this->img;
   delete [] this->mask;
-  delete [] this->imgRange;
-  delete [] this->labelRange;
+  //delete [] this->imgRange;
+  //delete [] this->labelRange;
   delete [] this->phi;
   delete [] this->label;
 
-
+  delete [] this->mdims;
   delete [] this->imgSlice;
   delete [] this->maskSlice;
   delete [] this->U_I_slice;
   delete [] this->labelSlice;
+  delete [] this->phiSlice;
 
   LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
   LL *Lin2out, *Lout2in,*Lchanged;
