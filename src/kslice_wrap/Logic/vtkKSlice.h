@@ -46,7 +46,7 @@ public:
   void PrintEmpty();
   void PrintImage();
 protected:
- vtkKSlice();
+  vtkKSlice();
   virtual ~vtkKSlice();
   KSegmentor3D* ksegmentor;
 

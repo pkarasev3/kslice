@@ -6,24 +6,29 @@
 
 int main(int argc, char** argv) {
     //inputs
-    char imgVolName[] = "../../data/bbTest/imgVol.mha";
-    char labVolName[] = "../../data/bbTest/labVol.mha";
-    char uiVolName[]  = "../../data/bbTest/uiVol.mha";
+//    char imgVolName[] = "../../data/bbTest/imgVol.mha";
+//    char labVolName[] = "../../data/bbTest/labVol.mha";
+//    char uiVolName[]  = "../../data/bbTest/uiVol.mha";
+
+    char imgVolName[] = "../../data/AN0084/ANON0084.mha";
+    char labVolName[] = "../../data/AN0084/ANON0084_label.mha";
+    char uiVolName[]  = "../../data/AN0084/ANON0084_ui.mha";
+
 
     std::cout << "looking for img, label, U: " << imgVolName << ", "
               << labVolName << ", " << uiVolName << std::endl;
 
     //create two readers one for the image and one for the labels
-    vtkSmartPointer<vtkMetaImageReader> labReader       = vtkSmartPointer<vtkMetaImageReader>::New();
-    vtkSmartPointer<vtkMetaImageReader> imgReader       = vtkSmartPointer<vtkMetaImageReader>::New();
-    vtkSmartPointer<vtkMetaImageReader> uiReader        = vtkSmartPointer<vtkMetaImageReader>::New();
+    vtkMetaImageReader* labReader       = vtkMetaImageReader::New();
+    vtkMetaImageReader* imgReader       = vtkMetaImageReader::New();
+    vtkMetaImageReader* uiReader        = vtkMetaImageReader::New();
 
     //one instance of a call to KSlice
     vtkImageData* labVol;
     vtkImageData* imgVol;
     vtkImageData* uiVol;
-    int numIts=10;
-    int rad=5;
+    int numIts=1;
+    int rad=3;
     float distWeight=.3;
     int currSlice=50;
 
@@ -87,10 +92,11 @@ int main(int argc, char** argv) {
 
 
 
-
+    for(int i=1; i<20; i++)
+    {
 
     //set up the black box
-    vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
+    vtkKSlice* bbKSlice = vtkKSlice::New();  //created the data, options structures empty for now
     //KSlice* bbKSlice=new KSlice();
     bbKSlice->SetImageVol(imgVol);
     bbKSlice->SetLabelVol(labVol);
@@ -102,16 +108,23 @@ int main(int argc, char** argv) {
     bbKSlice->Initialize();
 
     //evolve (simulated user)
-    bbKSlice->runUpdate2D(1);
-    bbKSlice->SetCurrSlice(currSlice-1);
-    bbKSlice->runUpdate2D(0);
+    //bbKSlice->SetCurrSlice(currSlice-2);
+    //bbKSlice->runUpdate2p5D(1);
+    //bbKSlice->SetCurrSlice(currSlice-3);
+    //bbKSlice->runUpdate2p5D(0);
+
     bbKSlice->SetCurrSlice(currSlice-2);
     bbKSlice->runUpdate3D(1);
     bbKSlice->SetCurrSlice(currSlice-3);
     bbKSlice->runUpdate3D(0);
 
+
+    //bbKSlice->runUpdate2D(1);
+    //bbKSlice->SetCurrSlice(currSlice-1);
+    //bbKSlice->runUpdate2D(0);
+
     //bbKSlice->PrintImage(std::cout, vtkIndent());
-    bbKSlice->PrintImage();
+
 
     //record the output (FOR TESTING ONLY)
     vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
@@ -119,6 +132,15 @@ int main(int argc, char** argv) {
     writer->SetFileName("../../data/bbTest/perturbedLab.mha");
     writer->Write();
 
+    writer->Delete();
+
+    bbKSlice->Delete();
+    std::cout<<"iteration number: "<<i<<std::endl;
+    }
+
+    labReader->Delete();
+    imgReader->Delete();
+    uiReader->Delete();
 
     return 0;
 }

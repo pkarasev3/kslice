@@ -487,6 +487,15 @@ void en_lrbac_destroy()
         free(gball);
         gball = NULL;
     }
+
+    //delete the static variables in energy3c.cpp
+    FVec.clear();
+    KappaVec.clear();
+    AiVec.clear();
+    AoVec.clear();
+    SiVec.clear();
+    SoVec.clear();
+
     // Don't delete them, we're caching !
     //    if(Ain!=NULL) {
     //        free(Ain); Ain = NULL; }

@@ -159,7 +159,7 @@ so it can access tools if needed.
     self.start()
 
   def start(self):
-    s#elf.active = True
+    #self.active = True
     #self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     sliceLogic = self.sliceWidget.sliceLogic()
     self.logic = KSliceEffectLogic( self.redSliceWidget.sliceLogic() )
@@ -321,9 +321,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.userMod = 0
 
     #create key shortcuts, make the connections
-    s2 = qt.QKeySequence(qt.Qt.Key_W) # Press w/W to run segmentor 2d
-    s3 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 3d
-    s4 = qt.QKeySequence(qt.Qt.Key_U) # Press u/U to run segmentor 2.5d
+    s2 = qt.QKeySequence(qt.Qt.Key_Q) # Press q/Q to run segmentor 2d
+    s3 = qt.QKeySequence(qt.Qt.Key_W) # Press w/W to run segmentor 3d
+    s4 = qt.QKeySequence(qt.Qt.Key_R) # Press r/R to run segmentor 2.5d
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
@@ -349,12 +349,12 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # Confused about how info propagates UIarray to UIVol, not the other way, NEEDS AUTO TESTS
     labelLogic          = self.sliceLogic.GetLabelLayer()
     backgroundLogic     = self.sliceLogic.GetBackgroundLayer()
+    self.labelNode      = labelLogic.GetVolumeNode()
+    self.backgroundNode = backgroundLogic.GetVolumeNode()
+
     volumesLogic        = slicer.modules.volumes.logic()
     steeredName         = self.backgroundNode.GetName() + '-UserInput'
     steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
-
-    self.labelNode      = labelLogic.GetVolumeNode()
-    self.backgroundNode = backgroundLogic.GetVolumeNode()
 
     self.labArr         = slicer.util.array(self.backgroundNode.GetName()+'-label')       # numpy array with label, TODO: prevents other-named labels?
     steeredArray        = slicer.util.array(steeredName)                                  # get the numpy array
@@ -367,11 +367,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
     # a number of observers for various events
-    self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
+    self.ladMod_tag            = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                 # put a listener on label, so we know when user has drawn
+    self.logMod_tag            = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)         # put test listener on the whole window
+    self.mouse_obs, self.swLUT = bind_view_observers(self.testWindowListener)
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
-    self.ladMod_tag           = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                 # put a listener on label, so we know when user has drawn
-    self.logMod_tag           = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)         # put test listener on the whole window
-
  
  
     # make KSlice class
@@ -393,6 +392,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.accumInProg  =0        #marker to know that we are accumulating user input   
 
     # make cache slices for the three different planes
+    def createTmpArray(dim0, dim1, nameSuffix):
+      Print_Good( "making array " + nameSuffix )
+      return np.zeros([volSize[dim0],volSize[dim1],1])   #tmpArr
+
     print("Making temporary slice arrays")
     volSize=self.labelImg.GetDimensions()
     self.ij_tmpArr=createTmpArray(0,1,'-ij_Tmp')
@@ -405,6 +408,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range) #indices for elements of slice, in the 3D array
     print("Done creating temporary slice arrays")
 
+
     # keep track of these vars so plane changes make tmpArr re-init correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp =self.ijkPlane
@@ -413,9 +417,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     range_img = self.backgroundNode.GetImageData().GetScalarRange()
     Print_Good( str(range_img) )
  
-  def createTmpArray( dim0, dim1, nameSuffix ):
-    Print_Good( "making array " + nameSuffix )
-    return np.zeros([volSize[dim0],volSize[dim1],1])   #tmpArr
+
 
   def check_U_sync(self):
     #self.uiImg.Update()
@@ -610,10 +612,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.lastModBy='2D'                             # was last active contour run in 2D or 3D (cache needs to be recomputed)
     
     #update vars
-    self.labelImg.Modified(                         # This triggers a Modified Event on Label => windowListener call
+    self.labelImg.Modified()                        # This triggers a Modified Event on Label => windowListener call
     self.labelNode.Modified()                       # labelNode.SetModifiedSinceRead(1)
     
     #self.check_U_sync()                            # turn the debug off
+
   def runSegment3D(self):
     print("doing 3D segmentation")
     self.computeCurrSlice()
@@ -628,9 +631,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetNumIts(10)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
-    useCache= (self.lastModBy=='3D') & (self.userMod==0) )
+    useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
     self.ksliceMod.runUpdate3D(not useCache)
-    print "use cache?:" + str(useCache
+    print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
     self.acMod=1
@@ -640,6 +643,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
 
     #self.check_U_sync()                                   # turn the debug off
+
   def runSegment2p5D(self):
     print("doing 2.5D segmentation")
     self.computeCurrSlice()
@@ -661,7 +665,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #save the 'last run state' information
     self.acMod=1
     self.lastModBy='3D'                                   # was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.check_U_sync()
+    #self.check_U_sync()                                  # very slow operation
     
     self.labelImg.Modified()                              # signal to slicer that the label needs to be updated
     self.labelNode.Modified()

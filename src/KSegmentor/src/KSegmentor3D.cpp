@@ -41,7 +41,7 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->U_I_slice   = NULL;
   this->labelSlice  = NULL;
   this->phiSlice    = NULL;
-  this->m_IJK_orient=vrcl::SLICE_IJ;
+  this->m_IJK_orient="IJ";
   this->prevSlice   =-1;
   this->currSlice   =-1;
   this->firstPassInit = true; // have not done initializeData() yet
@@ -303,26 +303,32 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
 
     cout << "m_EnergyName = " << m_EnergyName << endl;
     if( 0 == m_EnergyName.compare("ChanVese") )
-    { cout << " run basic chan-vese on it "<< endl;
-        CalcViewPlaneParams(); assert(m_PlaneNormalVector.size()==3);
-      interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+    {
+        cout << " run basic chan-vese on it "<< endl;
+        CalcViewPlaneParams();
+        assert(m_PlaneNormalVector.size()==3);
+        interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,m_PlaneNormalVector.data(),
                                m_PlaneCenter.data(),this->m_DistWeight);
-      bool bDisplayChanVeseCost = true;
-      if( bDisplayChanVeseCost ) { double u0,u1;
-                                   double cv_cost = this->evalChanVeseCost(u0,u1);
-                                   cout << "chan vese cost = " << cv_cost << endl;
-      }
+        bool bDisplayChanVeseCost = true;
+        if( bDisplayChanVeseCost )
+        {
+            double u0,u1;
+            double cv_cost = this->evalChanVeseCost(u0,u1);
+            cout << "chan vese cost = " << cv_cost << endl;
+        }
     }
     else if( 0 == m_EnergyName.compare("LocalCV") )
-    { cout <<" run localized func " << endl;
-      interactive_rbchanvese(    /* TODO: compute this energy!*/
+    {
+        cout <<" run localized func " << endl;
+        interactive_rbchanvese(    /* TODO: compute this energy!*/
                                  img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                                  iter,rad,lambda*0.5,display );
     }
-    else {
+    else
+    {
       cout << "Error, unsupported energy name! " << m_EnergyName << endl;
     }
 
@@ -436,6 +442,8 @@ KSegmentor3D::~KSegmentor3D(){
   ll_destroy(Lin2out);
   ll_destroy(Lout2in);
   ll_destroy(Lchanged);
+
+
 }
 
 
