@@ -30,7 +30,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     super(KSliceEffectOptions,self).__init__(parent)
     print("Made a KSliceEffectOptions")
 
-    #save a layout manager, get just the red slice
+    #save a layout manager, get all 3 slice widgets
     editUtil = EditorLib.EditUtil.EditUtil()
     parameterNode = editUtil.getParameterNode()
     lm = slicer.app.layoutManager()
@@ -151,36 +151,36 @@ so it can access tools if needed.
       slicer.modules.editorBot.active = False
       del(slicer.modules.editorBot)
     slicer.modules.editorBot = self
-    self.interval = 100
-    self.active = False
+    #self.interval = 100
+    #self.active = False
     self.redSliceWidget=options.redSliceWidget
     self.greenSliceWidget=options.greenSliceWidget
     self.yellowSliceWidget=options.yellowSliceWidget
     self.start()
 
   def start(self):
-    self.active = True
-    self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
+    s#elf.active = True
+    #self.labelMTimeAtStart = self.editUtil.getLabelVolume().GetImageData().GetMTime()
     sliceLogic = self.sliceWidget.sliceLogic()
     self.logic = KSliceEffectLogic( self.redSliceWidget.sliceLogic() )
 
     print("Starting")
-    qt.QTimer.singleShot(self.interval, self.iteration)
+    #qt.QTimer.singleShot(self.interval, self.iteration)
 
   def stop(self):
-    self.active = False
+    #self.active = False
     self.logic.destroy()
     
-  def iteration(self):
-    """Perform an iteration of the algorithm"""
-    if not self.active:
-      return
-    labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
-    if labelMTime > self.labelMTimeAtStart:
-      sliceLogic = self.sliceWidget.sliceLogic()
-      self.labelMTimeAtStart = labelMTime
-    #self.logic.step(1)
-    qt.QTimer.singleShot(self.interval, self.iteration)
+  #def iteration(self):
+  #  """Perform an iteration of the algorithm"""
+  #  if not self.active:
+  #    return
+  #  labelMTime = self.editUtil.getLabelVolume().GetImageData().GetMTime()
+  #  if labelMTime > self.labelMTimeAtStart:
+  #    sliceLogic = self.sliceWidget.sliceLogic()
+  #    self.labelMTimeAtStart = labelMTime
+  #  self.logic.step(1)
+  #  qt.QTimer.singleShot(self.interval, self.iteration)
 
 
 #
@@ -313,13 +313,14 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.attributes = ('MouseTool')
     self.displayName = 'KSliceEffect Effect'
 
-    self.labVal = EditorLib.EditUtil.EditUtil().getLabel() #this gets set once, user cannot use a different color w/o stopping segmentation, starting over
+    #this gets set once, user cannot use a different color w/o stopping segmentation, starting over
     #create variables to keep track of how the label changed (automatic part or user input)
+    self.labVal = EditorLib.EditUtil.EditUtil().getLabel() 
     Print_Good("Init KSliceLogic with Label Fixed to " + str(self.labVal) )
     self.acMod = 0
     self.userMod = 0
 
-    #create a key shortcut
+    #create key shortcuts, make the connections
     s2 = qt.QKeySequence(qt.Qt.Key_W) # Press w/W to run segmentor 2d
     s3 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 3d
     s4 = qt.QKeySequence(qt.Qt.Key_U) # Press u/U to run segmentor 2.5d
@@ -342,91 +343,83 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.qtkeyconnections.append(s)
         print(s)
 
-    #  TODO: check this claim-  might be causing leaks
-    #     set the image, label nodes (this will not change although the user can
-    #      alter what is bgrnd/frgrnd in editor)
-    labelLogic = self.sliceLogic.GetLabelLayer()
-    self.labelNode = labelLogic.GetVolumeNode()
-    backgroundLogic = self.sliceLogic.GetBackgroundLayer()
+    # TODO: check this claim-  might be causing leaks
+    #       set the image, label nodes (this will not change although the user can
+    #       alter what is bgrnd/frgrnd in editor)
+    # Confused about how info propagates UIarray to UIVol, not the other way, NEEDS AUTO TESTS
+    labelLogic          = self.sliceLogic.GetLabelLayer()
+    backgroundLogic     = self.sliceLogic.GetBackgroundLayer()
+    volumesLogic        = slicer.modules.volumes.logic()
+    steeredName         = self.backgroundNode.GetName() + '-UserInput'
+    steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
+
+    self.labelNode      = labelLogic.GetVolumeNode()
     self.backgroundNode = backgroundLogic.GetVolumeNode()
 
-    #put a listener on label, so we know when user has drawn
-    labelImg=self.labelNode.GetImageData()
-    self.ladMod_tag=labelImg.AddObserver("ModifiedEvent", self.labModByUser)
-    self.labelImg=labelImg
-   
-    #TODO: prevents other-named labels?
-    self.labArr= slicer.util.array(self.backgroundNode.GetName()+'-label') 
+    self.labArr         = slicer.util.array(self.backgroundNode.GetName()+'-label')       # numpy array with label, TODO: prevents other-named labels?
+    steeredArray        = slicer.util.array(steeredName)                                  # get the numpy array
+    steeredArray[:]     = 0                                                               # Init user input to zeros
+    self.UIarray        = steeredArray                                                    # skeep reference for easy computation of accumulation
 
-    #put test listener on the whole window
-    self.logMod_tag = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)
+    self.labelImg       = self.labelNode.GetImageData()                                   # vtkImageData*
+    self.uiImg          = steeredVolume.GetImageData() 
 
-    # a number of observers for mouse events, bound to the interactors
+
+
+    # a number of observers for various events
     self.mouse_obs,self.swLUT = bind_view_observers(self.testWindowListener)
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
- 
-
-    volumesLogic  = slicer.modules.volumes.logic()
-    steeredName   = self.backgroundNode.GetName() + '-UserInput'
-    steeredVolume = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
-
-    steeredArray = slicer.util.array(steeredName) #get the numpy array
-    steeredArray[:]=0 # Init user input to zeros
-    #tmpVol = steeredVolume.GetImageData()
-    #tmpVol.SetScalarTypeToDouble()
-    #tmpVol.AllocateScalars()
-
-    self.UIarray=slicer.util.array(steeredName) #keep reference for easy computation of accumulation
-    self.UIVol  =steeredVolume.GetImageData() # is == c++'s vtkImageData* ?
+    self.ladMod_tag           = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                 # put a listener on label, so we know when user has drawn
+    self.logMod_tag           = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)         # put test listener on the whole window
 
  
-    #make KSlice class
+ 
+    # make KSlice class
     print("making a kslice")
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
-    ksliceMod.SetImageVol(self.backgroundNode.GetImageData())
-    ksliceMod.SetLabelVol( self.labelNode.GetImageData() )
-    ksliceMod.SetUIVol( self.UIVol )
+    ksliceMod.SetImageVol( self.backgroundNode.GetImageData())
+    ksliceMod.SetLabelVol( self.labelImg )
+    ksliceMod.SetUIVol( self.uiImg )
     ksliceMod.SetCurrLabel(self.labVal)  
     ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
 
-    # Confused about how info propagates UIarray to UIVol, not the other way
-    # NEEDS AUTO TESTS
-    self.currSlice= None
-    self.ijkPlane='IJ'
-    self.computeCurrSlice() #initialize the current slice to something meaningful
-
+    # initialize state variables
+    self.currSlice    = None
+    self.ijkPlane     = 'IJ'
+    self.computeCurrSlice()     #initialize the current slice to something meaningful
     self.lastRunPlane ='None'   #null setting, meaning we havent done any segmentations yet
     self.lastModBy    ='None'   #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.accumInProg    =0        #marker to know that we are accumulating user input   
+    self.accumInProg  =0        #marker to know that we are accumulating user input   
 
+    # make cache slices for the three different planes
     print("Making temporary slice arrays")
     volSize=self.labelImg.GetDimensions()
-    def createTmpArray( dim0, dim1, nameSuffix ):
-        Print_Good( "making array " + nameSuffix )
-        return np.zeros([volSize[dim0],volSize[dim1],1])   #tmpArr
-               
-    
     self.ij_tmpArr=createTmpArray(0,1,'-ij_Tmp')
     self.jk_tmpArr=createTmpArray(1,2,'-jk_Tmp')
     self.ik_tmpArr=createTmpArray(0,2,'-ik_Tmp')
-    
+    print(volSize) 
     self.i_range=np.arange(0,volSize[0])
     self.j_range=np.arange(0,volSize[1])
     self.k_range=np.arange(0,volSize[2])
-    self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range)
+    self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range) #indices for elements of slice, in the 3D array
     print("Done creating temporary slice arrays")
 
     # keep track of these vars so plane changes make tmpArr re-init correctly
     self.currSlice_tmp=self.currSlice
     self.ijkPlane_tmp =self.ijkPlane
     
+    # debug 
     range_img = self.backgroundNode.GetImageData().GetScalarRange()
     Print_Good( str(range_img) )
  
+  def createTmpArray( dim0, dim1, nameSuffix ):
+    Print_Good( "making array " + nameSuffix )
+    return np.zeros([volSize[dim0],volSize[dim1],1])   #tmpArr
+
   def check_U_sync(self):
-    #self.UIVol.Update()
-    range_UIVol = self.UIVol.GetScalarRange()
+    #self.uiImg.Update()
+    range_UIVol = self.uiImg.GetScalarRange()
     range_UIArr = [self.UIarray.min(),self.UIarray.max()]
     strInfo="min,max of UIVol and UIArr = "+str(range_UIVol)+";  "+str(range_UIArr)+", sign(uk)= "
     isGood = True
@@ -464,10 +457,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.computeCurrSlice()
         print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
 
-    # self.labVal doesn't seem to work when erasing
+
+
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel() # return integer value, *scalar*
     signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) #change sign based on drawing/erasing
-    
     
     if event == "LeftButtonPressEvent":
       self.accumInProg=1
@@ -492,10 +485,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         # Danger: you haven't recalc'd the orientation and currSlice yet        
         # self.labVal doesn't seem to work when erasing
         if self.ijkPlane=="IJ":
-            if signAccum==-1:                     #We're drawing
-                deltPaint=self.labArr[self.linInd]#find the next stuff that was painted
+            if signAccum==-1:                                            # We're drawing
+                deltPaint=self.labArr[self.linInd]                       # find the next stuff that was painted
                 newLab= (self.ij_tmpArr + self.labArr[self.linInd])!=0
-            elif signAccum==1:                       #user is erasing
+            elif signAccum==1:                                           # user is erasing
                 deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd]  
         elif self.ijkPlane=="JK":
@@ -512,17 +505,14 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
             elif signAccum==1:    
                 deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
                 newLab=self.labArr[self.linInd] 
-        #TODO: scale by the currLabelValue 
-        #D'oh, weird bug with having to dual-event after changing label
         
         # Argh, overwrites any changes to underlying vtk volume!?
         #if bUseLabelModTrigger: # trying to add this back in
 
         ''' If you Enable this, It must pass the U Sync check! '''
         self.UIarray[self.linInd]+=signAccum*deltPaint
-        
         self.labArr[self.linInd] = self.labVal * newLab   
-        self.accumInProg=0    #done accumulating
+        self.accumInProg=0                                              # done accumulating
                  
         #self.check_U_sync()
         
@@ -537,10 +527,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       
 
 # 
-#        U_ijk = self.UIVol.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
+#        U_ijk = self.uiImg.GetScalarComponentAsDouble(ijk[0],ijk[1],ijk[2],0)
 #        print 'U at ' + str(ijk) + ' = '+str(U_ijk)
 #        U_new = U_ijk - 1.0
-#        self.UIVol.SetScalarComponentFromDouble(ijk[0],ijk[1],ijk[2],U_new)
+#        self.uiImg.SetScalarComponentFromDouble(ijk[0],ijk[1],ijk[2],U_new)
 
        
   def labModByUser(self,caller,event):
@@ -569,9 +559,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if self.copySliceView==self.sliceIJKPlane(): #make sure user hasn't move to a different view
       self.computeCurrSlice()
       self.ksliceMod.PasteSlice(self.currSlice)
-      labelImage=self.labelNode.GetImageData()
       self.labelNode.Modified()
-      labelImage.Modified()
+      self.labelImg.Modified()
       print('pasteslice')
 
   def computeCurrSliceSmarter(self,ijk):
@@ -599,12 +588,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
   def runSegment2D(self):
     print("doing 2D segmentation")
-    lm = slicer.app.layoutManager()
-       
     self.computeCurrSlice()
     
     # get the parameters from MRML
-    node = EditUtil.EditUtil().getParameterNode()
+    node    = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
 
     #make connections, parameter settings
@@ -612,29 +599,23 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(30)
 
-    #execute a run
-    #we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
+    #execute a run, we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
     useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
-    print "use cache?:" + str(useCache)
     self.ksliceMod.runUpdate2D(not useCache)
-    
-    #signal to slicer that the label needs to be updated
-    labelImage=self.labelNode.GetImageData()
+    print "use cache?:" + str(useCache)    
 
     #save the 'last run state' information
     self.acMod=1
     self.lastRunPlane=self.ijkPlane
-    self.lastModBy='2D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    #self.check_U_sync()   #turn the debug off
+    self.lastModBy='2D'                             # was last active contour run in 2D or 3D (cache needs to be recomputed)
     
     #update vars
-    labelImage.Modified()      # This triggers a Modified Event on Label => windowListener call
-    self.labelNode.Modified()
-    #labelNode.SetModifiedSinceRead(1)
-
+    self.labelImg.Modified(                         # This triggers a Modified Event on Label => windowListener call
+    self.labelNode.Modified()                       # labelNode.SetModifiedSinceRead(1)
+    
+    #self.check_U_sync()                            # turn the debug off
   def runSegment3D(self):
     print("doing 3D segmentation")
-    #lm = slicer.app.layoutManager()
     self.computeCurrSlice()
     
     # get the parameters from MRML
@@ -644,54 +625,45 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetBrushRad(currRad)
-    self.ksliceMod.SetNumIts(10) # should be less than 2D!
+    self.ksliceMod.SetNumIts(10)                    # should be less than 2D!
 
-    #execute a run
-    #still doing 3D, user has not drawn => use cache
-    useCache= (self.lastModBy=='3D') & (self.userMod==0) 
-    print "use cache?:" + str(useCache)
-
+    #execute a run, still doing 3D, user has not drawn => use cache
+    useCache= (self.lastModBy=='3D') & (self.userMod==0) )
     self.ksliceMod.runUpdate3D(not useCache)
-    
-    #signal to slicer that the label needs to be updated
-    labelImage=self.labelNode.GetImageData()
+    print "use cache?:" + str(useCache
 
     #save the 'last run state' information
     self.acMod=1
-    self.lastModBy='3D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.check_U_sync()
+    self.lastModBy='3D'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
 
-    labelImage.Modified()
-    self.labelNode.Modified()
-    #labelNode.SetModifiedSinceRead(1)
+    self.labelImg.Modified()
+    self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
 
+    #self.check_U_sync()                                   # turn the debug off
   def runSegment2p5D(self):
     print("doing 2.5D segmentation")
     self.computeCurrSlice()
 
+    # get the parameters from MRML
     node = EditUtil.EditUtil().getParameterNode()
     currRad = int(node.GetParameter("KSliceEffect,radius"))
 
     self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetBrushRad(currRad)
-    self.ksliceMod.SetNumIts(20)      # should be less than 2D!
-    self.ksliceMod.SetDistWeight(0.2) # weight evolution by distancef rom view-plane
+    self.ksliceMod.SetNumIts(20)                          # should be less than 2D!
+    self.ksliceMod.SetDistWeight(0.2)                     # weight evolution by distancef rom view-plane
 
     #still doing 3D, user has not drawn => use cache
     useCache= (self.lastModBy=='3D') & (self.userMod==0) 
-    print "use cache?:" + str(useCache)
-
     self.ksliceMod.runUpdate2p5D(not useCache)
-    
-    
-    labelImage=self.labelNode.GetImageData()
+    print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
     self.acMod=1
-    self.lastModBy='3D'    #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.lastModBy='3D'                                   # was last active contour run in 2D or 3D (cache needs to be recomputed)
     self.check_U_sync()
     
-    labelImage.Modified() #signal to slicer that the label needs to be updated
+    self.labelImg.Modified()                              # signal to slicer that the label needs to be updated
     self.labelNode.Modified()
 
 
@@ -721,7 +693,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.labelImg.RemoveObserver(self.ladMod_tag)
     #remove logic observer
     self.sliceLogic.RemoveObserver(self.logMod_tag)
-
+    
+    # destroy 
     self.ksliceMod.FastDelete()
 
 
