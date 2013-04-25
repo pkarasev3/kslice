@@ -489,12 +489,20 @@ void en_lrbac_destroy()
     }
 
     //delete the static variables in energy3c.cpp
-    FVec.clear();
-    KappaVec.clear();
-    AiVec.clear();
-    AoVec.clear();
-    SiVec.clear();
-    SoVec.clear();
+    //FVec.clear();
+    //KappaVec.clear();
+    //AiVec.clear();
+    //AoVec.clear();
+    //SiVec.clear();
+    //SoVec.clear();
+
+    //std::vector<double>().swap(FVec);
+    //std::vector<double>().swap(KappaVec);
+    //std::vector<double>().swap(AiVec);
+    //std::vector<double>().swap(AoVec);
+    //std::vector<double>().swap(SiVec);
+    //std::vector<double>().swap(SoVec);
+
 
     // Don't delete them, we're caching !
     //    if(Ain!=NULL) {

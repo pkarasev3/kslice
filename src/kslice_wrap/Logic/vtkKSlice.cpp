@@ -62,7 +62,7 @@ void vtkKSlice::PasteSlice(int toSlice){
 void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
     this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
-                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
+                                       contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
     this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }

@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
       if( canReadImg==0)
       {
         cout<<"Could not read file "<<imgVolName<<" \n";
-        //exit(-1); // Satanic! kills python process.
         return 0;
       }
 
@@ -70,7 +69,6 @@ int main(int argc, char** argv) {
 
     } else if(canReadImg==0){
       cout<<"Could not read file"<<labVolName<<"\n";
-      //exit(-1); // Satanic! kills python process.
       return 0;
     }
 
@@ -90,52 +88,56 @@ int main(int argc, char** argv) {
 
 
 
-
-
+    int test=1;
     for(int i=1; i<20; i++)
     {
+        //set up the black box
+        vtkKSlice* bbKSlice = vtkKSlice::New();  //created the data, options structures empty for now
+        //KSlice* bbKSlice=new KSlice();
+        bbKSlice->SetImageVol(imgVol);
+        bbKSlice->SetLabelVol(labVol);
+        bbKSlice->SetUIVol(uiVol);
+        bbKSlice->SetNumIts(numIts);
+        bbKSlice->SetBrushRad(rad);
+        bbKSlice->SetCurrSlice(currSlice);
+        bbKSlice->SetDistWeight(distWeight);
+        bbKSlice->Initialize();
 
-    //set up the black box
-    vtkKSlice* bbKSlice = vtkKSlice::New();  //created the data, options structures empty for now
-    //KSlice* bbKSlice=new KSlice();
-    bbKSlice->SetImageVol(imgVol);
-    bbKSlice->SetLabelVol(labVol);
-    bbKSlice->SetUIVol(uiVol);
-    bbKSlice->SetNumIts(numIts);
-    bbKSlice->SetBrushRad(rad);
-    bbKSlice->SetCurrSlice(currSlice);
-    bbKSlice->SetDistWeight(distWeight);
-    bbKSlice->Initialize();
+        switch(test)
+        {
+        case 1:
+            //evolve (simulated user)
+            bbKSlice->SetCurrSlice(currSlice-2);
+            bbKSlice->runUpdate2p5D(1);
+            bbKSlice->SetCurrSlice(currSlice-3);
+            bbKSlice->runUpdate2p5D(0);
+            break;
+        case 2:
+            bbKSlice->SetCurrSlice(currSlice-2);
+            bbKSlice->runUpdate3D(1);
+            bbKSlice->SetCurrSlice(currSlice-3);
+            bbKSlice->runUpdate3D(0);
+            break;
+        case 3:
+            bbKSlice->runUpdate2D(1);
+            bbKSlice->SetCurrSlice(currSlice-1);
+            bbKSlice->runUpdate2D(0);
+            break;
 
-    //evolve (simulated user)
-    //bbKSlice->SetCurrSlice(currSlice-2);
-    //bbKSlice->runUpdate2p5D(1);
-    //bbKSlice->SetCurrSlice(currSlice-3);
-    //bbKSlice->runUpdate2p5D(0);
+        }
 
-    bbKSlice->SetCurrSlice(currSlice-2);
-    bbKSlice->runUpdate3D(1);
-    bbKSlice->SetCurrSlice(currSlice-3);
-    bbKSlice->runUpdate3D(0);
+        //bbKSlice->PrintImage(std::cout, vtkIndent());
 
+        //record the output (FOR TESTING ONLY)
+        vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
+        writer->SetInput(labVol);
+        writer->SetFileName("../../data/bbTest/perturbedLab.mha");
+        writer->Write();
 
-    //bbKSlice->runUpdate2D(1);
-    //bbKSlice->SetCurrSlice(currSlice-1);
-    //bbKSlice->runUpdate2D(0);
+        writer->Delete();
 
-    //bbKSlice->PrintImage(std::cout, vtkIndent());
-
-
-    //record the output (FOR TESTING ONLY)
-    vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
-    writer->SetInput(labVol);
-    writer->SetFileName("../../data/bbTest/perturbedLab.mha");
-    writer->Write();
-
-    writer->Delete();
-
-    bbKSlice->Delete();
-    std::cout<<"iteration number: "<<i<<std::endl;
+        bbKSlice->Delete();
+        std::cout<<"iteration number: "<<i<<std::endl;
     }
 
     labReader->Delete();

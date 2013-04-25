@@ -311,7 +311,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,m_PlaneNormalVector.data(),
                                m_PlaneCenter.data(),this->m_DistWeight);
-        bool bDisplayChanVeseCost = true;
+        bool bDisplayChanVeseCost = false;
         if( bDisplayChanVeseCost )
         {
             double u0,u1;
