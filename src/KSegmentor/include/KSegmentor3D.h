@@ -8,6 +8,7 @@
 #include "KSegmentorBase.h"
 #include "KViewerOptions.h"
 #include "KSandbox.h"
+#include "energy3c.h"
 
 //For testing
 #include"vtkMetaImageWriter.h"
@@ -41,6 +42,7 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
         /** internal 'update from input' function */
         void integrateUserInput();
         bool firstPassInit; // only load image to double *once*
+        energy3c *segEngine;
         //void UpdateArraysAfterTransform();
 };
 

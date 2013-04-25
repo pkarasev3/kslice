@@ -1,6 +1,6 @@
 #include "KSegmentor3D.h"
 #include "llist.h"
-#include "sfm_local_chanvese_mex.h"
+//#include "sfm_local_chanvese_mex.h"
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
 #include <omp.h>
@@ -33,7 +33,7 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   //LL* Lztmp = this->LL3D.Lz;
   //assert(Lztmp != NULL);
 
-
+  this->segEngine=new energy3c();
 
   //initialize pointers 2D
   this->imgSlice    = NULL;
@@ -240,7 +240,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
     // Why does the U_I_slice keep seeming like zeros when clicking??
-    interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
+    interactive_rbchanvese(segEngine, imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
                            iter,rad,lambda*0.5,display);
 
@@ -307,7 +307,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         cout << " run basic chan-vese on it "<< endl;
         CalcViewPlaneParams();
         assert(m_PlaneNormalVector.size()==3);
-        interactive_chanvese_ext(img,phi,ptrIntegral_Image,label,dims,
+        interactive_chanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,m_PlaneNormalVector.data(),
                                m_PlaneCenter.data(),this->m_DistWeight);
@@ -323,7 +323,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     {
         cout <<" run localized func " << endl;
         interactive_rbchanvese(    /* TODO: compute this energy!*/
-                                 img, phi, ptrIntegral_Image, label, dims,
+                                 segEngine, img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                                  iter,rad,lambda*0.5,display );
     }
@@ -443,7 +443,7 @@ KSegmentor3D::~KSegmentor3D(){
   ll_destroy(Lout2in);
   ll_destroy(Lchanged);
 
-
+  delete segEngine;
 }
 
 

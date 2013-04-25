@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
 
 
-    int test=1;
+    int test=2;
     for(int i=1; i<20; i++)
     {
         //set up the black box

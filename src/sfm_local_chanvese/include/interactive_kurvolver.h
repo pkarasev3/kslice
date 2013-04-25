@@ -1,24 +1,25 @@
 #pragma once
 
 
+#include "sparse3c.h"
+#include "lsops3c.h"
+//#include "sfm_local_chanvese_mex.h"
 
-#include "sfm_local_chanvese_mex.h"
-
-void interactive_rbchanvese(double *img, float *phi, short *U_integral, short *label, long *dims,
+void interactive_rbchanvese(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display);
 
-void interactive_rbchanvese_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
+void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL*Lchanged,
                           int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight);
 
-void interactive_chanvese(double *img, float *phi, short *U_integral, short *label, long *dims,
+void interactive_chanvese(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                     int iter, double rad, double lambda, int display);
 
-void interactive_chanvese_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
-                          LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
-                          int iter, double lambda, int display, double* normvec, double* pointonplane,float distweight=0);
+void interactive_chanvese_ext(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
+                          LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in, LL* Lchanged,
+                          int iter, double lambda, int display, double* normvec, double* pointonplane, float distweight=0);
 
 /*void interactive_customspeed(double* speedimg, double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,

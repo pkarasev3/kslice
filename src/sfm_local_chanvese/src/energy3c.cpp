@@ -23,23 +23,39 @@
   #include <assert.h>
 #endif
 
-using std::vector;
-
-static double uin, uout, uuser, sumin, sumout,sumuser;
-double ain, aout, auser; // means
-static double sum2in, sum2out, varin, varout;      // variances
-static double du_orig;       //used in yezzi speed
-double *gball, *Ain, *Aout, *Sin, *Sout; //local means
-double *pdfin, *pdfout, *pdfuser;
-static int nbins=256;
-static double imgMin, imgMax,   binWidth;
-long numdims;
-double engEval;
-bool UseInitContour=1;
+std::vector<double> uin_rgb(3,0.0);
+std::vector<double> uout_rgb(3,0.0);
+std::vector<double> sumin_rgb(3,0.0);
+std::vector<double> sumout_rgb(3,0.0);
+std::vector<double> ain_rgb(3,0.0);
+std::vector<double> aout_rgb(3,0.0);
 
 
+energy3c::energy3c()
+{
+    rad=5;
+    nbins=256;
+    UseInitContour=1;
+    FVec.resize(128);
+    KappaVec.resize(128);
+    AiVec.resize(128);
+    AoVec.resize(128);
+    SiVec.resize(128);
+    SoVec.resize(128);
+}
 
-double *en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
+energy3c::~energy3c()
+{
+
+}
+
+void energy3c::SetRadius(double radius)
+{
+    this->rad=radius;
+}
+
+
+double *energy3c::en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -80,7 +96,7 @@ double *en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, d
     return F;
 }
 
-void en_lrbac_vessel_yz_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
+void energy3c::en_lrbac_vessel_yz_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -116,7 +132,7 @@ void en_lrbac_vessel_yz_init_point(double* img, float *phi, int idx, int x, int 
     Sin[idx] = usum; Sout[idx] = vsum;
 }
 
-void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
+void energy3c::en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
     int x,y,z,idx;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -180,7 +196,7 @@ void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(uout>0) uout = sumout/aout;
 }
 
-double *en_lrbac_vessel_cv_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
+double *energy3c::en_lrbac_vessel_cv_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -219,7 +235,7 @@ double *en_lrbac_vessel_cv_compute(LL *Lz,float *phi, double *img, long *dims, d
     return F;
 }
 
-void en_lrbac_vessel_cv_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
+void energy3c::en_lrbac_vessel_cv_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -255,7 +271,7 @@ void en_lrbac_vessel_cv_init_point(double* img, float *phi, int idx, int x, int 
     Sin[idx] = usum; Sout[idx] = vsum;
 }
 
-void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
+void energy3c::en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
     int x,y,z,idx;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -319,43 +335,35 @@ void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     if(uout>0) uout = sumout/aout;
 }
 
-namespace {
-    static std::vector<double>  FVec(128);
-    static std::vector<double>  KappaVec(128);
-    static std::vector<double>  AiVec(128);
-    static std::vector<double>  AoVec(128);
-    static std::vector<double>  SiVec(128);
-    static std::vector<double>  SoVec(128);
-
-    bool CheckLevelSetSizes( int queryLength )
+bool energy3c::CheckLevelSetSizes( int queryLength )
+{
+    bool bDidResize = false;
+    int  initLength = FVec.size();
+    if( queryLength > initLength )
     {
-        bool bDidResize = false;
-        int  initLength = FVec.size();
-        if( queryLength > initLength )
-        {
-            FVec.resize(queryLength * 2 + 128);
-            KappaVec.resize(queryLength * 2 + 128);
-            bDidResize = true;
-        }
-        return bDidResize;
+        FVec.resize(queryLength * 2 + 128);
+        KappaVec.resize(queryLength * 2 + 128);
+        bDidResize = true;
     }
-    bool CheckBinSizes( int queryLength )
+    return bDidResize;
+}
+bool energy3c::CheckBinSizes( int queryLength )
+{
+    bool bDidResize = false;
+    int  initLength = AiVec.size();
+    if( queryLength > initLength )
     {
-        bool bDidResize = false;
-        int  initLength = AiVec.size();
-        if( queryLength > initLength )
-        {
-            AiVec.resize(queryLength);
-            AoVec.resize(queryLength);
-            SiVec.resize(queryLength);
-            SoVec.resize(queryLength);
-            bDidResize = true;
-        }
-        return bDidResize;
+        AiVec.resize(queryLength);
+        AoVec.resize(queryLength);
+        SiVec.resize(queryLength);
+        SoVec.resize(queryLength);
+        bDidResize = true;
     }
+    return bDidResize;
 }
 
-void en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double rad){
+
+void energy3c::en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double rad){
     int i;
 
     //create ball
@@ -386,7 +394,7 @@ void en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double rad){
     }
 }
 
-void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad){
+void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad){
     double usum,vsum,au,av;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -418,7 +426,7 @@ void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, 
     Sin[idx] = usum; Sout[idx] = vsum;
 }
 
-void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad){
+void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad){
     int x,y,z,idx;
     int i,j,k,irad,idia,ridx,bidx;
 
@@ -480,7 +488,7 @@ void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double r
     if(uout>0) uout = sumout/aout;
 }
 
-void en_lrbac_destroy()
+void energy3c::en_lrbac_destroy()
 {
 
     if(gball!=NULL) {
@@ -550,7 +558,7 @@ void en_lrbac_destroy()
 //}
 
 
-double *en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
+double *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
@@ -648,7 +656,7 @@ double *en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
 
 
 
-double *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
+double *energy3c::en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
                          double *scale, double lam, double rad )
 {
     int x,y,z,idx;
@@ -696,7 +704,7 @@ double *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
 
 // allocates and populates memory for a 3D Gaussian,
 // size (floor(rad)*2+1)^3 centered in the middle with sigma = rad/2.
-double *en_lrbac_gball(double rad){
+double *energy3c::en_lrbac_gball(double rad){
     double *gball;
     int dia,dia2,i,j,k,idx;
     double cen,x2,y2,z2,sig2;
@@ -728,7 +736,7 @@ double *en_lrbac_gball(double rad){
     return gball;
 }
 
-double *en_yezzi_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam){
+double *energy3c::en_yezzi_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam){
     int idx,n,j;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -801,7 +809,7 @@ double *en_yezzi_compute(LL *Lz,float *phi, double *img, long *dims, double *sca
     return F;
 }
 
-void en_yezzi_init(LL* Lz, double *img, float *phi, long *dims){
+void energy3c::en_yezzi_init(LL* Lz, double *img, float *phi, long *dims){
     int idx;
     double Gamuu, Gamuv, sumuu, sumuv, Ibar, I2bar;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
@@ -837,7 +845,7 @@ void en_yezzi_init(LL* Lz, double *img, float *phi, long *dims){
     du_orig = (uin-uout)*(Gamuu-Gamuv);
 }
 
-void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
+void energy3c::en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     int idx;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
@@ -859,7 +867,7 @@ void en_yezzi_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     if(uout>0) uout = sumout/aout;
 }
 
-double *en_grow_compute(LL *Lz, double *img, float *phi, long *dims, double lam, double dthresh){
+double *energy3c::en_grow_compute(LL *Lz, double *img, float *phi, long *dims, double lam, double dthresh){
     double *F,*kappa;
     int n = 0;
     F = (double*)malloc(Lz->length*sizeof(double));
@@ -883,7 +891,7 @@ double *en_grow_compute(LL *Lz, double *img, float *phi, long *dims, double lam,
     return F;
 }
 
-double *en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, double rad, double lam, double *scale){
+double *energy3c::en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, double rad, double lam, double *scale){
     double *F, *kappa;
     double dx,dy,dz,fmax;
     int x,y,z,idx,n;//,idxN;
@@ -927,7 +935,7 @@ double *en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, double rad,
 
 
 
-double *en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
+double *energy3c::en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -975,7 +983,7 @@ double *en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double 
 }
 
 
-void en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, double* seed){
+void energy3c::en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, double* seed){
     int i;
     double I;
     auser=0;
@@ -1019,7 +1027,7 @@ void en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, d
     std::cout<<"The auser is : "<<auser<<std::endl;
 }
 
-double *en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad){
+double *energy3c::en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
@@ -1073,7 +1081,7 @@ double *en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha
     return F;
 }
 
-void en_chanvese_init(double* img, float *phi, long *dims){
+void energy3c::en_chanvese_init(double* img, float *phi, long *dims){
     double I;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
     uin = 0; uout = 0; du_orig = 0;
@@ -1094,7 +1102,7 @@ void en_chanvese_init(double* img, float *phi, long *dims){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_user_chanvese_compute(LL *Lz, float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam)
+double *energy3c::en_user_chanvese_compute(LL *Lz, float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -1127,7 +1135,7 @@ double *en_user_chanvese_compute(LL *Lz, float *phi, double *img,double penaltyA
 
 
 
-void en_user_chanvese_init(double* img, float *phi, long *dims, double* seed){
+void energy3c::en_user_chanvese_init(double* img, float *phi, long *dims, double* seed){
     double I;
     sumin = 0; sumout = 0; sumuser=0;ain = 0; aout = 0; auser=0;
     uin = 0; uout = 0; du_orig = 0;
@@ -1165,7 +1173,7 @@ void en_user_chanvese_init(double* img, float *phi, long *dims, double* seed){
     if(auser>0) uuser = sumuser/auser;
 }
 
-void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
+void energy3c::en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     int idx;
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
@@ -1188,7 +1196,7 @@ void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_meanvar_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
+double *energy3c::en_meanvar_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -1219,7 +1227,7 @@ double *en_meanvar_compute(LL *Lz, float *phi, double *img, long *dims, double *
     return F;
 }
 
-void en_meanvar_init(double* img, float *phi, long *dims){
+void energy3c::en_meanvar_init(double* img, float *phi, long *dims){
     double I;
     sumin = 0; sumout = 0; ain = 0; aout = 0;
     sum2in=0; sum2out=0; varin = 0; varout = 0;
@@ -1249,7 +1257,7 @@ void en_meanvar_init(double* img, float *phi, long *dims){
     //mexPrintf("varin=%f varout=%f\n",varin,varout);
 }
 
-void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
+void energy3c::en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     int idx;
     double I,I2;
     ll_init(Lin2out);
@@ -1280,7 +1288,7 @@ void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double *en_bhattacharyya_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
+double *energy3c::en_bhattacharyya_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int i,idx,n;
     double *F, *kappa, *lookup;
@@ -1343,7 +1351,7 @@ double *en_bhattacharyya_compute(LL *Lz, float *phi, double *img, long *dims, do
     return F;
 }
 
-void en_bhattacharyya_init(double* img, float *phi, long *dims){
+void energy3c::en_bhattacharyya_init(double* img, float *phi, long *dims){
     int I;
     nbins = 256;
 
@@ -1380,7 +1388,7 @@ void en_bhattacharyya_init(double* img, float *phi, long *dims){
 
 }
 
-void findMinMax(double *img,long *dims){
+void energy3c::findMinMax(double *img,long *dims){
     imgMin=0;
     imgMax=0;
     long elemNum=0;
@@ -1397,7 +1405,7 @@ void findMinMax(double *img,long *dims){
 
 }
 
-double *en_user_bhattacharyya_compute(LL *Lz, float *phi, double *img, double penaltyAlpha, long *dims, double *scale, double lam)
+double *energy3c::en_user_bhattacharyya_compute(LL *Lz, float *phi, double *img, double penaltyAlpha, long *dims, double *scale, double lam)
 {
     int i,idx,n;
     double *F, *kappa, *lookup, *lookupUser;
@@ -1503,7 +1511,7 @@ double *en_user_bhattacharyya_compute(LL *Lz, float *phi, double *img, double pe
     return F;
 }
 
-void en_user_bhattacharyya_init(double* img, float *phi, long *dims, double* seed){
+void energy3c::en_user_bhattacharyya_init(double* img, float *phi, long *dims, double* seed){
     int I;
 
     pdfin  = (double*)malloc(nbins*sizeof(double)); if(pdfin ==NULL) return;
@@ -1567,17 +1575,17 @@ void en_user_bhattacharyya_init(double* img, float *phi, long *dims, double* see
 }
 
 
-void en_bhattacharyya_destroy(){
+void energy3c::en_bhattacharyya_destroy(){
     if(pdfin!=NULL)  free(pdfin);
     if(pdfout!=NULL) free(pdfout);
 }
-void en_user_bhattacharyya_destroy(){
+void energy3c::en_user_bhattacharyya_destroy(){
     if(pdfin!=NULL)  free(pdfin);
     if(pdfout!=NULL) free(pdfout);
     if(pdfuser!=NULL) free(pdfuser);
 }
 
-void en_bhattacharyya_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
+void energy3c::en_bhattacharyya_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     int idx;
     int I;
     ll_init(Lin2out);
@@ -1599,12 +1607,12 @@ void en_bhattacharyya_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     //mexPrintf("uin=%f uout=%f\n",uin,uout);
 }
 
-double en_kappa_pt(PT* p, float *phi, long *dims){
+double energy3c::en_kappa_pt(PT* p, float *phi, long *dims){
     double dx,dy,dz;
     return en_kappa_norm_pt(p, phi, dims, &dx, &dy, &dz);
 }
 
-double *en_kappa_compute(LL *Lz, float *phi, long *dims)
+double *energy3c::en_kappa_compute(LL *Lz, float *phi, long *dims)
 {
     double *kappa;
     int n = 0;
@@ -1620,7 +1628,7 @@ double *en_kappa_compute(LL *Lz, float *phi, long *dims)
     return kappa;
 }
 
-double en_kappa_norm_pt(PT* p, float *phi, long *dims, double *pdx, double *pdy, double *pdz){
+double energy3c::en_kappa_norm_pt(PT* p, float *phi, long *dims, double *pdx, double *pdy, double *pdz){
     double kappa;
     double dx,dy,dz,dxx,dyy,dzz,dxy,dxz,dyz,dx2,dy2,dz2;
     int idx,x,y,z;
@@ -1670,7 +1678,7 @@ double en_kappa_norm_pt(PT* p, float *phi, long *dims, double *pdx, double *pdy,
     return kappa;
 }
 
-void en_null_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
+void energy3c::en_null_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
         ll_remcurr_free(Lin2out);
@@ -1684,7 +1692,7 @@ void en_null_update(double* img, long *dims, LL *Lin2out, LL *Lout2in){
 
 
 #if HAS_OPENCV
-void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
+void energy3c::draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
 
 
     //create an image to hold the histogram
@@ -1723,7 +1731,7 @@ void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
 
 
 
-void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgRange ){
+void energy3c::display_slice(double *img,int *dims, int sliceNum, char *name, double *imgRange ){
 
     //create matrix with our data
     int offsetInt=dims[0]*dims[1]*sliceNum;
@@ -1741,7 +1749,7 @@ void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgR
 
 #endif
 
- void smoothHist(double *pdfRough, double *pdfSmooth ){
+ void energy3c::smoothHist(double *pdfRough, double *pdfSmooth ){
 
     //    //create matrix with our data
     //    cv::Mat roughPDF =  cv::Mat(nbins,1, CV_32FC1,&pdfRough);
@@ -1820,16 +1828,8 @@ void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgR
 
 TODO: move these into a struct that maintains state  */
 
-namespace {
-std::vector<double> uin_rgb(3,0.0);
-std::vector<double> uout_rgb(3,0.0);
-std::vector<double> sumin_rgb(3,0.0);
-std::vector<double> sumout_rgb(3,0.0);
-std::vector<double> ain_rgb(3,0.0);
-std::vector<double> aout_rgb(3,0.0);
-}
 
-void en_chanvese_rgb_init(double* img, float *phi, long *dims)
+void energy3c::en_chanvese_rgb_init(double* img, float *phi, long *dims)
 {
     double I;
     int sz = (int) uin_rgb.size();
@@ -1860,7 +1860,7 @@ void en_chanvese_rgb_init(double* img, float *phi, long *dims)
 
 }
 
-double *en_chanvese_rgb_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
+double *energy3c::en_chanvese_rgb_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
     double *F, *kappa;
@@ -1900,7 +1900,7 @@ double *en_chanvese_rgb_compute(LL *Lz, float *phi, double *img, long *dims, dou
     return F;
 }
 
-void en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in)
+void energy3c::en_chanvese_rgb_update(double* img, long *dims, LL *Lin2out, LL *Lout2in)
 {
     int idx;
     ll_init(Lin2out);
