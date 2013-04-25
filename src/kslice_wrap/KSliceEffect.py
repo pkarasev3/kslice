@@ -336,7 +336,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
                        [cp,self.copyslice],
                        [ps,self.pasteslice] ] # like a cell array in matlab
 
+    #print(mainWindow())
+
     for keydef in self.qtkeydefs:
+        print(keydef[0])
         s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
         s.connect('activated()', keydef[1])
         s.connect('activatedAmbiguously()', keydef[1])
@@ -347,14 +350,17 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #       set the image, label nodes (this will not change although the user can
     #       alter what is bgrnd/frgrnd in editor)
     # Confused about how info propagates UIarray to UIVol, not the other way, NEEDS AUTO TESTS
+    print("making user input node")
     labelLogic          = self.sliceLogic.GetLabelLayer()
     backgroundLogic     = self.sliceLogic.GetBackgroundLayer()
     self.labelNode      = labelLogic.GetVolumeNode()
     self.backgroundNode = backgroundLogic.GetVolumeNode()
 
+
     volumesLogic        = slicer.modules.volumes.logic()
     steeredName         = self.backgroundNode.GetName() + '-UserInput'
     steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
+    print("done making user input node")
 
     self.labArr         = slicer.util.array(self.backgroundNode.GetName()+'-label')       # numpy array with label, TODO: prevents other-named labels?
     steeredArray        = slicer.util.array(steeredName)                                  # get the numpy array
@@ -684,12 +690,15 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         test1=keydef.disconnect('activated()', keyfun[1])
         test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
         #why is this necessary for full disconnect (if removed, get the error that more and more keypresses are required if module is repetedly erased and created
-        keydef.delete() 
+        #keydef.delete() #this causes errors
         print "disconnected 'activated'?:" + str(test1)
         print "disconnected 'activatedAmbiguously'?:" + str(test2)                
 
 
-    #***delete steeredArray
+    #delete steeredArray
+    #slicer.mrmlScene.RemoveNode( getNode(self.backgroundNode.GetName() + '-UserInput') )
+
+    #remove observers
     for style,tag in self.mouse_obs:
         style.RemoveObserver(tag)
 

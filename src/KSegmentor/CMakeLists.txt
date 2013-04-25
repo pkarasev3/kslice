@@ -13,7 +13,7 @@ set( KSEGM_LIBS
 add_library(KSegmentor SHARED ${ksegm_headers} ${ksegm_sources})
 target_link_libraries(KSegmentor   sfm_local_chanvese   vrcl ${KSEGM_LIBS} )
 
-set(KSlice_Angry TRUE CACHE BOOL TRUE)
+set(KSlice_Angry FALSE CACHE BOOL FALSE) #dont want errors if user doesnt have Boost installed
 if(KSlice_Angry)
   add_subdirectory(tests)
 endif()
