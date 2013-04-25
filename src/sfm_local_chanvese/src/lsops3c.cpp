@@ -11,7 +11,7 @@ namespace
 
 }
 
-void ls_iteration(double *F, float *phi, short *label, long* dims,
+void ls_iteration(float *F, float *phi, short *label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in){
   int x,y,z,i,idx;
@@ -263,7 +263,7 @@ void ls_iteration(double *F, float *phi, short *label, long* dims,
 }
 
 
-void ls_iteration_ext(double *F, float *phi, short *label, long* dims,
+void ls_iteration_ext(float *F, float *phi, short *label, long* dims,
                   LL* Lz, LL* Ln1, LL* Lp1, LL *Ln2, LL *Lp2,
                   LL *Lin2out, LL* Lout2in, LL* Lchanged){
     /** this function is mostly the same as ls_iteration, except it

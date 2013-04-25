@@ -33,7 +33,7 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   //LL* Lztmp = this->LL3D.Lz;
   //assert(Lztmp != NULL);
 
-  this->segEngine=new energy3c();
+  this->segEngine=new energy3c(brushRad); //initialized once, radius does not get to change
 
   //initialize pointers 2D
   this->imgSlice    = NULL;
@@ -242,7 +242,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     // Why does the U_I_slice keep seeming like zeros when clicking??
     interactive_rbchanvese(segEngine, imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
-                           iter,rad,lambda*0.5,display);
+                           iter,lambda*0.5,display, true);
 
     bool isGood = check_U_behavior(cache_phi, phiSlice, U_I_slice);
     if( !isGood ) { std::cout << "BAD!" << std::endl; }
@@ -279,6 +279,7 @@ void KSegmentor3D::CalcViewPlaneParams( )
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
 
+    bool firstPass=this->firstPassInit; //first time running cached/non-cached? save variable before it flips in initializeData()
     if( !reInitFromMask ) {// do this only if re-making the level set function
         cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL3D.Lz);
@@ -295,9 +296,9 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     }
 
     //supposedly, U_Integral_image->GetScalarRange(Urange) is a time consuming operation
-    double Urange[2]; // check range; is it getting set right from python?
-    U_Integral_image->GetScalarRange(Urange);
-    std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
+    //double Urange[2]; // check range; is it getting set right from python?
+    //U_Integral_image->GetScalarRange(Urange);
+    //std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
 
     ptrIntegral_Image = static_cast<short*>( U_Integral_image->GetScalarPointer() );
 
@@ -319,13 +320,23 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
             cout << "chan vese cost = " << cv_cost << endl;
         }
     }
+    else if (0== m_EnergyName.compare("LocalCVLimited"))
+    {
+        cout << " run local global chan-vese on it, limiting around current plane "<< endl;
+        CalcViewPlaneParams();
+        assert(m_PlaneNormalVector.size()==3);
+        interactive_rbchanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
+                               LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
+                               m_PlaneCenter.data(),this->m_DistWeight);
+    }
     else if( 0 == m_EnergyName.compare("LocalCV") )
     {
         cout <<" run localized func " << endl;
         interactive_rbchanvese(    /* TODO: compute this energy!*/
                                  segEngine, img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
-                                 iter,rad,lambda*0.5,display );
+                                 iter,lambda*0.5,display, firstPass );
     }
     else
     {
@@ -335,45 +346,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     //threshold the level set to update the mask
     int Nelements = this->dimx * this->dimy * this->dimz;
     int labType=labelVol->GetScalarType();
-    switch(labType)
-    {
-    case 0:     //#define VTK_VOID            0
-        assert(0);
-        break;
-    case 1:    //#define VTK_BIT             1
-        vrcl::setLabel3D((bool *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 2:    //#define VTK_CHAR            2
-        vrcl::setLabel3D((char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 3:    //#define VTK_UNSIGNED_CHAR   3
-        vrcl::setLabel3D((unsigned char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 4:    //#define VTK_SHORT           4
-        vrcl::setLabel3D((short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 5:    //#define VTK_UNSIGNED_SHORT  5
-        vrcl::setLabel3D((unsigned short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 6:    //#define VTK_INT             6
-        vrcl::setLabel3D((int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 7:    //#define VTK_UNSIGNED_INT    7
-        vrcl::setLabel3D((unsigned int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 8:    //#define VTK_LONG            8
-        vrcl::setLabel3D((long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 9:    //#define VTK_UNSIGNED_LONG   9
-        vrcl::setLabel3D((unsigned long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 10:    //#define VTK_FLOAT          10
-        vrcl::setLabel3D((float *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 11:    //#define VTK_DOUBLE         11
-        vrcl::setLabel3D((double *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    }
+    vrcl::setLabel3D(labType, labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
 
     cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;

@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     vtkImageData* labVol;
     vtkImageData* imgVol;
     vtkImageData* uiVol;
-    int numIts=1;
+
     int rad=3;
     float distWeight=.3;
     int currSlice=50;
@@ -73,9 +73,6 @@ int main(int argc, char** argv) {
     }
 
     //debug to make sure we've loaded things correctly
-    double range[2];
-    imgVol->GetScalarRange(range);
-    labVol->GetScalarRange(range);
 
     int dims[3];
     imgVol->GetDimensions(dims);
@@ -88,8 +85,9 @@ int main(int argc, char** argv) {
 
 
 
-    int test=2;
-    for(int i=1; i<20; i++)
+    int test=1;
+    int numIts=1;
+    for(int i=0; i<numIts; i++)
     {
         //set up the black box
         vtkKSlice* bbKSlice = vtkKSlice::New();  //created the data, options structures empty for now

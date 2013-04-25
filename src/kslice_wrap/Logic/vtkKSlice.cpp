@@ -79,11 +79,12 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
 
 void vtkKSlice::runUpdate2p5D(bool reInitFromMask){      // U key now
     if(initCorrectFlag==1){ //already initialized
-        this->ksegmentor->SetEnergyChanVese();
+        //this->ksegmentor->SetEnergyChanVese();
+        this->ksegmentor->SetEnergyLocalCVLimited();
         this->ksegmentor->SetDistanceWeight(DistWeight);
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update3D(reInitFromMask);
-        std::cout<<"did the update for 3d" <<std::endl;
+        std::cout<<"did the update for 2p5d" <<std::endl;
     }
 }
 

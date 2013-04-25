@@ -31,9 +31,9 @@ std::vector<double> ain_rgb(3,0.0);
 std::vector<double> aout_rgb(3,0.0);
 
 
-energy3c::energy3c()
+energy3c::energy3c(int radius)
 {
-    rad=5;
+    rad=radius;
     nbins=256;
     UseInitContour=1;
     FVec.resize(128);
@@ -42,11 +42,15 @@ energy3c::energy3c()
     AoVec.resize(128);
     SiVec.resize(128);
     SoVec.resize(128);
+    gball=NULL;
+    pdfin=NULL;
+    pdfout=NULL;
+    pdfuser=NULL;
 }
 
 energy3c::~energy3c()
 {
-
+    this->en_lrbac_destroy();
 }
 
 void energy3c::SetRadius(double radius)
@@ -54,11 +58,18 @@ void energy3c::SetRadius(double radius)
     this->rad=radius;
 }
 
+double energy3c::GetRadius()
+{
+    return rad;
+}
 
 double *energy3c::en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;
+
+
+    //TODO: fix all these functions to use std::vector for F, kappa, etc., make them float type
 
     // allocate space for F
     F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
@@ -484,8 +495,9 @@ void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
         }
         ll_remcurr_free(Lout2in);
     }
-    if(uin>0)  uin  = sumin/ain;
-    if(uout>0) uout = sumout/aout;
+
+    //if(uin>0)  uin  = sumin/ain;      //Why are these lines here?
+    //if(uout>0) uout = sumout/aout;
 }
 
 void energy3c::en_lrbac_destroy()
@@ -558,15 +570,15 @@ void energy3c::en_lrbac_destroy()
 //}
 
 
-double *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
+float *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
-    double *F, *kappa;
+    float *F, *kappa;
     double a;
     // allocate space for F
-    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
-    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
+    F = (float*)malloc(Lz->length*sizeof(float));    if(F==NULL) throw "Failed Allocating F!" ;
+    kappa = (float*)malloc(Lz->length*sizeof(float)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
     int i,j,k;
     ll_init(Lz);
     int        n= 0;
@@ -656,11 +668,11 @@ double *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dim
 
 
 
-double *energy3c::en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
+float *energy3c::en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
                          double *scale, double lam, double rad )
 {
     int x,y,z,idx;
-    double *F, *kappa;
+    float *F, *kappa;
     double a=0.0; double I=0.0;
     double u=0.0; double v=0.0;
 
@@ -935,10 +947,10 @@ double *energy3c::en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, d
 
 
 
-double *energy3c::en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
+float *energy3c::en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam)
 {
     int idx,n;
-    double *F, *kappa;
+    float *F, *kappa;
     double a,I;
     CheckLevelSetSizes( Lz->length );
 
@@ -996,10 +1008,10 @@ void energy3c::en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, dou
     gball = en_lrbac_gball(rad);
 
     //allocate memory for lookups
-    Ain  = (double*)malloc(NUMEL*sizeof(double)); if(Ain==NULL) return;
-    Sin  = (double*)malloc(NUMEL*sizeof(double)); if(Sin==NULL) return;
-    Aout = (double*)malloc(NUMEL*sizeof(double)); if(Aout==NULL) return;
-    Sout = (double*)malloc(NUMEL*sizeof(double)); if(Sout==NULL) return;
+    Ain  = (float*)malloc(NUMEL*sizeof(float)); if(Ain==NULL) return;
+    Sin  = (float*)malloc(NUMEL*sizeof(float)); if(Sin==NULL) return;
+    Aout = (float*)malloc(NUMEL*sizeof(float)); if(Aout==NULL) return;
+    Sout = (float*)malloc(NUMEL*sizeof(float)); if(Sout==NULL) return;
 
     //poision "uninitialized" points and compute mean seeds
     for(i=0;i<NUMEL;i++){

@@ -11,11 +11,12 @@ void interactive_edgebased(energy3c* segEngine, double *img, float *phi, short *
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                     int iter, double rad, double lambda, int display, double ImgMin, double ImgMax )
 {
-    double *F;
+    float *F;
     double scale[1];
     scale[0] = 0.0;
     //initialize datastructures and statistics
     segEngine->SetRadius(rad);
+
     segEngine->en_lrbac_init(Lz,img,phi,dims,rad);
     for(int i=0;i<iter;i++){
       // compute force
@@ -36,18 +37,19 @@ void interactive_edgebased(energy3c* segEngine, double *img, float *phi, short *
     if( display > 0 )
       cout << "done sfls iters: " << iter << endl;
 
-    segEngine->en_lrbac_destroy();
+    //segEngine->en_lrbac_destroy();    // in the destructor
 }
 
 void interactive_edgebased_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                     int iter, double rad, double lambda, int display, double ImgMin, double ImgMax, double* normvec, double* pointonplane,float distweight)
 {
-    double *F;
+    float *F;
     double scale[1];
     scale[0] = 0.0;
     //initialize datastructures and statistics
     segEngine->SetRadius(rad);
+
     segEngine->en_lrbac_init(Lz,img,phi,dims,rad);
     for(int i=0;i<iter;i++){
       // compute force
@@ -68,23 +70,25 @@ void interactive_edgebased_ext(energy3c* segEngine, double *img, float *phi, sho
     if( display > 0 )
       cout << "done sfls iters: " << iter << endl;
 
-    segEngine->en_lrbac_destroy();
+    //segEngine->en_lrbac_destroy(); //this is done in the destructor of segEngine!
 }
 
 
 void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
-                          int iter, double rad, double lambda, int display)
+                          int iter, double lambda, int display, bool firstPass)
 {
-  double *F;
+  float *F;
   double scale[1];
   scale[0] = 0.0;
   //initialize datastructures and statistics
-  segEngine->SetRadius(rad);
-  segEngine->en_lrbac_init(Lz,img,phi,dims,rad);
+  if(firstPass){
+      segEngine->en_lrbac_init(Lz,img,phi,dims, segEngine->GetRadius());
+  }
+
   for(int i=0;i<iter;i++){
     // compute force
-    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
+    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,segEngine->GetRadius());
 
     /** TODO: currently uses approximation for input observer. port the full double-loop version from
         matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
@@ -95,28 +99,29 @@ void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short 
     ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);  //TURN THIS BACK ON!!!
 
     //update statistics
-    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
+    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, segEngine->GetRadius());
 
   }
   if( display > 0 )
     cout << "done sfls iters: " << iter << endl;
 
-   segEngine->en_lrbac_destroy();
+   //segEngine->en_lrbac_destroy(); //in the destructor
 }
 
 void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL*Lchanged,
-                          int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight)
+                            int iter, double lambda, int display, double* normvec, double* pointonplane,float distweight)
 {
-  double *F;
+  float *F;
   double scale[1];
   scale[0] = 0.0;
   //initialize datastructures and statistics
-  segEngine->SetRadius(rad);
-  segEngine->en_lrbac_init(Lz,img,phi,dims,rad);
+  segEngine->SetRadius(segEngine->GetRadius());
+  segEngine->en_lrbac_init(Lz,img,phi,dims,segEngine->GetRadius());
+
   for(int i=0;i<iter;i++){
     // compute force
-    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
+    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,segEngine->GetRadius());
 
     /** TODO: currently uses approximation for input observer. port the full double-loop version from
         matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
@@ -127,13 +132,13 @@ void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, sh
     ls_iteration_ext(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged);
 
     //update statistics
-    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
+    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, segEngine->GetRadius());
 
   }
   if( display > 0 )
     cout << "done sfls iters: " << iter << endl;
 
-  segEngine->en_lrbac_destroy();
+  //segEngine->en_lrbac_destroy();   //in the destructor
 }
 
 
@@ -141,7 +146,7 @@ void interactive_chanvese(energy3c* segEngine, double *img, float *phi, short *U
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
                           int iter, double rad, double lambda, int display)
 {
-    double *F;
+    float *F;
     double scale[1]; scale[0] = 0;
 
     //initialize datastructures and statistics
@@ -171,7 +176,7 @@ void interactive_chanvese_ext(energy3c* segEngine, double *img, float *phi, shor
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                           int iter, double lambda, int display, double* normvec, double* pointonplane,float distWeight)
 {
-    double *F;
+    float *F;
     double scale[1]; scale[0] = 0;
 
     //initialize datastructures and statistics
@@ -231,7 +236,7 @@ void interactive_customspeed(double* speedimg, double *img, float *phi, short *U
 */
 
 
-void apply_control_function(LL *Lz,float *phi, double* F,
+void apply_control_function(LL *Lz,float *phi, float* F,
                             short *U_integral, double *img, int iter, long* dims)
 { /** \note used when running 2D level set, currently via "s" key */
   // apply user's time-integrated edits inside the updates
@@ -255,7 +260,7 @@ void apply_control_function(LL *Lz,float *phi, double* F,
   //std::cout<< minU<<","<<maxU<<" =Min,Max encountered by apply_control_function (2D)"<<std::endl;
 }
 
-void apply_control_function_ext(LL *Lz,float *phi, double* F,
+void apply_control_function_ext(LL *Lz,float *phi, float* F,
                                 short *U_integral, double *img, int iter, long* dims,
                                 double* normal,double* poP,float distweight )
 { // apply user's time-integrated edits inside the updates

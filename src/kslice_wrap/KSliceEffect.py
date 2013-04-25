@@ -122,9 +122,11 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
       slicer.modules.editorBot.stop()
       del(slicer.modules.editorBot)
       self.botButton.text = "Start Interactive Segmentor"
+      self.locRadFrame.show()
     else:
       KSliceBot(self)
       self.botButton.text = "Stop Interactive Segmentor"
+      self.locRadFrame.hide()
 
   def updateMRMLFromGUI(self):
     if self.updatingGUI:
@@ -385,7 +387,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ksliceMod.SetImageVol( self.backgroundNode.GetImageData())
     ksliceMod.SetLabelVol( self.labelImg )
     ksliceMod.SetUIVol( self.uiImg )
-    ksliceMod.SetCurrLabel(self.labVal)  
+    ksliceMod.SetCurrLabel(self.labVal)
+    node    = EditUtil.EditUtil().getParameterNode()        # get the parameters from MRML
+    currRad = int(node.GetParameter("KSliceEffect,radius"))
+    ksliceMod.SetBrushRad(currRad)                          # only get to set radius at the beginning
     ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
 
@@ -598,13 +603,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     print("doing 2D segmentation")
     self.computeCurrSlice()
     
-    # get the parameters from MRML
-    node    = EditUtil.EditUtil().getParameterNode()
-    currRad = int(node.GetParameter("KSliceEffect,radius"))
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(30)
 
     #execute a run, we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
@@ -626,14 +627,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   def runSegment3D(self):
     print("doing 3D segmentation")
     self.computeCurrSlice()
-    
-    # get the parameters from MRML
-    node = EditUtil.EditUtil().getParameterNode()
-    currRad = int(node.GetParameter("KSliceEffect,radius"))
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(10)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
@@ -654,12 +650,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     print("doing 2.5D segmentation")
     self.computeCurrSlice()
 
-    # get the parameters from MRML
-    node = EditUtil.EditUtil().getParameterNode()
-    currRad = int(node.GetParameter("KSliceEffect,radius"))
-
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetBrushRad(currRad)
     self.ksliceMod.SetNumIts(20)                          # should be less than 2D!
     self.ksliceMod.SetDistWeight(0.2)                     # weight evolution by distancef rom view-plane
 
@@ -682,17 +673,17 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    for i in range(len(self.qtkeydefs)):
-        keyfun = self.qtkeydefs[i]
-        keydef = self.qtkeyconnections[i]
-        print('disconnecting keydef: ')
-        print(keydef)
-        test1=keydef.disconnect('activated()', keyfun[1])
-        test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
+    #for i in range(len(self.qtkeydefs)):
+    #    keyfun = self.qtkeydefs[i]
+    #    keydef = self.qtkeyconnections[i]
+    #    print('disconnecting keydef: ')
+    #    print(keydef)
+    #    test1=keydef.disconnect('activated()', keyfun[1])
+    #    test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
         #why is this necessary for full disconnect (if removed, get the error that more and more keypresses are required if module is repetedly erased and created
         #keydef.delete() #this causes errors
-        print "disconnected 'activated'?:" + str(test1)
-        print "disconnected 'activatedAmbiguously'?:" + str(test2)                
+    #    print "disconnected 'activated'?:" + str(test1)
+    #    print "disconnected 'activatedAmbiguously'?:" + str(test2)                
 
 
     #delete steeredArray

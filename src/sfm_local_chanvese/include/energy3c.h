@@ -12,12 +12,13 @@ using std::vector;
 class energy3c
 {
 public:
-        energy3c();
+        energy3c(int radius);
         ~energy3c();
 
         void SetRadius(double radius);
+        double GetRadius();
         // functions to minimize edge-based (kslice-CT) energy
-        double *en_edgebased_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam, double rad, double ImgMin, double ImgMax);
+        float *en_edgebased_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam, double rad, double ImgMin, double ImgMax);
 
         // functions to minimize lrbac (vessel, yezzi) energy
         double *en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh);
@@ -30,7 +31,7 @@ public:
         void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh);
 
         // functions to minimize lrbac (chanvese) energy
-        double *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad);
+        float *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad);
         void en_lrbac_init(LL *Lz, double *img,float *phi, long *dims, double rad);
         void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad);
         double *en_lrbac_gball(double rad);
@@ -64,7 +65,7 @@ public:
         void en_meanvar_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
 
         // functions to minimize chan-vese energy
-        double *en_chanvese_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam);
+        float *en_chanvese_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam);
         void en_chanvese_init(double *img, float *phi, long *dims);
         void en_chanvese_update(double* img, long *dims, LL *Lin2out, LL *Lout2in);
 
@@ -117,7 +118,8 @@ private:
         double ain, aout, auser; // means
         double sum2in, sum2out, varin, varout;      // variances
         double du_orig;       //used in yezzi speed
-        double *gball, *Ain, *Aout, *Sin, *Sout; //local means
+        double *gball;
+        float  *Ain, *Aout, *Sin, *Sout; //local means     //IKChange precision
         double *pdfin, *pdfout, *pdfuser;
         int nbins;
         double imgMin, imgMax,   binWidth;
@@ -126,11 +128,11 @@ private:
         bool UseInitContour;
 
         double rad;
-        std::vector<double>  FVec;//(128);
-        std::vector<double>  KappaVec;//(128);
-        std::vector<double>  AiVec;//(128);
-        std::vector<double>  AoVec;//(128);
-        std::vector<double>  SiVec;//(128);
-        std::vector<double>  SoVec;//(128);
+        std::vector<float>  FVec;//(128);                         //IKChange precision
+        std::vector<float>  KappaVec;//(128);
+        std::vector<float>  AiVec;//(128);
+        std::vector<float>  AoVec;//(128);
+        std::vector<float>  SiVec;//(128);
+        std::vector<float>  SoVec;//(128);
 };
 #endif

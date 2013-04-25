@@ -472,9 +472,49 @@ namespace vrcl {
       }
   }
 
+  template<typename T> void setLabel3D(int labType, T *array, float *source, int Nelements, int currLabel)
+  {
+      switch(labType)
+      {
+      case 0:     //#define VTK_VOID            0
+          assert(0);
+          break;
+      case 1:    //#define VTK_BIT             1
+          vrcl::setLabel3D((bool *) array,  source, Nelements, currLabel);
+          break;
+      case 2:    //#define VTK_CHAR            2
+          vrcl::setLabel3D((char *) array,  source, Nelements, currLabel);
+          break;
+      case 3:    //#define VTK_UNSIGNED_CHAR   3
+          vrcl::setLabel3D((unsigned char *) array,  source, Nelements, currLabel);
+          break;
+      case 4:    //#define VTK_SHORT           4
+          vrcl::setLabel3D((short *) array,  source, Nelements, currLabel);
+          break;
+      case 5:    //#define VTK_UNSIGNED_SHORT  5
+          vrcl::setLabel3D((unsigned short *) array,  source, Nelements, currLabel);
+          break;
+      case 6:    //#define VTK_INT             6
+          vrcl::setLabel3D((int *) array,  source, Nelements, currLabel);
+          break;
+      case 7:    //#define VTK_UNSIGNED_INT    7
+          vrcl::setLabel3D((unsigned int *) array,  source, Nelements, currLabel);
+          break;
+      case 8:    //#define VTK_LONG            8
+          vrcl::setLabel3D((long *) array,  source, Nelements, currLabel);
+          break;
+      case 9:    //#define VTK_UNSIGNED_LONG   9
+          vrcl::setLabel3D((unsigned long *) array,  source, Nelements, currLabel);
+          break;
+      case 10:    //#define VTK_FLOAT          10
+          vrcl::setLabel3D((float *) array,  source, Nelements, currLabel);
+          break;
+      case 11:    //#define VTK_DOUBLE         11
+          vrcl::setLabel3D((double *) array,  source, Nelements, currLabel);
+          break;
+      }
 
-
-
+}
 
 
 }

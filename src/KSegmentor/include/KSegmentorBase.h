@@ -67,6 +67,7 @@ class KSegmentorBase
             std::vector<std::string> e_names;
             e_names.push_back("ChanVese");
             e_names.push_back("LocalCV");
+            e_names.push_back("LocalCVLimited");
             return e_names;
         }
     public:
@@ -168,6 +169,11 @@ class KSegmentorBase
         {
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
+        void SetEnergyLocalCVLimited()
+        {
+            this->m_EnergyName = GetSupportedEnergyNames()[2];
+        }
+
         vtkImageData* GetUIVol() { return U_Integral_image; }
 
         vtkImageData* U_Integral_image;

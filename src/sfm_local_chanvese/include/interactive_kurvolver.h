@@ -7,11 +7,11 @@
 
 void interactive_rbchanvese(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
-                          int iter, double rad, double lambda, int display);
+                          int iter, double lambda, int display, bool firstPass);
 
 void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
-                            LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL*Lchanged,
-                          int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight);
+                            LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in, LL*Lchanged,
+                          int iter, double lambda, int display, double* normvec, double* pointonplane, float distweight);
 
 void interactive_chanvese(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
@@ -34,8 +34,8 @@ void interactive_edgebased_ext(double *img, float *phi, short *U_integral, short
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
                     int iter, double rad, double lambda, int display, double ImgMin, double ImgMax, double* normvec, double* pointonplane,float distweight);
 
-void apply_control_function(LL *Lz,float *phi, double* F,
-                            short *U_integral,double *img, int iter, long* dims);
+void apply_control_function(LL *Lz, float *phi, float *F,
+                            short *U_integral, double *img, int iter, long* dims);
 
-void apply_control_function_ext(LL *Lz,float *phi, double* F,
-                            short *U_integral, double *img, int iter, long* dims, double* normal,double* poP,float distWeight=0 );
+void apply_control_function_ext(LL *Lz, float *phi, float *F,
+                            short *U_integral, double *img, int iter, long* dims, double* normal, double* poP, float distWeight=0 );
