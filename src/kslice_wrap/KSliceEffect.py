@@ -360,12 +360,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
     volumesLogic        = slicer.modules.volumes.logic()
-    steeredName         = self.backgroundNode.GetName() + '-UserInput'
+    steeredName         = self.backgroundNode.GetName() + '-UserInput'                              #the name we want it to have
     steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
+    self.uiVolName      = steeredVolume.GetName()                                                   #the name that was actually assigned by slicer
     print("done making user input node")
 
     self.labArr         = slicer.util.array(self.backgroundNode.GetName()+'-label')       # numpy array with label, TODO: prevents other-named labels?
-    steeredArray        = slicer.util.array(steeredName)                                  # get the numpy array
+    steeredArray        = slicer.util.array(self.uiVolName )                              # get the numpy array
     steeredArray[:]     = 0                                                               # Init user input to zeros
     self.UIarray        = steeredArray                                                    # skeep reference for easy computation of accumulation
 
@@ -673,21 +674,24 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
-    #for i in range(len(self.qtkeydefs)):
-    #    keyfun = self.qtkeydefs[i]
-    #    keydef = self.qtkeyconnections[i]
-    #    print('disconnecting keydef: ')
-    #    print(keydef)
-    #    test1=keydef.disconnect('activated()', keyfun[1])
-    #    test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
+    for i in range(len(self.qtkeydefs)):
+        keyfun = self.qtkeydefs[i]
+        keydef = self.qtkeyconnections[i]
+        print('disconnecting keydef: ')
+        print(keydef)
+        test1=keydef.disconnect('activated()', keyfun[1])
+        test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
+        keydef.setParent(None)
         #why is this necessary for full disconnect (if removed, get the error that more and more keypresses are required if module is repetedly erased and created
-        #keydef.delete() #this causes errors
-    #    print "disconnected 'activated'?:" + str(test1)
-    #    print "disconnected 'activatedAmbiguously'?:" + str(test2)                
+        keydef.delete() #this causes errors
+        print "disconnected 'activated'?:" + str(test1)
+        print "disconnected 'activatedAmbiguously'?:" + str(test2)                
 
 
     #delete steeredArray
-    #slicer.mrmlScene.RemoveNode( getNode(self.backgroundNode.GetName() + '-UserInput') )
+    uiNode = getNode(self.uiVolName) 
+    slicer.mrmlScene.RemoveNode( getNode(self.uiVolName) )
+    #uiNode.setParent(None)
 
     #remove observers
     for style,tag in self.mouse_obs:
@@ -699,7 +703,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.sliceLogic.RemoveObserver(self.logMod_tag)
     
     # destroy 
-    self.ksliceMod.FastDelete()
+    # self.ksliceMod=None    #self.ksliceMod.FastDelete()
 
 
 

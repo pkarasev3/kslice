@@ -1,7 +1,7 @@
 #get volume 
 #volNode=slicer.util.loadVolume("/raid1/home/pkarasev3/Dropbox/Quad study/ANON0084.mha")
 
-filenameImage="dont load" #"../data/DS004.mha" # /home/kslice/kslice/data/ANON0084.mha"
+filenameImage="../data/DS004.mha" # /home/kslice/kslice/data/ANON0084.mha"
 # Let's try to use one that's in git, or a few downloadable by URL
 volNode=slicer.util.loadVolume(filenameImage)
 
