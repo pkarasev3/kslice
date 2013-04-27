@@ -49,11 +49,12 @@ else(WIN32)
   set(CMAKE_C_FLAGS "-fPIC -g3 -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS "-fPIC -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
-  find_package( Boost COMPONENTS system filesystem program_options )
+endif(WIN32)
+
+find_package( Boost COMPONENTS system filesystem program_options )
   find_package( OpenMP )
   link_directories ( ${Boost_LIBRARY_DIRS} )
   include_directories ( ${Boost_INCLUDE_DIRS} )
-endif(WIN32)
 
 
 
@@ -73,7 +74,7 @@ set( KSlice_include  ${CMAKE_CURRENT_SOURCE_DIR}/util/vrcl/include
 # Use the include path and library for Qt that is used by VTK.
 include_directories( ${QT_include_DIR} ${KSlice_include} )
 
-add_subdirectory(util/vrcl)
+#add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
 add_subdirectory(KSegmentor)
 add_subdirectory(sfm_local_chanvese)

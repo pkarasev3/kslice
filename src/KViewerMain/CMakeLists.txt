@@ -7,7 +7,8 @@ include_DIRECTORIES(
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 
 set(KV_LIBS vtkRendering  vtkGraphics  vtkIO  vtkCommon  vtkVolumeRendering
-             ${PYTHON_LIBRARIES} KSegmentor  vrcl)
+             ${PYTHON_LIBRARIES} KSegmentor  ) 
+#vrcl
 
 set(KV_SRC                 ./src/KSandbox.cpp
                            ./include/KViewerOptions.h
