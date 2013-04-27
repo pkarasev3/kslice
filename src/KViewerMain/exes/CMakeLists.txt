@@ -1,5 +1,5 @@
 set(KV_LIBS KSlice QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics
-         vtkIO  vtkCommon  ${OpenCV_LIBS} )
+         vtkIO  vtkCommon   ) #${OpenCV_LIBS}
 
 set(KV_SRC      ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/vtkKSlice.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/vtkKSlice.h

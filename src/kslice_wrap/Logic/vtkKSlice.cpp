@@ -4,7 +4,6 @@
 #include "vtkKSlice.h"
 
 #include "KSandbox.h"
-//#include "KDataWarehouse.h"
 #include "KSegmentorBase.h"
 
 #include "vtkObjectFactory.h"
@@ -25,10 +24,10 @@ vtkKSlice::vtkKSlice( ) {
 
     BrushRad=7;
     NumIts=50;
-    CurrSlice=50; //make this so segmentation is non-trivial (no points initialized on level set)
-    DistWeight=.3;
+    CurrSlice=1;
+    DistWeight=.2;
     m_bUseEdgeBased=0;
-    contInit=0;
+    contInit=0;        //is doing init from contour
     initCorrectFlag=0; //should not run updates before this flag is set to 1
     CurrLabel=1;
 
@@ -41,23 +40,18 @@ vtkKSlice::~vtkKSlice() {
 }
 
 void vtkKSlice::SetOrientation(const std::string& orient) {
- // axial,sagittal,coronal,etc
+ // ijk <=> axial,sagittal,coronal,etc
   std::cout<<"set kslice orientation to " << orient << std::endl;
   this->ksegmentor->SetSliceOrientationIJK(orient);
   this->Orientation=orient;
 }
 
-void vtkKSlice::applyUserIncrement(int i, int j, int k, double val) {
-
-  std::cout << "vtkKSlice::applyUserIncrement" << val << " at i,j,k =  "
-            << i << "," <<j << ", " << k << std::endl; // UIVol->Print(std::cout);
-  double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  this->ksegmentor->accumulateUserInput(val,i,j,k);
-  //UIVol->DeepCopy(ksegmentor->U_Integral_image);
-  cout << "same pointer? " << UIVol << ", " << this->ksegmentor->U_Integral_image << std::endl;
-  double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
-  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl; // UIVol->Print(std::cout);
-  UIVol->Modified();
+void vtkKSlice::applyUserIncrement(int i, int j, int k, double val)
+{
+  std::cout << "\033[94m  vtkKSlice::applyUserIncrement" << val << " at i,j,k =  " << i << "," <<j << ", " << k << "\033[0m" << std::endl;
+    this->ksegmentor->accumulateUserInput(val,i,j,k);
+  assert( UIVol == this->ksegmentor->U_Integral_image );
+  UIVol->Update();
 }
 
 void vtkKSlice::PasteSlice(int toSlice){
@@ -68,7 +62,7 @@ void vtkKSlice::PasteSlice(int toSlice){
 void vtkKSlice::Initialize(){  // Called on "start bot" button
     //set up the segmentor
     this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
-                                                contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
+                                       contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
     this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
@@ -78,16 +72,29 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
-        LabelVol->Modified(); //why do we need this??
+        //LabelVol->Modified(); // don't need this but keep in mind that this call will
+                                // trigger python function for vtkObservers
     }
 }
 
+void vtkKSlice::runUpdate2p5D(bool reInitFromMask){      // U key now
+    if(initCorrectFlag==1){ //already initialized
+        //this->ksegmentor->SetEnergyChanVese();
+        this->ksegmentor->SetEnergyLocalCVLimited();
+        this->ksegmentor->SetDistanceWeight(DistWeight);
+        this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->Update3D(reInitFromMask);
+        std::cout<<"did the update for 2p5d" <<std::endl;
+    }
+}
+
+
 void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
     if(initCorrectFlag==1){ //already initialized
+        this->ksegmentor->SetEnergyLocalCV();
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
-        LabelVol->Modified(); //why do we need this??
     }
 }
 
@@ -98,15 +105,9 @@ void vtkKSlice::PrintSelf(ostream &os, vtkIndent indent)
 
 void vtkKSlice::PrintEmpty()
 {
-    std::cout<<"This empty print works" <<std::endl;
+    std::cout<<"vtkKSlice::PrintEmpty() called" <<std::endl;
 }
-//void vtkKSlice::CollectRevisions(std::ostream&){
-//}
 
-//void vtkKSlice::PrintImage(ostream &os, vtkIndent indent)
-//{
-//    this->ImageVol->PrintSelf(os, indent);
-//}
 
 void vtkKSlice::PrintImage()
 {
@@ -115,3 +116,23 @@ void vtkKSlice::PrintImage()
     this->ImageVol->GetScalarRange(imgRange);
     std::cout<<imgRange[0]<<"-"<<imgRange[1]<<std::endl;
 }
+
+// shtraf-bat
+/**
+HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[101m'
+    ENDC = '\033[0m'
+
+  cout << "before,after accumulate:  " << Uinit << ", " << Uend << std::endl;
+//void vtkKSlice::CollectRevisions(std::ostream&){
+//}
+  double Uend = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+  double Uinit = this->UIVol->GetScalarComponentAsDouble(i,j,k,0);
+//void vtkKSlice::PrintImage(ostream &os, vtkIndent indent)
+//{
+//    this->ImageVol->PrintSelf(os, indent);
+//}
+  */

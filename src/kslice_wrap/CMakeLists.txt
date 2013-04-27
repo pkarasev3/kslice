@@ -84,6 +84,14 @@ set(MODULE_PYTHON_RESOURCES
 
 #-----------------------------------------------------------------------------
 ctkMacroCompilePythonScript(
+  TARGET_NAME KUtil
+  SCRIPTS "KUtil.py"
+  RESOURCES ""
+  DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
+  INSTALL_DIR ${Slicer_INSTALL_ROOT}
+  )
+
+ctkMacroCompilePythonScript(
   TARGET_NAME KSliceEffect
   SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
   RESOURCES "${MODULE_PYTHON_RESOURCES}"

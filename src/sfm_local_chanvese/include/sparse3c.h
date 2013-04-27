@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include "llist.h"
-#include "lsops3c.h"
+//#include "lsops3c.h"
 #include "energy3c.h"
 
 #define DIMX dims[1]

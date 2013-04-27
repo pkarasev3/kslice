@@ -1,6 +1,6 @@
 #include "KSegmentor3D.h"
 #include "llist.h"
-#include "sfm_local_chanvese_mex.h"
+//#include "sfm_local_chanvese_mex.h"
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
 #include <omp.h>
@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <assert.h>
-
+#include <initializer_list>
 
 using std::string;
 
@@ -30,8 +30,10 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
 
   this->CreateLLs(this->LL3D);
   this->CreateLLs(this->LL2D);
-  LL* Lztmp = this->LL3D.Lz;
-  assert(Lztmp != NULL);
+  //LL* Lztmp = this->LL3D.Lz;
+  //assert(Lztmp != NULL);
+
+  this->segEngine=new energy3c(brushRad); //initialized once, radius does not get to change
 
   //initialize pointers 2D
   this->imgSlice    = NULL;
@@ -39,6 +41,10 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->U_I_slice   = NULL;
   this->labelSlice  = NULL;
   this->phiSlice    = NULL;
+  this->m_IJK_orient="IJ";
+  this->prevSlice   =-1;
+  this->currSlice   =-1;
+  this->firstPassInit = true; // have not done initializeData() yet
 
 }
 
@@ -65,121 +71,47 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
 //  this->OnUserPaintsLabel(); // Ivan: consider OnUserPaintsLabel the "on label changed" entry point
 //}
 
-void KSegmentor3D::integrateUserInput()
-{
-  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-  ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
+//void KSegmentor3D::integrateUserInput()
+//{
+//  ptrIntegral_Image = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
+//  ptrU_t_Image      = static_cast<double*>(this->U_t_image->GetScalarPointer());
 
-  int pos=0;
-  int Nelements=this->m_UpdateVector.size();
-  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N = "
-       << Nelements << endl;
-  for (int element=0;element<Nelements;element++)
-  {
-    pos=this->m_UpdateVector[element];
-    this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
-    this->ptrU_t_Image[pos]       = 0;
-  }
-}
+//  int pos=0;
+//  int Nelements=this->m_UpdateVector.size();
+//  cout << " Integrating:  KSegmentor3D::integrateUserInput(), N = "
+//       << Nelements << endl;
+//  for (int element=0;element<Nelements;element++)
+//  {
+//    pos=this->m_UpdateVector[element];
+//    this->ptrIntegral_Image[pos] += this->ptrU_t_Image[pos];
+//    this->ptrU_t_Image[pos]       = 0;
+//  }
+//}
 
 
 void KSegmentor3D::initializeData()
 {
   currSlice=0;
   prevSlice=-1; //this will never be true
-  imageVol->GetScalarRange( imgRange );
-  labelVol->GetScalarRange( labelRange );
-  if( abs(labelRange[1]) < 1e-3 )
-  { // empty label; so set the proper range
-    labelRange[1] = this->currLabel;
-  }
 
-  this->imgRange=imgRange;
-  //ptrCurrImage = static_cast< short*>(imageVol->GetScalarPointer());
-  //ptrCurrLabel = static_cast< short*>(labelVol->GetScalarPointer());
-
-
-  int imgType=imageVol->GetScalarType();
-  switch(imgType)
-  {
-  case 0:     //#define VTK_VOID            0
-      assert(0);
-      break;
-  case 1:    //#define VTK_BIT             1
-      vrcl::convertImage( (bool *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 2:    //#define VTK_CHAR            2
-      vrcl::convertImage( (char *) imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 3:    //#define VTK_UNSIGNED_CHAR   3
-      vrcl::convertImage( (unsigned char *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 4:    //#define VTK_SHORT           4
-      vrcl::convertImage( (short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 5:    //#define VTK_UNSIGNED_SHORT  5
-      vrcl::convertImage( (unsigned short *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 6:    //#define VTK_INT             6
-      vrcl::convertImage( (int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 7:    //#define VTK_UNSIGNED_INT    7
-      vrcl::convertImage( (unsigned int *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 8:    //#define VTK_LONG            8
-      vrcl::convertImage( (long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 9:    //#define VTK_UNSIGNED_LONG   9
-      vrcl::convertImage( (unsigned long *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 10:    //#define VTK_FLOAT          10
-      vrcl::convertImage( (float *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
-  case 11:    //#define VTK_DOUBLE         11
-      vrcl::convertImage( (double *)imageVol->GetScalarPointer(), this->img, dimx, dimy, dimz);
-      break;
+  if( firstPassInit ) {
+      std::cout<<"Initializing data in c++"<<std::endl;
+      //imageVol->GetScalarRange( imgRange );
+      //labelVol->GetScalarRange( labelRange );
+      //if( abs(labelRange[1]) < 1e-3 )
+      //{ // empty label; so set the proper range
+      //  labelRange[1] = this->currLabel;
+      //}
+      //this->imgRange=imgRange;
+      int imgType=imageVol->GetScalarType();
+      vrcl::convertImage( imgType,imageVol->GetScalarPointer(),img, dimx, dimy, dimz);
+      firstPassInit = false;
+  } else {
+      // callgrind claims that this range calc takes a big chunk o time
   }
 
   int labType=labelVol->GetScalarType();
-  switch(labType)
-  {
-  case 0:     //#define VTK_VOID            0
-      assert(0);
-      break;
-  case 1:    //#define VTK_BIT             1
-      vrcl::convertLabel( (bool *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 2:    //#define VTK_CHAR            2
-      vrcl::convertLabel( (char *) labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 3:    //#define VTK_UNSIGNED_CHAR   3
-      vrcl::convertLabel( (unsigned char *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 4:    //#define VTK_SHORT           4
-      vrcl::convertLabel( (short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 5:    //#define VTK_UNSIGNED_SHORT  5
-      vrcl::convertLabel( (unsigned short *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 6:    //#define VTK_INT             6
-      vrcl::convertLabel( (int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 7:    //#define VTK_UNSIGNED_INT    7
-      vrcl::convertLabel( (unsigned int *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 8:    //#define VTK_LONG            8
-      vrcl::convertLabel( (long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 9:    //#define VTK_UNSIGNED_LONG   9
-      vrcl::convertLabel( (unsigned long *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 10:    //#define VTK_FLOAT          10
-      vrcl::convertLabel( (float *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  case 11:    //#define VTK_DOUBLE         11
-      vrcl::convertLabel( (double *)labelVol->GetScalarPointer(), this->mask, dimx, dimy, dimz);
-      break;
-  }
+  vrcl::convertLabel(labType,labelVol->GetScalarPointer(), mask, dimx, dimy, dimz);
 
 }
 
@@ -201,7 +133,7 @@ public:
 double UmaxConst = 5.0;
 std::vector<double> cached_phi;
 
-bool check_U_behavior(const std::vector<double>& phi0, double* phi1, double* U )
+bool check_U_behavior(const std::vector<float>& phi0, float* phi1, short* U )
 {    /** ensure that phi does not change sign when
               U is "sufficiently large" */
     bool isGood = true;
@@ -276,18 +208,18 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
         //allocate new slices, with correct dimensions
         this->imgSlice          = new double[ dim0 * dim1 ];
-        this->maskSlice         = new double[ dim0 * dim1 ];
-        this->U_I_slice         = new double[ dim0 * dim1 ];
-        this->labelSlice        = new double[ dim0 * dim1 ];
-        this->phiSlice          = new double[ dim0 * dim1 ];
+        this->maskSlice         = new short[ dim0 * dim1 ];
+        this->U_I_slice         = new short[ dim0 * dim1 ];
+        this->labelSlice        = new short[ dim0 * dim1 ];
+        this->phiSlice          = new float[ dim0 * dim1 ];
 
         //copy images based on type
         int imgType=imageVol->GetScalarType();
-        vrcl::convertSliceToDouble(imgType, (bool *)imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
+        vrcl::convertSliceToDouble(imgType, imageVol->GetScalarPointer(), imgSlice  , dim0, dim1, dim2, currSlice, sliceView );
 
         //copy labels based on type
         int labType=labelVol->GetScalarType();
-        vrcl::convertSliceToDouble(labType,(double *)labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
+        vrcl::convertSliceToShort(labType, labelVol->GetScalarPointer(), maskSlice  , dim0, dim1, dim2, currSlice, sliceView );
 
         //set up the new level set
         this->CreateLLs(LL2D);
@@ -296,42 +228,79 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     }
     prevSlice=currSlice;
 
-    /** moved this out of "is cache" portion; always reslice U to maintain sync, whew what a bug-hunt
+    /** moved this out of "is cache" portion; always reslice U to maintain sync, whew what a bug-hunt (This does not make sense)
     //user input is always double */
-    ptrIntegral_Image   = static_cast<double*>(this->U_Integral_image->GetScalarPointer());
-    vrcl::convertSliceToDouble( ptrIntegral_Image, this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
+    int uiType=U_Integral_image->GetScalarType();
+    vrcl::convertSliceToShort(uiType, U_Integral_image->GetScalarPointer(), this->U_I_slice  , dim0, dim1, dim2, currSlice, sliceView );
 
 
     // save the phi before levelset, to verify expected behavior
     cache_phi.resize(dim0*dim1);
-    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*dim0 * dim1 );
+    std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(float)*dim0 * dim1 );
 
     //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
     // Why does the U_I_slice keep seeming like zeros when clicking??
-    interactive_rbchanvese(imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
+    interactive_rbchanvese(segEngine, imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
-                           iter,rad,lambda*0.5,display);
+                           iter,lambda*0.5,display, true);
 
     bool isGood = check_U_behavior(cache_phi, phiSlice, U_I_slice);
     if( !isGood ) { std::cout << "BAD!" << std::endl; }
 
     //threshold phi, set label to appropriate values
     int labType=labelVol->GetScalarType();
-    vrcl::convertDoubleToSlice( labType, labelVol->GetScalarPointer(), phiSlice,
-                                dim0, dim1, dim2, currSlice, sliceView, currLabel );
+    vrcl::convertFloatToSlice( labType, labelVol->GetScalarPointer(), phiSlice, dim0, dim1, dim2, currSlice, sliceView, currLabel );
 
     //clean up, but is m_UpdateVector, m_CoordinatesVector necessary??
     cout <<  "Lz size: "       << LL2D.Lz->length << endl;
 
-    //whats the point of these two variable? awesomeness
+    //whats the point of these two variable? awesomeness (please clarify)
     m_UpdateVector.clear(); // should hook this up for user input accum
     m_CoordinatesVector.clear();
 }
 
+#ifndef WIN32
+void KSegmentor3D::CalcViewPlaneParams( )
+{
+    /** should this use physical spacing instead of slice steps? */
+    if( m_IJK_orient == "IJ" ) {
+        m_PlaneNormalVector = {0.0,0.0,1.0};
+        m_PlaneCenter       = {0.0,0.0,(double)currSlice};
+    }else if( m_IJK_orient == "JK" ) {
+        m_PlaneNormalVector = {1.0,0.0,0.0};
+        m_PlaneCenter       = {(double)currSlice,0.0,0.0};
+    }else if( m_IJK_orient == "IK" ) {
+        m_PlaneNormalVector = {0.0,1.0,0.0};
+        m_PlaneCenter       = {0.0,(double)currSlice,0.0};
+    }else {
+        cout << "Bad, invalid orientation!?" << endl;
+    }
+}
+#else
+void KSegmentor3D::CalcViewPlaneParams( )
+{
+    /** should this use physical spacing instead of slice steps? */
+	m_PlaneNormalVector = std::vector<double>(3,0.0);
+	m_PlaneCenter       = std::vector<double>(3,0.0);
+    if( m_IJK_orient == "IJ" ) {
+        m_PlaneNormalVector[2]=1.0; // = {0.0,0.0,1.0};
+        m_PlaneCenter[2]      =(double)currSlice;
+    }else if( m_IJK_orient == "JK" ) {
+        m_PlaneNormalVector[0]=1.0;
+        m_PlaneCenter[0]=(double)currSlice;
+    }else if( m_IJK_orient == "IK" ) {
+        m_PlaneNormalVector[1]=1.0;
+        m_PlaneCenter[1]=(double)currSlice;
+    }else {
+        cout << "Bad, invalid orientation!?" << endl;
+    }
+}
+#endif
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
 
+    bool firstPass=this->firstPassInit; //first time running cached/non-cached? save variable before it flips in initializeData()
     if( !reInitFromMask ) {// do this only if re-making the level set function
         cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL3D.Lz);
@@ -347,57 +316,58 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         ls_mask2phi3c(mask,phi,label,dims,LL3D.Lz,LL3D.Ln1,LL3D.Ln2,LL3D.Lp1,LL3D.Lp2);
     }
 
-    double Urange[2]; // check range; is it getting set right from python?
-    U_Integral_image->GetScalarRange(Urange);
-    std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
+    //supposedly, U_Integral_image->GetScalarRange(Urange) is a time consuming operation
+    //double Urange[2]; // check range; is it getting set right from python?
+    //U_Integral_image->GetScalarRange(Urange);
+    //std::cout<< "Update3D:  Umin=" << Urange[0] << ", Umax=" << Urange[1] << std::endl;
 
-    ptrIntegral_Image = static_cast<double*>( U_Integral_image->GetScalarPointer() );
-    interactive_rbchanvese(  img, phi, ptrIntegral_Image, label, dims,
-                             LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
-                             iter,rad,lambda*0.5,display);
+    ptrIntegral_Image = static_cast<short*>( U_Integral_image->GetScalarPointer() );
+
+    cout << "m_EnergyName = " << m_EnergyName << endl;
+    if( 0 == m_EnergyName.compare("ChanVese") )
+    {
+        cout << " run basic chan-vese on it "<< endl;
+        CalcViewPlaneParams();
+        assert(m_PlaneNormalVector.size()==3);
+        interactive_chanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
+                               LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
+                               m_PlaneCenter.data(),this->m_DistWeight);
+        bool bDisplayChanVeseCost = false;
+        if( bDisplayChanVeseCost )
+        {
+            double u0,u1;
+            double cv_cost = this->evalChanVeseCost(u0,u1);
+            cout << "chan vese cost = " << cv_cost << endl;
+        }
+    }
+    else if (0== m_EnergyName.compare("LocalCVLimited"))
+    {
+        cout << " run local global chan-vese on it, limiting around current plane "<< endl;
+        CalcViewPlaneParams();
+        assert(m_PlaneNormalVector.size()==3);
+        interactive_rbchanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
+                               LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
+                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
+                               m_PlaneCenter.data(),this->m_DistWeight);
+    }
+    else if( 0 == m_EnergyName.compare("LocalCV") )
+    {
+        cout <<" run localized func " << endl;
+        interactive_rbchanvese(    /* TODO: compute this energy!*/
+                                 segEngine, img, phi, ptrIntegral_Image, label, dims,
+                                 LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
+                                 iter,lambda*0.5,display, firstPass );
+    }
+    else
+    {
+      cout << "Error, unsupported energy name! " << m_EnergyName << endl;
+    }
 
     //threshold the level set to update the mask
     int Nelements = this->dimx * this->dimy * this->dimz;
     int labType=labelVol->GetScalarType();
-    switch(labType)
-    {
-    case 0:     //#define VTK_VOID            0
-        assert(0);
-        break;
-    case 1:    //#define VTK_BIT             1
-        vrcl::setLabel3D((bool *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 2:    //#define VTK_CHAR            2
-        vrcl::setLabel3D((char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 3:    //#define VTK_UNSIGNED_CHAR   3
-        vrcl::setLabel3D((unsigned char *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 4:    //#define VTK_SHORT           4
-        vrcl::setLabel3D((short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 5:    //#define VTK_UNSIGNED_SHORT  5
-        vrcl::setLabel3D((unsigned short *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 6:    //#define VTK_INT             6
-        vrcl::setLabel3D((int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 7:    //#define VTK_UNSIGNED_INT    7
-        vrcl::setLabel3D((unsigned int *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 8:    //#define VTK_LONG            8
-        vrcl::setLabel3D((long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 9:    //#define VTK_UNSIGNED_LONG   9
-        vrcl::setLabel3D((unsigned long *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 10:    //#define VTK_FLOAT          10
-        vrcl::setLabel3D((float *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    case 11:    //#define VTK_DOUBLE         11
-        vrcl::setLabel3D((double *) labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
-        break;
-    }
+    vrcl::setLabel3D(labType, labelVol->GetScalarPointer(),  phi, Nelements, this->currLabel);
 
     cout <<  "dims are:" << dims[0] << "    " << dims[1] << "      " << dims[2] << endl;
     cout <<  "Lz size: "       << LL3D.Lz->length << endl;
@@ -411,20 +381,21 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
 
 
 KSegmentor3D::~KSegmentor3D(){
-
+  std::cout<<"deallocating kslice 3d"<<std::endl;
   //delete [] this->mdims;//Causes trouble! Haveto find out why!!
   delete [] this->img;
   delete [] this->mask;
-  delete [] this->imgRange;
-  delete [] this->labelRange;
+  //delete [] this->imgRange;
+  //delete [] this->labelRange;
   delete [] this->phi;
   delete [] this->label;
 
-
+  delete [] this->mdims;
   delete [] this->imgSlice;
   delete [] this->maskSlice;
   delete [] this->U_I_slice;
   delete [] this->labelSlice;
+  delete [] this->phiSlice;
 
   LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
   LL *Lin2out, *Lout2in,*Lchanged;
@@ -465,6 +436,8 @@ KSegmentor3D::~KSegmentor3D(){
   ll_destroy(Lin2out);
   ll_destroy(Lout2in);
   ll_destroy(Lchanged);
+
+  delete segEngine;
 }
 
 

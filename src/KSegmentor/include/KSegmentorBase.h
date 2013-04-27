@@ -67,6 +67,7 @@ class KSegmentorBase
             std::vector<std::string> e_names;
             e_names.push_back("ChanVese");
             e_names.push_back("LocalCV");
+            e_names.push_back("LocalCVLimited");
             return e_names;
         }
     public:
@@ -86,7 +87,7 @@ class KSegmentorBase
         virtual double evalChanVeseCost( double& mu_i, double& mu_o  ) const;
 
         /** external interface to update at a voxel */
-        virtual void accumulateUserInput(double value,const unsigned int element);
+        //virtual void accumulateUserInput(double value,const unsigned int element);
 
         /** for 3D updates that are less frequent */
         virtual void accumulateUserInput(double value, int i, int j, int k);
@@ -140,12 +141,12 @@ class KSegmentorBase
             }
         }
 
-        void SetPlaneCenter(double* center)
+        void SetPlaneCenter(const std::vector<double>& center)
         {
-            this->m_PlaneCenter=center;
+            m_PlaneCenter=center;
         }
 
-        void SetPlaneNormalVector(double* normal)
+        void SetPlaneNormalVector(const std::vector<double>& normal)
         {
             this->m_PlaneNormalVector=normal;
         }
@@ -168,17 +169,21 @@ class KSegmentorBase
         {
             this->m_EnergyName = GetSupportedEnergyNames()[1];
         }
+        void SetEnergyLocalCVLimited()
+        {
+            this->m_EnergyName = GetSupportedEnergyNames()[2];
+        }
+
         vtkImageData* GetUIVol() { return U_Integral_image; }
 
-        //vtkSmartPointer<vtkImageData>
         vtkImageData* U_Integral_image;
 
         virtual void OnUserPaintsLabel()=0;
     protected:
         vtkSmartPointer<vtkImageData> U_l_slice_image, U_t_image;
 
-
-
+        /** two arrays for storing the location of user edits; Vanya: it !!DRAMATICALLY!!
+                                                   improves speed and thus pracical usability*/
         std::vector<unsigned int > m_UpdateVector;
         std::vector< std::vector<unsigned int> > m_CoordinatesVector;
 
@@ -191,13 +196,13 @@ class KSegmentorBase
 
         virtual void initializeData()=0;
 
-        virtual void integrateUserInput()=0;
+        //virtual void integrateUserInput()=0;
 
         //virtual void UpdateArraysAfterTransform()=0;
 
         void CreateLLs(LLset& ll);
 
-        std::vector<double> cache_phi;
+        std::vector<float> cache_phi;
 
         /** write to png file. rescale to 255, make sure it has .png ending */
         void saveMatToPNG( double* data, const std::string& fileName );
@@ -205,7 +210,7 @@ class KSegmentorBase
         /** Does NOT own this memory */
         vtkImageData *imageVol; //full image volume we are working with
         vtkImageData *labelVol; //full label volume (at the current time)
-        double* m_PlaneNormalVector, *m_PlaneCenter;
+        std::vector<double> m_PlaneNormalVector, m_PlaneCenter;
         float m_DistWeight,m_ThreshWeight;
 
         std::string m_EnergyName;
@@ -217,33 +222,28 @@ class KSegmentorBase
         SFM_vars* m_SFM_vars;
 
 public:
-        //short  *ptrCurrImage; //ptr to current image slice
-        //short  *ptrCurrLabel; //ptr to current label slice
-
-        double *ptrIntegral_Image;
-        double *ptrU_t_Image;
-
-
-/** Might (??) own anything else below */
+        /** Might (??) own anything else below */
         int currSlice;       //the slice we are segmenting
         int prevSlice;
         long numberdims;     //for images =2, for volumes =3
         int *mdims;          //dimensions of "image" we are segmenting (ex.512x512x212)
-        double *imgRange;    //[minImageVal, maxImageVal]
-        double* labelRange;  //[minLabVal, maxLabVal]
+        //double *imgRange;    //[minImageVal, maxImageVal]
+        //double* labelRange;  //[minLabVal, maxLabVal]
 
         //all the 2D slices
         double* imgSlice;
-        double* maskSlice;
-        double* phiSlice;
-        double* U_I_slice;
-        double* labelSlice;
+        short* maskSlice; //changing types
+        float* phiSlice;
+        short* U_I_slice;
+        short* labelSlice;
 
 
         //3D variables
         double *img;
-        double *mask;
-
+        short *mask;
+        float *phi;
+        short *ptrIntegral_Image;
+        short* label;
 
         double* m_CustomSpeedImgPointer;
         double penaltyAlpha; //regularizer for "user constraints" experiments
@@ -259,7 +259,7 @@ public:
         double m_SatRange[2];
         bool   m_bUseEdgeBased; // do we use edge-based energy?
 
-        double *B, *phi, *C, *label;
+        double *B, *C;
         double *F;
         double usum, vsum;
         int    countdown;

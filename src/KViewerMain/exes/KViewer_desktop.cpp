@@ -6,9 +6,14 @@
 
 int main(int argc, char** argv) {
     //inputs
-    char imgVolName[] = "../../data/bbTest/imgVol.mha";
-    char labVolName[] = "../../data/bbTest/labVol.mha";
-    char uiVolName[]  = "../../data/bbTest/uiVol.mha";
+//    char imgVolName[] = "../../data/bbTest/imgVol.mha";
+//    char labVolName[] = "../../data/bbTest/labVol.mha";
+//    char uiVolName[]  = "../../data/bbTest/uiVol.mha";
+
+    char imgVolName[] = "../../data/AN0084/ANON0084.mha";
+    char labVolName[] = "../../data/AN0084/ANON0084_label.mha";
+    char uiVolName[]  = "../../data/AN0084/ANON0084_ui.mha";
+
 
     std::cout << "looking for img, label, U: " << imgVolName << ", "
               << labVolName << ", " << uiVolName << std::endl;
@@ -22,8 +27,8 @@ int main(int argc, char** argv) {
     vtkImageData* labVol;
     vtkImageData* imgVol;
     vtkImageData* uiVol;
-    int numIts=10;
-    int rad=5;
+
+    int rad=3;
     float distWeight=.3;
     int currSlice=50;
 
@@ -37,20 +42,19 @@ int main(int argc, char** argv) {
       if( canReadImg==0)
       {
         cout<<"Could not read file "<<imgVolName<<" \n";
-        //exit(-1); // Satanic! kills python process.
         return 0;
       }
 
       imgReader->SetFileName(imgVolName);
-      imgReader->SetDataScalarTypeToUnsignedShort();
+      //imgReader->SetDataScalarTypeToUnsignedShort();
       imgReader->Update();
 
       labReader->SetFileName(labVolName);
-      labReader->SetDataScalarTypeToUnsignedShort();
+      //labReader->SetDataScalarTypeToUnsignedShort();
       labReader->Update();
 
       uiReader->SetFileName(uiVolName);
-      uiReader->SetDataScalarTypeToUnsignedShort();
+      //uiReader->SetDataScalarTypeToUnsignedShort();
       uiReader->Update();
 
       labVol = labReader->GetOutput();
@@ -65,14 +69,10 @@ int main(int argc, char** argv) {
 
     } else if(canReadImg==0){
       cout<<"Could not read file"<<labVolName<<"\n";
-      //exit(-1); // Satanic! kills python process.
       return 0;
     }
 
     //debug to make sure we've loaded things correctly
-    double range[2];
-    imgVol->GetScalarRange(range);
-    labVol->GetScalarRange(range);
 
     int dims[3];
     imgVol->GetDimensions(dims);
@@ -85,39 +85,62 @@ int main(int argc, char** argv) {
 
 
 
+    int test=1;
+    int numIts=1;
+    for(int i=0; i<numIts; i++)
+    {
+        //set up the black box
+        vtkKSlice* bbKSlice = vtkKSlice::New();  //created the data, options structures empty for now
+        //KSlice* bbKSlice=new KSlice();
+        bbKSlice->SetImageVol(imgVol);
+        bbKSlice->SetLabelVol(labVol);
+        bbKSlice->SetUIVol(uiVol);
+        bbKSlice->SetNumIts(numIts);
+        bbKSlice->SetBrushRad(rad);
+        bbKSlice->SetCurrSlice(currSlice);
+        bbKSlice->SetDistWeight(distWeight);
+        bbKSlice->Initialize();
 
+        switch(test)
+        {
+        case 1:
+            //evolve (simulated user)
+            bbKSlice->SetCurrSlice(currSlice-2);
+            bbKSlice->runUpdate2p5D(1);
+            bbKSlice->SetCurrSlice(currSlice-3);
+            bbKSlice->runUpdate2p5D(0);
+            break;
+        case 2:
+            bbKSlice->SetCurrSlice(currSlice-2);
+            bbKSlice->runUpdate3D(1);
+            bbKSlice->SetCurrSlice(currSlice-3);
+            bbKSlice->runUpdate3D(0);
+            break;
+        case 3:
+            bbKSlice->runUpdate2D(1);
+            bbKSlice->SetCurrSlice(currSlice-1);
+            bbKSlice->runUpdate2D(0);
+            break;
 
+        }
 
+        //bbKSlice->PrintImage(std::cout, vtkIndent());
 
-    //set up the black box
-    vtkSmartPointer<vtkKSlice> bbKSlice = vtkSmartPointer<vtkKSlice>::New();  //created the data, options structures empty for now
-    //KSlice* bbKSlice=new KSlice();
-    bbKSlice->SetImageVol(imgVol);
-    bbKSlice->SetLabelVol(labVol);
-    bbKSlice->SetUIVol(uiVol);
-    bbKSlice->SetNumIts(numIts);
-    bbKSlice->SetBrushRad(rad);
-    bbKSlice->SetCurrSlice(currSlice);
-    bbKSlice->SetDistWeight(distWeight);
-    bbKSlice->Initialize();
+        //record the output (FOR TESTING ONLY)
+        vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
+        writer->SetInput(labVol);
+        writer->SetFileName("../../data/bbTest/perturbedLab.mha");
+        writer->Write();
 
-    //evolve (simulated user)
-    bbKSlice->runUpdate2D(1);
-    bbKSlice->SetCurrSlice(currSlice-1);
-    bbKSlice->runUpdate2D(0);
-    bbKSlice->SetCurrSlice(currSlice-2);
-    bbKSlice->runUpdate3D(1);
-    bbKSlice->SetCurrSlice(currSlice-3);
-    bbKSlice->runUpdate3D(0);
+        writer->Delete();
 
-    //bbKSlice->PrintImage(std::cout, vtkIndent());
-    bbKSlice->PrintImage();
+        bbKSlice->Delete();
+        std::cout<<"iteration number: "<<i<<std::endl;
+    }
 
-    //record the output (FOR TESTING ONLY)
-    vtkMetaImageWriter *writer = vtkMetaImageWriter::New();
-    writer->SetInput(labVol);
-    writer->SetFileName("../../data/bbTest/perturbedLab.mha");
-    writer->Write();
+    labReader->Delete();
+    imgReader->Delete();
+    uiReader->Delete();
 
     return 0;
 }

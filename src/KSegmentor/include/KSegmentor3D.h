@@ -8,6 +8,7 @@
 #include "KSegmentorBase.h"
 #include "KViewerOptions.h"
 #include "KSandbox.h"
+#include "energy3c.h"
 
 //For testing
 #include"vtkMetaImageWriter.h"
@@ -26,7 +27,8 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
 
         virtual ~KSegmentor3D();
         void initializeData();
-        //virtual void Update3DUnknown(bool reInitFromMask);
+        /** compute view plane's normal and center */
+        void CalcViewPlaneParams( );
         virtual void Update3D(bool reInitFromMask);
         virtual void Update2D(bool reInitFromMask);
 
@@ -39,6 +41,8 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
     private:
         /** internal 'update from input' function */
         void integrateUserInput();
+        bool firstPassInit; // only load image to double *once*
+        energy3c *segEngine;
         //void UpdateArraysAfterTransform();
 };
 

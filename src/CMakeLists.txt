@@ -31,9 +31,9 @@ endif()
 
 
 SET(BUILD_SHARED_LIBS ON CACHE INTERNAL ON)
-
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
-#set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug;Release") #what does this line do??
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug;Release")
+ #Q: what does this line do??  A: enables dropdown box in cmake-gui, instead of needed to type
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Debug")
 
@@ -50,11 +50,6 @@ else(WIN32)
   set(CMAKE_CXX_FLAGS "-fPIC -std=c++0x -Wall -pipe -DVTK_EXCLUDE_STRSTREAM_HEADERS -Wl,--no-undefined -fopenmp" CACHE STRING "compiler flags always used" FORCE)
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 " CACHE STRING "extra compiler flags for debug" FORCE )
 endif(WIN32)
-
-find_package( Boost COMPONENTS system filesystem program_options )
-  find_package( OpenMP )
-  link_directories ( ${Boost_LIBRARY_DIRS} )
-  include_directories ( ${Boost_INCLUDE_DIRS} )
 
 
 
@@ -79,6 +74,7 @@ add_subdirectory(KViewerMain)
 add_subdirectory(KSegmentor)
 add_subdirectory(sfm_local_chanvese)
 
+message(STATUS "Check that this dir actually contains libraries! On windows, will have subdirs! ${KSLICE_LIB_PATH}" )
 if(KSlice_Build_SlicerWrap)
     set(KSLICE_LIB_PATH  ${CMAKE_BINARY_DIR}/lib/ CACHE PATH "where are vrcl and KSegmentor libraries")
     add_subdirectory(kslice_wrap)
