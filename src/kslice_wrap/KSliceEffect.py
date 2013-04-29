@@ -474,28 +474,28 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     imgNode    = sliceLogic.GetBackgroundLayer().GetVolumeNode()
     labelNode  = sliceLogic.GetLabelLayer().GetVolumeNode()
 
-    print("sliceViewMatchEditor")
+    #print("sliceViewMatchEditor")
 
     if type(imgNode)==type(None) or type(labelNode)==type(None):
         self.dialogBox.setText("Either image or label not set in slice views.") 
         self.dialogBox.show()
         return False 
 
-    print("testing sizes")
+    #print("testing sizes")
     dimImg=self.backgroundNode.GetImageData().GetDimensions()
     dimLab=self.labelNode.GetImageData().GetDimensions()
-    print(dimLab)
-    print(dimImg)
+    #print(dimLab)
+    #print(dimImg)
 
     if not (dimImg[0]==dimLab[0] and dimImg[1]==dimLab[1] and dimImg[2]==dimLab[2]):    #if sizes dont match up(doing this b/c cant reach HelperBox parameters
        self.dialogBox.setText("Mismatched label to image.")
        self.dialogBox.show()
        return False
 
-    print(self.imgName)
-    print(self.labelName)
-    print( sliceLogic.GetBackgroundLayer().GetVolumeNode().GetName() )
-    print( sliceLogic.GetLabelLayer().GetVolumeNode().GetName() )
+    #print(self.imgName)
+    #print(self.labelName)
+    #print( sliceLogic.GetBackgroundLayer().GetVolumeNode().GetName() )
+    #print( sliceLogic.GetLabelLayer().GetVolumeNode().GetName() )
 
 
     if (self.imgName== imgNode.GetName()) and (self.labelName == labelNode.GetName()):
@@ -526,7 +526,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       else:
         viewName,orient = get_view_names(sw)
         xy = interactor.GetEventPosition()
-        ijk = smart_xyToIJK(xy,sw)
+        ijk = smart_xyToIJK(xy,sw)                               #ijk computation leads to "computeCurrSliceSmarter" not working
         vals = get_values_at_IJK(ijk,sw)
         self.sliceLogic = sw.sliceLogic()                        #this is a hack, look at init function, self.sliceLogic already defined as just "Red" slice
         ijkPlane = self.sliceIJKPlane()
@@ -535,7 +535,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.computeCurrSlice()
         print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
 
-
+        currSliceTest=self.computeCurrSliceSmarter(ijk)                    #debug
+        print "currSmartSlice is: " + "curr slice = " + str(currSliceTest) #debug
 
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel()    # return integer value, *scalar*
     signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) # change sign based on drawing/erasing
