@@ -20,6 +20,9 @@ selectionNode.SetReferenceActiveVolumeID( imgNode.GetID() )
 selectionNode.SetReferenceActiveLabelVolumeID( labNode.GetID() )
 slicer.app.applicationLogic().PropagateVolumeSelection(0)
 
+#enter editor
+mW=slicer.util.mainWindow()
+mW.moduleSelector().selectModule('Editor')
 
 # got to the editor and do some drawing
 editUtil = EditorLib.EditUtil.EditUtil()
