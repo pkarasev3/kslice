@@ -250,6 +250,11 @@ def smart_xyToIJK(xy,sliceWidget):
     except ValueError:
       index = 0
     ijk.append(index)
+  #print "the x,y,z coordinate is: " + str(xyz[0]) + "  " + str(xyz[1]) + "  " + str(xyz[2]) #debug
+  #RAS= sliceWidget.sliceView().convertXYZToRAS(xyz);
+  #print "the RAS coordinate is: " + str(RAS[0]) + "  " + str(RAS[1]) + "  " + str(RAS[2]) #debug
+  #print "the x,y used is: " + str(xy[0])+ "  " + str(xy[1]) #debug
+  #print "ijk is: " + str(ijk) #debug
   return ijk
 
 
@@ -400,12 +405,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
     # a number of observers for various events
-    self.ladMod_tag            = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                 # put a listener on label, so we know when user has drawn
-    self.logMod_tag            = self.sliceLogic.AddObserver("ModifiedEvent", self.testWindowListener)         # put test listener on the whole window
+    self.ladMod_tag            = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                   # put a listener on label, so we know when user has drawn
+    self.logMod_tag            = self.sliceLogic.AddObserver("ModifiedEvent", self.updateLabelUserInput)         # put test listener on the whole window
     self.mouse_obs, self.swLUT = bind_view_observers(self.testWindowListener)
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
- 
- 
+  
     # make KSlice class
     print("making a kslice")
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
@@ -422,10 +426,12 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # initialize state variables
     self.currSlice    = None
     self.ijkPlane     = 'IJ'
-    self.computeCurrSlice()     #initialize the current slice to something meaningful
-    self.lastRunPlane ='None'   #null setting, meaning we havent done any segmentations yet
-    self.lastModBy    ='None'   #was last active contour run in 2D or 3D (cache needs to be recomputed)
-    self.accumInProg  =0        #marker to know that we are accumulating user input   
+    self.sw           = slicer.app.layoutManager().sliceWidget('Red')
+    self.interactor   = self.sw.sliceView().interactor() #initialize to red slice interactor
+    self.computeCurrSliceSmarter()     #initialize the current slice to something meaningful
+    self.lastRunPlane = 'None'   #null setting, meaning we havent done any segmentations yet
+    self.lastModBy    = 'None'   #was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.accumInProg  = 0        #marker to know that we are accumulating user input   
 
     # make cache slices for the three different planes
     def createTmpArray(dim0, dim1, nameSuffix):
@@ -474,18 +480,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     imgNode    = sliceLogic.GetBackgroundLayer().GetVolumeNode()
     labelNode  = sliceLogic.GetLabelLayer().GetVolumeNode()
 
-    #print("sliceViewMatchEditor")
-
     if type(imgNode)==type(None) or type(labelNode)==type(None):
         self.dialogBox.setText("Either image or label not set in slice views.") 
         self.dialogBox.show()
         return False 
 
-    #print("testing sizes")
     dimImg=self.backgroundNode.GetImageData().GetDimensions()
     dimLab=self.labelNode.GetImageData().GetDimensions()
-    #print(dimLab)
-    #print(dimImg)
 
     if not (dimImg[0]==dimLab[0] and dimImg[1]==dimLab[1] and dimImg[2]==dimLab[2]):    #if sizes dont match up(doing this b/c cant reach HelperBox parameters
        self.dialogBox.setText("Mismatched label to image.")
@@ -506,42 +507,38 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         return False
 
   def testWindowListener(self, caller, event):
-    interactor=caller # should be called by the slice interactor...
-   
+    interactor=caller 						       # should be called by the slice interactor...
+    self.sw         = self.swLUT[interactor]
+    self.interactor = interactor 
+    
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
-      pass
+      return
 
     if event == "MouseMoveEvent": # this a verbose event, dont print
+      self.computeCurrSliceSmarter()                                   #just in case, so were always up to date
       pass
     else:
       pass  #print "windowListener => processEvent( " + str(event) +" )"   
    
     if event in ("EnterEvent","LeftButtonPressEvent","RightButtonPressEvent"):
       # should be done first! sets orientation info
-      sw = self.swLUT[interactor]
-
-      if not sw:
+      if not self.sw:
         print "caller (interactor?) not found in lookup table!"
         pass
       else:
-        viewName,orient = get_view_names(sw)
+        viewName,orient = get_view_names(self.sw)
         xy = interactor.GetEventPosition()
-        ijk = smart_xyToIJK(xy,sw)                               #ijk computation leads to "computeCurrSliceSmarter" not working
-        vals = get_values_at_IJK(ijk,sw)
-        self.sliceLogic = sw.sliceLogic()                        #this is a hack, look at init function, self.sliceLogic already defined as just "Red" slice
+        ijk = smart_xyToIJK(xy,self.sw)                               #ijk computation leads to "computeCurrSliceSmarter" not working
+        vals = get_values_at_IJK(ijk,self.sw)
+        self.sliceLogic = self.sw.sliceLogic()                        #this is a hack, look at init function, self.sliceLogic already defined as just "Red" slice
         ijkPlane = self.sliceIJKPlane()
         self.ksliceMod.SetOrientation(str(ijkPlane))
         self.ijkPlane = ijkPlane
-        self.computeCurrSlice()
-        print "ijk plane is: " + str(ijkPlane) + ", curr slice = " + str(self.currSlice)
-
-        currSliceTest=self.computeCurrSliceSmarter(ijk)                    #debug
-        print "currSmartSlice is: " + "curr slice = " + str(currSliceTest) #debug
-
-    currLabelValue = EditorLib.EditUtil.EditUtil().getLabel()    # return integer value, *scalar*
-    signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) # change sign based on drawing/erasing
+        self.computeCurrSliceSmarter()                    
+     
     
     if event == "LeftButtonPressEvent":
+      print("We're accumulating user input")
       self.accumInProg=1
       if self.ijkPlane=="IJ":
           self.linInd=np.ix_([self.currSlice],  self.j_range, self.i_range)
@@ -557,7 +554,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
           
       if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
           self.labArr[self.linInd]=0
-          
+
+  def updateLabelUserInput(self, caller, event):
+
+    currLabelValue = EditorLib.EditUtil.EditUtil().getLabel()    # return integer value, *scalar*
+    signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) # change sign based on drawing/erasing
 
     bUseLabelModTrigger = False    
     if (event=="ModifiedEvent") and (self.accumInProg==1):
@@ -592,7 +593,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.UIarray[self.linInd]+=signAccum*deltPaint
         self.labArr[self.linInd] = self.labVal * newLab   
         self.accumInProg=0                                              # done accumulating
-                 
+        self.uiImg.Modified()
         #self.check_U_sync()
         
     
@@ -614,7 +615,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
        
   def labModByUser(self,caller,event):
     if self.acMod==0 :
-      if 0==self.userMod:
+      if self.userMod==0:
         print("modified by user, kslice bot is running")
       self.userMod=1
     else:
@@ -633,7 +634,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       return
 
     self.copySliceView=self.sliceIJKPlane()   #ensure were pasting from within the same view later
-    self.computeCurrSlice()
+    self.computeCurrSliceSmarter()
     self.ksliceMod.SetFromSlice(self.currSlice)
     print('copyslice')
 
@@ -642,18 +643,26 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       return
 
     if self.copySliceView==self.sliceIJKPlane(): #make sure user hasn't move to a different view
-      self.computeCurrSlice()
+      self.computeCurrSliceSmarter()
       self.ksliceMod.PasteSlice(self.currSlice)
       self.labelNode.Modified()
       self.labelImg.Modified()
       print('pasteslice')
 
-  def computeCurrSliceSmarter(self,ijk):
+  def computeCurrSliceSmarter(self):
+    #strange thing happens, at the very instant the user mouse enters a slice view, this function
+    #results in currSlice being off by 1, after click event/move event it works correctly(uncomment the print line below
+    #to notice this effect)
+    xy = self.interactor.GetEventPosition()
+    ijk = smart_xyToIJK(xy,self.sw)                               #ijk computation leads to "computeCurrSliceSmarter" not working
+
     ns=-1
     for orient in ( ('IJ',2),('JK',0),('IK',1) ):
       if self.ijkPlane == orient[0]:
         ns = ijk[ orient[1] ]
-    return ns
+    
+    self.currSlice = ns
+    #print"Computation of current slice yields:" + str(ns) 
 
   def computeCurrSlice(self):
     # annoying to reset these just for slice #...
@@ -676,7 +685,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       return
 
     print("doing 2D segmentation")
-    self.computeCurrSlice()
+    self.computeCurrSliceSmarter()
     
 
     #make connections, parameter settings
@@ -704,7 +713,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       return
 
     print("doing 3D segmentation")
-    self.computeCurrSlice()
+    self.computeCurrSliceSmarter()
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
@@ -729,7 +738,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       return
 
     print("doing 2.5D segmentation")
-    self.computeCurrSlice()
+    self.computeCurrSliceSmarter()
 
     self.ksliceMod.SetCurrSlice(self.currSlice)
     self.ksliceMod.SetNumIts(20)                          # should be less than 2D!
