@@ -768,15 +768,15 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     for i in range(len(self.qtkeydefs)):
         keyfun = self.qtkeydefs[i]
         keydef = self.qtkeyconnections[i]
-        print('disconnecting keydef: ')
-        print(keydef)
+        #print('disconnecting keydef: ')
+        #print(keydef)
         test1=keydef.disconnect('activated()', keyfun[1])
         test2=keydef.disconnect('activatedAmbiguously()', keyfun[1])
         keydef.setParent(None)
         #why is this necessary for full disconnect (if removed, get the error that more and more keypresses are required if module is repetedly erased and created
         keydef.delete() #this causes errors
-        print "disconnected 'activated'?:" + str(test1)
-        print "disconnected 'activatedAmbiguously'?:" + str(test2)                
+        #print "disconnected 'activated'?:" + str(test1)
+        #print "disconnected 'activatedAmbiguously'?:" + str(test2)                
 
 
     #delete steeredArray
@@ -793,10 +793,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.sliceLogic.RemoveObserver(self.logMod_tag)
     
     # destroy 
-    # self.ksliceMod=None    #self.ksliceMod.FastDelete()
-
-
-
+    self.ksliceMod=None    #self.ksliceMod.FastDelete()
+    self.UIarray=None      # keep reference for easy computation of accumulation
+    self.uiImg=None
+    print("Deletion completed")
 
 #
 # The KSliceEffectExtension class definition
