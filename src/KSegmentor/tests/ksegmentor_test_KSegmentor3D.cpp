@@ -126,9 +126,11 @@ int main( int argc, char* argv[] )
                 new KSegmentor3D(image,label,UIVol,true,0,50,0.005,3/*brush rad*/,1/**label value*/));
     kseg->setNumIterations( opts.segmentor_iters );
     kseg->SetEnergyChanVese( );
-
-    vector<double> defaultPlaneCenter(3,0.0);
-    vector<double> defaultPlaneNormal({1.0,1.0,1.0});
+	
+	std::vector<double> defaultPlaneNormalVector = std::vector<double>(3,0.0);
+	std::vector<double> defaultPlaneCenter       = std::vector<double>(3,0.0);
+    defaultNormalVector[2]=1.0; // = {0.0,0.0,1.0};
+    defaultPlaneCenter[2]      =3;
     vector<int> Lz_len; // look at length as correctness check
 
     for( int k=0; k<10; k++ ) {

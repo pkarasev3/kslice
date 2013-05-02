@@ -16,7 +16,9 @@ class VTK_SLICER_KSLICE_MODULE_LOGIC_EXPORT vtkKSlice : public vtkObject
 
 public:
   static vtkKSlice* New();
-  vtkTypeRevisionMacro(vtkKSlice,vtkObject);
+  //vtkTypeRevisionMacro(vtkKSlice,vtkObject);
+  vtkTypeMacro(vtkKSlice,vtkObject);
+  
 
   void PrintSelf(ostream &os, vtkIndent indent);
 
@@ -65,6 +67,7 @@ private:
   int ToSlice;
   int CurrLabel;
   std::string Orientation;
+ // virtual char const* GetClassNameInternal() const;
 
 
 };

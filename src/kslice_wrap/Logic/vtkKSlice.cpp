@@ -10,7 +10,7 @@
 #include "vtkSmartPointer.h"
 
 
-vtkCxxRevisionMacro(vtkKSlice, "$Revision$"); //necessary?
+//vtkCxxRevisionMacro(vtkKSlice, "$Revision$"); //necessary?
 vtkStandardNewMacro(vtkKSlice); //for the new() macro
 
 //----------------------------------------------------------------------------

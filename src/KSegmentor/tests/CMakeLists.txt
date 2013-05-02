@@ -1,5 +1,5 @@
 find_package( Boost COMPONENTS system filesystem program_options timer thread)
-find_package( OpenMP )
+#find_package( OpenMP )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 

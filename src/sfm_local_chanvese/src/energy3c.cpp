@@ -16,11 +16,12 @@
 #include <fstream>
 //#include <opencv2/core/core.hpp>
 //#include <opencv2/highgui/highgui.hpp>
-#include <omp.h>
+
 #ifdef WIN32
 #define assert( X ) { }
 #else
   #include <assert.h>
+  #include <omp.h>
 #endif
 
 std::vector<double> uin_rgb(3,0.0);

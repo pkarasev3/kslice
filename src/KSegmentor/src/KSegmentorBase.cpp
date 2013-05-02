@@ -4,7 +4,9 @@
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
 #include "KSandbox.h"
-#include <omp.h>
+#ifndef WIN32
+	#include <omp.h>
+#endif
 #include <string>
 #include <sstream>
 //#include <opencv2/highgui/highgui.hpp>
