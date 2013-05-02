@@ -3,7 +3,10 @@
 //#include "sfm_local_chanvese_mex.h"
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
-#include <omp.h>
+#ifndef WIN32
+	#include <omp.h>
+    #include <initializer_list>
+#endif
 #include <string>
 #include <sstream>
 #include "vtkImageGaussianSmooth.h"
@@ -11,7 +14,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <assert.h>
-#include <initializer_list>
+
 
 using std::string;
 
@@ -259,6 +262,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     m_CoordinatesVector.clear();
 }
 
+#ifndef WIN32
 void KSegmentor3D::CalcViewPlaneParams( )
 {
     /** should this use physical spacing instead of slice steps? */
@@ -275,6 +279,26 @@ void KSegmentor3D::CalcViewPlaneParams( )
         cout << "Bad, invalid orientation!?" << endl;
     }
 }
+#else
+void KSegmentor3D::CalcViewPlaneParams( )
+{
+    /** should this use physical spacing instead of slice steps? */
+	m_PlaneNormalVector = std::vector<double>(3,0.0);
+	m_PlaneCenter       = std::vector<double>(3,0.0);
+    if( m_IJK_orient == "IJ" ) {
+        m_PlaneNormalVector[2]=1.0; // = {0.0,0.0,1.0};
+        m_PlaneCenter[2]      =(double)currSlice;
+    }else if( m_IJK_orient == "JK" ) {
+        m_PlaneNormalVector[0]=1.0;
+        m_PlaneCenter[0]=(double)currSlice;
+    }else if( m_IJK_orient == "IK" ) {
+        m_PlaneNormalVector[1]=1.0;
+        m_PlaneCenter[1]=(double)currSlice;
+    }else {
+        cout << "Bad, invalid orientation!?" << endl;
+    }
+}
+#endif
 
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
@@ -310,8 +334,8 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         assert(m_PlaneNormalVector.size()==3);
         interactive_chanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
-                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
-                               m_PlaneCenter.data(),this->m_DistWeight);
+                               iter,0.5*lambda,display,&(m_PlaneNormalVector[0]),
+                               &(m_PlaneCenter[0]),this->m_DistWeight);
         bool bDisplayChanVeseCost = false;
         if( bDisplayChanVeseCost )
         {
@@ -327,8 +351,8 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         assert(m_PlaneNormalVector.size()==3);
         interactive_rbchanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
-                               iter,0.5*lambda,display,m_PlaneNormalVector.data(),
-                               m_PlaneCenter.data(),this->m_DistWeight);
+                               iter,0.5*lambda,display,&(m_PlaneNormalVector[0]),
+                               &(m_PlaneCenter[0]),this->m_DistWeight);
     }
     else if( 0 == m_EnergyName.compare("LocalCV") )
     {

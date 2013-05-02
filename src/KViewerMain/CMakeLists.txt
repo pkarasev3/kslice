@@ -7,7 +7,8 @@ include_DIRECTORIES(
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 
 set(KV_LIBS vtkRendering  vtkGraphics  vtkIO  vtkCommon  vtkVolumeRendering
-             ${PYTHON_LIBRARIES} KSegmentor  vrcl)
+             ${PYTHON_LIBRARIES}  KSegmentor  ) 
+
 
 set(KV_SRC                 ./src/KSandbox.cpp
                            ./include/KViewerOptions.h
@@ -15,7 +16,7 @@ set(KV_SRC                 ./src/KSandbox.cpp
                            ./include/KSandbox.h)
 
 # FOR WRAPPING; makes KSlice.so (explicitly set, must equal the PythonModule name)
-add_library( KSlice SHARED ${KV_SRC})
+add_library( KSlice STATIC ${KV_SRC})
 target_link_libraries( KSlice  ${KV_LIBS})
 set_target_properties( KSlice PROPERTIES PREFIX "" ) # want KSlice.so, not libKSlice.so
 set_target_properties( KSlice PROPERTIES COMPILE_FLAGS "-fPIC" )

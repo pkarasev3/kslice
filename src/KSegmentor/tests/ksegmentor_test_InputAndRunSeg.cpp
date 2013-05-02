@@ -139,9 +139,10 @@ int main( int argc, char* argv[] )
       kseg->SetEnergyLocalCV();
     }
 
-    vector<double> defaultPlaneCenter(3,0.0);
-    vector<double> defaultPlaneNormal({1.0,1.0,1.0});
-    vector<int> Lz_len; // look at length as correctness check
+	std::vector<double> defaultPlaneNormalVector = std::vector<double>(3,0.0);
+	std::vector<double> defaultPlaneCenter       = std::vector<double>(3,0.0);
+    defaultNormalVector[2]=1.0; // = {0.0,0.0,1.0};
+    defaultPlaneCenter[2]      =3;    vector<int> Lz_len; // look at length as correctness check
 
     for( int k=0; k<opts.outer_iters; k++ ) {
         kseg->setCurrIndex( 2 ); // slice index

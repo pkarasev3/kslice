@@ -69,11 +69,12 @@ set( KSlice_include  ${CMAKE_CURRENT_SOURCE_DIR}/util/vrcl/include
 # Use the include path and library for Qt that is used by VTK.
 include_directories( ${QT_include_DIR} ${KSlice_include} )
 
-add_subdirectory(util/vrcl)
+#add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
 add_subdirectory(KSegmentor)
 add_subdirectory(sfm_local_chanvese)
 
+message(STATUS "Check that this dir actually contains libraries! On windows, will have subdirs! ${KSLICE_LIB_PATH}" )
 if(KSlice_Build_SlicerWrap)
     set(KSLICE_LIB_PATH  ${CMAKE_BINARY_DIR}/lib/ CACHE PATH "where are vrcl and KSegmentor libraries")
     add_subdirectory(kslice_wrap)
