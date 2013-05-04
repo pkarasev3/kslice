@@ -3,6 +3,7 @@
 enable_testing()
 
 
+
 #-----------------------------------------------------------------------------
 set(MODULE_NAME KSlice)
 set(MODULE_TITLE ${MODULE_NAME})

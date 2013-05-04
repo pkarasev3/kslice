@@ -8,7 +8,14 @@ cmake_policy(SET CMP0012 NEW)
 enable_testing()
 
 #-----------------------------------------------------------------------------
-set(MODULE_NAME KSlice)
+set(EXTENSION_NAME KSlice)
+set(MIDAS_PACKAGE_EMAIL  karasevpa@gmail.com)
+set(MIDAS_PACKAGE_API_KEY  tqsS/lB5zAE7xcI3i52P0NFVvJx0x8EQ)
+set(EXTENSION_HOMEPAGE     http://www.google.com)
+set(EXTENSION_CATEGORY    segmentation)
+set(EXTENSION_ICONURL     http://www.google.com/bogus.png)
+set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov, Peter Karasev, Karl Fritscher, Steve Pieper")
+set(EXTENSION_DESCRIPTION   "This extension provides an interactive 3D segmentation tool.")
 #-----------------------------------------------------------------------------
 
 set(KSlice_Build_SlicerWrap TRUE CACHE BOOL TRUE)
