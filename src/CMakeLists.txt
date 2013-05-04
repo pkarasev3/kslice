@@ -14,7 +14,7 @@ set(MIDAS_PACKAGE_API_KEY  tqsS/lB5zAE7xcI3i52P0NFVvJx0x8EQ)
 set(EXTENSION_HOMEPAGE     http://www.google.com)
 set(EXTENSION_CATEGORY    segmentation)
 set(EXTENSION_ICONURL     http://www.google.com/bogus.png)
-set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov, Peter Karasev, Karl Fritscher, Steve Pieper")
+set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov (GT), Peter Karasev (GT), Karl Fritscher (BWH & MGH)")
 set(EXTENSION_DESCRIPTION   "This extension provides an interactive 3D segmentation tool.")
 #-----------------------------------------------------------------------------
 
