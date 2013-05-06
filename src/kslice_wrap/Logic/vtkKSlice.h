@@ -38,6 +38,7 @@ public:
   // needs implementation
   void SetOrientation(const std::string& orient); // IJ, JK, IK
   void applyUserIncrement(int i, int j, int k, double val);
+  bool checkSliceValid(std::string Orientation, int sliceNum);
 
   //implemented functionality
   void PasteSlice(int toSlice);
@@ -67,6 +68,7 @@ private:
   int ToSlice;
   int CurrLabel;
   std::string Orientation;
+  int *mdims;
  // virtual char const* GetClassNameInternal() const;
 
 

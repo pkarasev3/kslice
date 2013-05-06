@@ -331,6 +331,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     self.dialogBox=qt.QMessageBox()                                                    #will display messages to draw users attention if he does anything wrong
     self.dialogBox.setWindowTitle("KSlice Interactive Segmentor Error")
+    self.dialogBox.setWindowModality(qt.Qt.NonModal)                                             #will allow user to continue interacting with Slicer
 
     # TODO: check this claim-  might be causing leaks
     #       set the image, label nodes (this will not change although the user can
@@ -345,7 +346,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #perform safety check on right images/labels being selected,     #set up images
     if type(self.backgroundNode)==type(None) or type(self.labelNode)==type(None):   #if red slice doesnt have a label or image, go no further
-       self.dialogBox.setText("Either image or label not set in slice views.")
+       self.dialogBox.setText("Either Image (must be Background Image) or Label not set in slice views.")
        self.dialogBox.show()
        return
         
@@ -424,7 +425,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod= ksliceMod;
 
     # initialize state variables
-    self.currSlice    = None
+    #self.currSlice    = None
     self.ijkPlane     = 'IJ'
     self.sw           = slicer.app.layoutManager().sliceWidget('Red')
     self.interactor   = self.sw.sliceView().interactor() #initialize to red slice interactor
@@ -481,7 +482,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     labelNode  = sliceLogic.GetLabelLayer().GetVolumeNode()
 
     if type(imgNode)==type(None) or type(labelNode)==type(None):
-        self.dialogBox.setText("Either image or label not set in slice views.") 
+        self.dialogBox.setText("Either image (must be Background Image) or label not set in slice views.") 
         self.dialogBox.show()
         return False 
 
@@ -536,8 +537,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.ijkPlane = ijkPlane
         self.computeCurrSliceSmarter()                    
      
-    
-    if event == "LeftButtonPressEvent":
+    #make sure accumulation has been done BEFORE clearing cache variables and recording over them (fixes multiple left clicks required by the "DrawEffect" tool
+    if event == "LeftButtonPressEvent" and self.accumInProg==0:      
       print("We're accumulating user input")
       self.accumInProg=1
       if self.ijkPlane=="IJ":
@@ -556,6 +557,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
           self.labArr[self.linInd]=0
 
   def updateLabelUserInput(self, caller, event):
+    print("updating label user input")
 
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel()    # return integer value, *scalar*
     signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) # change sign based on drawing/erasing
@@ -619,8 +621,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         print("modified by user, kslice bot is running")
       self.userMod=1
     else:
-      self.acMod=0    #modification came from active contour, reset variable, prepare to listen to next modification
-      self.userMod=0  #print("modified by active contour")
+      self.acMod=0                                                    #modification came from active contour, reset variable, prepare to listen to next modification
+      self.userMod=0                                                  #print("modified by active contour")
       pass
 
   def toggleDrawErase(self):
@@ -633,7 +635,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
       return
 
-    self.copySliceView=self.sliceIJKPlane()   #ensure were pasting from within the same view later
+    self.copySliceView=self.sliceIJKPlane()                            #ensure were pasting from within the same view later
     self.computeCurrSliceSmarter()
     self.ksliceMod.SetFromSlice(self.currSlice)
     print('copyslice')
@@ -642,7 +644,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
       return
 
-    if self.copySliceView==self.sliceIJKPlane(): #make sure user hasn't move to a different view
+    if self.copySliceView==self.sliceIJKPlane():                       #make sure user hasn't move to a different view
       self.computeCurrSliceSmarter()
       self.ksliceMod.PasteSlice(self.currSlice)
       self.labelNode.Modified()
@@ -654,7 +656,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     #results in currSlice being off by 1, after click event/move event it works correctly(uncomment the print line below
     #to notice this effect)
     xy = self.interactor.GetEventPosition()
-    ijk = smart_xyToIJK(xy,self.sw)                               #ijk computation leads to "computeCurrSliceSmarter" not working
+    ijk = smart_xyToIJK(xy,self.sw)                                     #ijk computation leads to "computeCurrSliceSmarter" not working
 
     ns=-1
     for orient in ( ('IJ',2),('JK',0),('IK',1) ):
@@ -781,7 +783,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #delete steeredArray
     slicer.mrmlScene.RemoveNode( getNode(self.uiName) )
-    #slicer.mrmlScene.InitTraversal()
 
     #remove observers
     for style,tag in self.mouse_obs:
@@ -794,6 +795,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     
     # destroy 
     self.ksliceMod=None    #self.ksliceMod.FastDelete()
+    self.dialogBox=None
     self.UIarray=None      # keep reference for easy computation of accumulation
     self.uiImg=None
     print("Deletion completed")

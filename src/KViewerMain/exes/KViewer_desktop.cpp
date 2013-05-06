@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 
 
 
-    int test=2;
+    int test=1;
     int numIts=1;
     for(int i=0; i<numIts; i++)
     {
