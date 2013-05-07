@@ -12,13 +12,13 @@ using std::vector;
 class energy3c
 {
 public:
-        energy3c(int radius);
+        energy3c(int *radius);
         ~energy3c();
 
-        void SetRadius(double radius);
-        double GetRadius();
+        void SetRadius(int *radius);
+        int *GetRadius();
         // functions to minimize edge-based (kslice-CT) energy
-        float *en_edgebased_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam, double rad, double ImgMin, double ImgMax);
+        float *en_edgebased_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam, int *rad, double ImgMin, double ImgMax);
 
         // functions to minimize lrbac (vessel, yezzi) energy
         double *en_lrbac_vessel_yz_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh);
@@ -31,12 +31,12 @@ public:
         void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh);
 
         // functions to minimize lrbac (chanvese) energy
-        float *en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam, double rad);
-        void en_lrbac_init(LL *Lz, double *img,float *phi, long *dims, double rad);
-        void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad);
-        double *en_lrbac_gball(double rad);
+        float *en_lrbac_compute(LL *Lz, float *phi, double *img, long *dims, double *scale, double lam, int *rad);
+        void en_lrbac_init(LL *Lz, double *img, float *phi, long *dims, int *rad);
+        void en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, int *rad);
+        double *en_lrbac_gball(int *rad);
         void en_lrbac_destroy();
-        void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad);
+        void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, int *rad);
 
 
         // functions to minimize bhattacharyya energy
@@ -56,8 +56,8 @@ public:
         void en_user_chanvese_init(double* img, float *phi, long *dims, double* seed);
 
         //functions to minimize user local global constrained chan-vese
-        double *en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad);
-        void en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, double* seed);
+        double *en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, int *rad);
+        void en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, int *rad, double* seed);
 
         // functions to minimize mean&variance energy
         double *en_meanvar_compute(LL *Lz,float *phi, double *img, long *dims, double *scale, double lam);
@@ -86,7 +86,7 @@ public:
         double *en_grow_compute(LL *Lz,double *img, float *phi, long *dims, double lam, double dthresh);
 
         // function to shrink contour w/o collapsing (uses en_null_update)
-        double *en_shrink_compute(LL *Lz, double* img, float *phi, long *dims,double rad, double lam, double *scale);
+        double *en_shrink_compute(LL *Lz, double* img, float *phi, long *dims, int *rad, double lam, double *scale);
 
         // function to smooth contour with curvature (uses en_null_update)
         double *en_kappa_compute(LL *Lz,float *phi,long *dims);
@@ -127,7 +127,7 @@ private:
         double engEval;
         bool UseInitContour;
 
-        double rad;
+        int *rad;
         std::vector<float>  FVec;//(128);                         //IKChange precision
         std::vector<float>  KappaVec;//(128);
         std::vector<float>  AiVec;//(128);

@@ -36,7 +36,7 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   //LL* Lztmp = this->LL3D.Lz;
   //assert(Lztmp != NULL);
 
-  this->segEngine=new energy3c(brushRad); //initialized once, radius does not get to change
+  this->segEngine=new energy3c(this->rad); //initialized once, radius does not get to change
 
   //initialize pointers 2D
   this->imgSlice    = NULL;

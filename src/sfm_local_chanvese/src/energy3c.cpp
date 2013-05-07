@@ -32,7 +32,7 @@ std::vector<double> ain_rgb(3,0.0);
 std::vector<double> aout_rgb(3,0.0);
 
 
-energy3c::energy3c(int radius)
+energy3c::energy3c(int *radius)
 {
     rad=radius;
     nbins=256;
@@ -54,12 +54,12 @@ energy3c::~energy3c()
     this->en_lrbac_destroy();
 }
 
-void energy3c::SetRadius(double radius)
+void energy3c::SetRadius(int *radius)
 {
     this->rad=radius;
 }
 
-double energy3c::GetRadius()
+int *energy3c::GetRadius()
 {
     return rad;
 }
@@ -375,7 +375,7 @@ bool energy3c::CheckBinSizes( int queryLength )
 }
 
 
-void energy3c::en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double rad){
+void energy3c::en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, int *rad){
     int i;
 
     //create ball
@@ -406,22 +406,27 @@ void energy3c::en_lrbac_init(LL *Lz,double *img,float *phi, long *dims, double r
     }
 }
 
-void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad){
+void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, int *rad){
     double usum,vsum,au,av;
-    int i,j,k,irad,idia,ridx,bidx;
+    int i,j,k,irad_i, irad_j, irad_k,idia_i, idia_j,ridx,bidx;
 
     usum=vsum=au=av=0;
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
+    irad_i = (int)(floor(rad[0]));
+    irad_j = (int)(floor(rad[1]));
+    irad_k = (int)(floor(rad[2]));
 
-    for(i=-irad;i<=irad;i++){
+    idia_i = irad_i*2+1; //fix this usage
+    idia_j = irad_j*2+1; //fix this usage
+
+
+    for(i=-irad_i;i<=irad_i;i++){
         if((x+i)<0 || (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){
+        for(j=-irad_j;j<=irad_j;j++){
             if((y+j)<0 || (y+j)>=DIMY) continue;
-            for(k=-irad;k<=irad;k++){
+            for(k=-irad_k;k<=irad_k;k++){
                 if((z+k)<0 || (z+k)>=DIMZ) continue;
                 ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
+                bidx = (j+irad_j)+((i+irad_i)*idia_j)+((k+irad_k)*idia_i*idia_j);
 
                 if(phi[ridx]<=0){
                     usum += img[ridx]*gball[bidx];
@@ -438,26 +443,30 @@ void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int 
     Sin[idx] = usum; Sout[idx] = vsum;
 }
 
-void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad){
+void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, int *rad){
     int x,y,z,idx;
-    int i,j,k,irad,idia,ridx,bidx;
+    int i,j,k,irad_i,irad_j,irad_k,idia_i,idia_j,idia_k,ridx,bidx;
 
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
+    irad_i = (int)(floor(rad[0]));
+    irad_j = (int)(floor(rad[1]));
+    irad_k = (int)(floor(rad[2]));
 
+    idia_i = irad_i*2+1;
+    idia_j = irad_j*2+1;
+    idia_k = irad_k*2+1;
 
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){
         x = Lin2out->curr->x; y = Lin2out->curr->y; z = Lin2out->curr->z; idx = Lin2out->curr->idx;
 
-        for(i=-irad;i<=irad;i++){
+        for(i=-irad_i;i<=irad_i;i++){
             if( ((x+i)<0) | ((x+i)>=DIMX) ) continue;
-            for(j=-irad;j<=irad;j++){
+            for(j=-irad_j;j<=irad_j;j++){
                 if( ((y+j)<0) | ((y+j)>=DIMY) ) continue;
-                for(k=-irad;k<=irad;k++){
+                for(k=-irad_k;k<=irad_k;k++){
                     if( ((z+k)<0) | ((z+k)>=DIMZ) ) continue;
                     ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                    bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
+                    bidx = (j+irad_j)+((i+irad_i)*idia_j)+((k+irad_k)*idia_i*idia_j);
 
                     if(Ain[ridx]>=0)
                     {
@@ -475,14 +484,14 @@ void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in
     while(Lout2in->curr != NULL){
         x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
 
-        for(i=-irad;i<=irad;i++){
+        for(i=-irad_i;i<=irad_i;i++){
             if( ((x+i)<0) | ((x+i)>=DIMX) ) continue;
-            for(j=-irad;j<=irad;j++){
+            for(j=-irad_j;j<=irad_j;j++){
                 if( ((y+j)<0) | ((y+j)>=DIMY) ) continue;
-                for(k=-irad;k<=irad;k++){
+                for(k=-irad_k;k<=irad_k;k++){
                     if( ((z+k)<0) | ((z+k)>=DIMZ) ) continue;
                     ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                    bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
+                    bidx = (j+irad_j)+((i+irad_i)*idia_j)+((k+irad_k)*idia_i*idia_j);
 
                     if(Ain[ridx]>=0)
                     {
@@ -572,7 +581,7 @@ void energy3c::en_lrbac_destroy()
 
 
 float *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims,
-                             double *scale, double lam, double rad, double ImgMin, double ImgMax )
+                             double *scale, double lam, int *rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
     float *F, *kappa;
@@ -670,7 +679,7 @@ float *energy3c::en_edgebased_compute(LL *Lz,float *phi, double *img, long *dims
 
 
 float *energy3c::en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
-                         double *scale, double lam, double rad )
+                         double *scale, double lam, int *rad )
 {
     int x,y,z,idx;
     float *F, *kappa;
@@ -717,33 +726,41 @@ float *energy3c::en_lrbac_compute(LL *Lz,float *phi, double *img, long *dims,
 
 // allocates and populates memory for a 3D Gaussian,
 // size (floor(rad)*2+1)^3 centered in the middle with sigma = rad/2.
-double *energy3c::en_lrbac_gball(double rad){
+double *energy3c::en_lrbac_gball(int *rad){
     double *gball;
-    int dia,dia2,i,j,k,idx;
-    double cen,x2,y2,z2,sig2;
+    int dia_i, dia_j, dia_k,dia2,i,j,k,idx;
+    double cen_i,cen_j,cen_k,x2,y2,z2,sig2_i, sig2_j, sig2_k;
     double gsum;
-    dia = (int)(floor(rad)*2+1);
-    dia2 = dia*dia;
-    cen = (int)(floor(rad));
-    sig2 = (rad/2)*(rad/2);
+    dia_i = rad[0]*2+1;
+    dia_j = rad[1]*2+1;
+    dia_k = rad[2]*2+1;
 
-    gball = (double*)malloc(sizeof(double)*dia*dia*dia);
+    dia2 = dia_i*dia_j;
+    cen_i = (int)(floor(rad[0]));
+    cen_j = (int)(floor(rad[1]));
+    cen_k = (int)(floor(rad[2]));
+
+    sig2_i = (rad[0]/2)*(rad[0]/2);
+    sig2_j = (rad[1]/2)*(rad[1]/2);
+    sig2_k = (rad[2]/2)*(rad[2]/2);
+
+    gball = (double*)malloc(sizeof(double)*dia_i*dia_j*dia_k);
     if(gball == NULL) return NULL;
 
     gsum = 0;
-    for(i=0;i<dia;i++){
-        for(j=0;j<dia;j++){
-            for(k=0;k<dia;k++){
-                idx = i+j*dia+k*dia2;
-                x2 = ((double)i-cen)*((double)i-cen);
-                y2 = ((double)j-cen)*((double)j-cen);
-                z2 = ((double)k-cen)*((double)k-cen);
-                gball[idx] = exp(-(x2+y2+z2)/(2*sig2));
+    for(i=0;i<dia_i;i++){
+        for(j=0;j<dia_j;j++){
+            for(k=0;k<dia_k;k++){
+                idx = i+j*dia_i+k*dia2;
+                x2 = ((double)i-cen_i)*((double)i-cen_i);
+                y2 = ((double)j-cen_j)*((double)j-cen_j);
+                z2 = ((double)k-cen_k)*((double)k-cen_k);
+                gball[idx] = exp(-x2/(2*sig2_i)-y2/(2*sig2_j)-z2/(2*sig2_k));
                 gsum += gball[idx];
             }
         }
     }
-    for(i=0;i<(dia2*dia);i++){
+    for(i=0;i<(dia2*dia_k);i++){
         gball[i] = gball[i]/gsum;
     }
     return gball;
@@ -904,7 +921,7 @@ double *energy3c::en_grow_compute(LL *Lz, double *img, float *phi, long *dims, d
     return F;
 }
 
-double *energy3c::en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, double rad, double lam, double *scale){
+double *energy3c::en_shrink_compute(LL *Lz,double *img, float *phi,long *dims, int *rad, double lam, double *scale){
     double *F, *kappa;
     double dx,dy,dz,fmax;
     int x,y,z,idx,n;//,idxN;
@@ -996,7 +1013,7 @@ float *energy3c::en_chanvese_compute(LL *Lz, float *phi, double *img, long *dims
 }
 
 
-void energy3c::en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, double rad, double* seed){
+void energy3c::en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, int *rad, double* seed){
     int i;
     double I;
     auser=0;
@@ -1040,7 +1057,7 @@ void energy3c::en_lrbac_user_init(LL *Lz,double *img,float *phi, long *dims, dou
     std::cout<<"The auser is : "<<auser<<std::endl;
 }
 
-double *energy3c::en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, double rad){
+double *energy3c::en_lrbac_user_compute(LL *Lz,float *phi, double *img,double penaltyAlpha, long *dims, double *scale, double lam, int *rad){
     int x,y,z,idx,n;
     double *F, *kappa;
     double a,Fmax,u,v,I;

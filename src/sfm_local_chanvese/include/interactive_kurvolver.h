@@ -32,7 +32,7 @@ void interactive_edgebased(double *img, float *phi, short *U_integral, short *la
 
 void interactive_edgebased_ext(double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
-                    int iter, double rad, double lambda, int display, double ImgMin, double ImgMax, double* normvec, double* pointonplane,float distweight);
+                    int iter, int *rad, double lambda, int display, double ImgMin, double ImgMax, double* normvec, double* pointonplane,float distweight);
 
 void apply_control_function(LL *Lz, float *phi, float *F,
                             short *U_integral, double *img, int iter, long* dims);

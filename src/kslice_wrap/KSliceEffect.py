@@ -411,6 +411,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
   
     # make KSlice class
+    print(self.backgroundNode.GetImageData().GetOrigin())
+    print(self.backgroundNode.GetImageData().GetSpacing())
+
     print("making a kslice")
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
     ksliceMod.SetImageVol( self.backgroundNode.GetImageData())

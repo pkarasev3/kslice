@@ -107,9 +107,9 @@ class KSegmentorBase
 
         virtual void copyIntegralDuringPaste( int kFrom, int kTo );
 
-        void setRadius( int radNew ) {
-          rad = radNew;
-        }
+        //void setRadius( int *radNew ) {
+        //  rad = radNew;
+        //}
 
         void setCurrIndex(int sliceIndex){
             this->currSlice=sliceIndex;
@@ -251,7 +251,7 @@ public:
         bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
-        double rad[3];          //radius of ball used in local-global energies
+        int rad[3];          //radius of ball used in local-global energies
         int currLabel;       //the label value to mark inside contour
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 

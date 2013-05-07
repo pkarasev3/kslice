@@ -58,7 +58,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     this->currSlice=currSlice;
     this->iter=numIts;
     this->m_DistWeight=distWeight;
-    this->rad= brushRad;
+    //this->rad= brushRad;
     this->currLabel=currLabel;
     this->labelVol=label;
 
@@ -84,6 +84,17 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     mask=NULL;
 
     image->GetSpacing( m_Spacing_mm );
+    rad[0]=ceil(brushRad/m_Spacing_mm[0]);
+    rad[1]=ceil(brushRad/m_Spacing_mm[1]);
+    rad[2]=ceil(brushRad/m_Spacing_mm[2]);
+
+    std::cout<<"the dimensions are : "<<mdims[0]<<" , "<<mdims[1]<<" , "<<mdims[2]<<std::endl;
+    double originLoc[3];
+    image->GetOrigin(originLoc);
+    std::cout<<"the origin is : "<<originLoc[0]<<" , "<<originLoc[1]<<" , "<<originLoc[2]<<std::endl;
+    std::cout<<"the spacing is : "<<m_Spacing_mm[0]<<" , "<<m_Spacing_mm[1]<<" , "<<m_Spacing_mm[2]<<std::endl;
+    std::cout<<"the radii used are : "<<rad[0]<<" , "<<rad[1]<<" , "<<rad[2]<<std::endl;
+
 
     m_IJK_orient = std::string("IJ");
     cout << "segmentor using ROI size: " << rad << endl;
