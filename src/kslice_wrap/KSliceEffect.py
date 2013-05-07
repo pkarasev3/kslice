@@ -73,7 +73,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.locRadFrame.layout().addWidget(self.locRadSpinBox)
     self.widgets.append(self.locRadSpinBox)
 
-    HelpButton(self.frame, "This is an interactive segmentation tool.")
+    HelpButton(self.frame, "TO USE: \n Start the interactive segmentor and initialize the segmentation with any other editor tool. \n KEYS: \n Press the following keys to interact: \n C: copy label slice \n V: paste label slice \n Q: evolve contour in 2D \n W: evolve contour in 3D \n A: toggle between draw/erase modes" )
     self.frame.layout().addStretch(1) # Add vertical spacer
 
   def destroy(self):
@@ -293,8 +293,7 @@ def bind_view_observers( handlerFunc ):
     if sliceWidget: # add obserservers and keep track of tags
       style = sliceWidget.sliceView().interactor()
       SliceWidgetLUT[style] = sliceWidget
-      events = ("LeftButtonPressEvent","MouseMoveEvent",
-                    "RightButtonPressEvent","EnterEvent", "LeaveEvent")
+      events = ("LeftButtonPressEvent","MouseMoveEvent", "RightButtonPressEvent","EnterEvent", "LeaveEvent")
       for event in events: # override active effect w/ priority
         tag = style.AddObserver(event, handlerFunc, 2.0)
         ObserverTags.append([style,tag])
@@ -331,7 +330,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     self.dialogBox=qt.QMessageBox()                                                    #will display messages to draw users attention if he does anything wrong
     self.dialogBox.setWindowTitle("KSlice Interactive Segmentor Error")
-    self.dialogBox.setWindowModality(qt.Qt.NonModal)                                             #will allow user to continue interacting with Slicer
+    self.dialogBox.setWindowModality(qt.Qt.NonModal)                                   #will allow user to continue interacting with Slicer
 
     # TODO: check this claim-  might be causing leaks
     #       set the image, label nodes (this will not change although the user can
@@ -344,8 +343,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.labelNode      = self.editUtil.getLabelVolume()                                #labelLogic.GetVolumeNode()
     self.backgroundNode = self.editUtil.getBackgroundVolume()                           #backgroundLogic.GetVolumeNode()
 
-    #perform safety check on right images/labels being selected,     #set up images
-    if type(self.backgroundNode)==type(None) or type(self.labelNode)==type(None):   #if red slice doesnt have a label or image, go no further
+    #perform safety check on right images/labels being selected,                        #set up images
+    if type(self.backgroundNode)==type(None) or type(self.labelNode)==type(None):       #if red slice doesnt have a label or image, go no further
        self.dialogBox.setText("Either Image (must be Background Image) or Label not set in slice views.")
        self.dialogBox.show()
        return
@@ -790,6 +789,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #remove label observer
     self.labelImg.RemoveObserver(self.ladMod_tag)
+
     #remove logic observer
     self.sliceLogic.RemoveObserver(self.logMod_tag)
     
@@ -838,14 +838,10 @@ as a loadable scripted module
   def __init__(self, parent):
     parent.title = "Editor KSliceEffect Effect"
     parent.categories = ["Developer Tools.Editor Extensions"]
-    parent.contributors = ["Steve Pieper (Isomics)"] # insert your name in the list
-    parent.helpText = """
-Example of an editor extension. No module interface here, only in the Editor module
-"""
-    parent.acknowledgementText = """
-This editor extension was developed by
-<Author>, <Institution>
-"""
+    parent.contributors = ["Ivan Kolesov, Peter Karasev, Patricio Vela (Georgia Institute of Technology) , Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.)"] # insert your name in the list
+    parent.helpText = """Interactive segmentation editor extension."""
+    parent.acknowledgementText = """ This editor extension was developed by Ivan Kolesov, Peter Karasev, Patricio Vela (Georgia Institute of Technology),
+Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.).  """
 
     # TODO:
     # don't show this module - it only appears in the Editor module
