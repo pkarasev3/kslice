@@ -251,7 +251,7 @@ public:
         bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
         int iter;            //number of iterations to execute
         double lambda;       //curvature penalty
-        double rad;          //radius of ball used in local-global energies
+        double rad[3];          //radius of ball used in local-global energies
         int currLabel;       //the label value to mark inside contour
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
