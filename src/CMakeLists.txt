@@ -2,25 +2,33 @@ cmake_minimum_required(VERSION 2.8)
 
 
 
-project(KSlice3D-slicer)
-cmake_policy(SET CMP0012 NEW)
+#roject(KSlice3D-slicer)
+#make_policy(SET CMP0012 NEW)
 
 enable_testing()
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME KSlice)
+
+set(KSLICE_VERSION_MAJOR "1")
+set(KSLICE_VERSION_MINOR "0")
+set(KSLICE_VERSION ${KSLICE_VERSION_MAJOR}.${KSLICE_VERSION_MINOR})
+set(EXTENSION_STATUS "Beta")
+set(EXTENSION_DEPENDS "NA") 
+set(EXTENSION_SCREENSHOTURLS   "http://www.slicer.org/slicerWiki/images/thumb/2/2c/DrawLabel.png/500px-DrawLabel.png  http://www.na-mic.org/Wiki/images/thumb/d/d0/TendonSegment.png/800px-TendonSegment.png  http://www.na-mic.org/Wiki/images/thumb/b/b8/FiducialSnapshotX.png/800px-FiducialSnapshotX.png")
+# "boost") # Specified as a space separated list or 'NA' if any
+#set(EXTENSION_BUILD_SUBDIRECTORY  
+
 set(MIDAS_PACKAGE_EMAIL  karasevpa@gmail.com)
 set(MIDAS_PACKAGE_API_KEY  tqsS/lB5zAE7xcI3i52P0NFVvJx0x8EQ)
-set(EXTENSION_HOMEPAGE     http://www.google.com)
-set(EXTENSION_CATEGORY    segmentation)
-set(EXTENSION_ICONURL     http://www.google.com/bogus.png)
-set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov (GT), Peter Karasev (GT), Karl Fritscher (BWH & MGH)")
+set(EXTENSION_HOMEPAGE     http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/KSliceInteractiveSegmentor)
+set(EXTENSION_CATEGORY    "Segmentation")
+set(EXTENSION_ICONURL    http://www.slicer.org/slicerWiki/images/b/bc/KSliceEffect.png)
+set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov (GT), Peter Karasev (GT), Allen Tannenbaum (UAB), Karl Fritscher (BWH & MGH)")
 set(EXTENSION_DESCRIPTION   "This extension provides an interactive 3D segmentation tool.")
 #-----------------------------------------------------------------------------
 
 set(KSlice_Build_SlicerWrap TRUE CACHE BOOL TRUE)
-
-
 if(KSlice_Build_SlicerWrap)
   if(NOT Slicer_SOURCE_DIR)
     find_package(Slicer REQUIRED)
@@ -90,6 +98,7 @@ endif()
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_INSTALL_PREFIX  ${Slicer_DIR} CACHE PATH  "cmake install prefix")
 
 message(STATUS " Compiler: ${CMAKE_COMPILER} ")
 message(STATUS " C++ flags (Release): ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
