@@ -705,7 +705,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(1)
+    self.ksliceMod.SetNumIts(35)
 
     #execute a run, we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
     useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
@@ -732,7 +732,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(1)                    # should be less than 2D!
+    self.ksliceMod.SetNumIts(35)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
     useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
@@ -756,7 +756,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.computeCurrSliceSmarter()
 
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(20)                          # should be less than 2D!
+    self.ksliceMod.SetNumIts(35)                          # should be less than 2D!
     self.ksliceMod.SetDistWeight(0.2)                     # weight evolution by distancef rom view-plane
 
     #still doing 3D, user has not drawn => use cache

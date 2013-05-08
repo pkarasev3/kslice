@@ -411,8 +411,10 @@ void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int 
     int i,j,k,irad_i, irad_j, irad_k,idia_i, idia_j,ridx,bidx;
 
     usum=vsum=au=av=0;
-    irad_i = (int)(floor(rad[0]));
-    irad_j = (int)(floor(rad[1]));
+
+    //the order is this way to fit with indexing in en_lrbac_gball() & defn on line 9 of sparce3c.h
+    irad_i = (int)(floor(rad[1]));
+    irad_j = (int)(floor(rad[0]));
     irad_k = (int)(floor(rad[2]));
 
     idia_i = irad_i*2+1;
@@ -445,15 +447,15 @@ void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int 
 
 void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, int *rad){
     int x,y,z,idx;
-    int i,j,k,irad_i,irad_j,irad_k,idia_i,idia_j,idia_k,ridx,bidx;
+    int i,j,k,irad_i,irad_j,irad_k,idia_i,idia_j,ridx,bidx;
 
-    irad_i = (int)(floor(rad[0]));
-    irad_j = (int)(floor(rad[1]));
+    //the order is this way to fit with indexing in en_lrbac_gball() & defn on line 9 of sparce3c.h
+    irad_i = (int)(floor(rad[1]));
+    irad_j = (int)(floor(rad[0]));
     irad_k = (int)(floor(rad[2]));
 
     idia_i = irad_i*2+1;
     idia_j = irad_j*2+1;
-    idia_k = irad_k*2+1;
 
     ll_init(Lin2out);
     while(Lin2out->curr != NULL){

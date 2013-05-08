@@ -11,7 +11,7 @@ void interactive_rbchanvese(energy3c *segEngine, double *img, float *phi, short 
 
 void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in, LL*Lchanged,
-                          int iter, double lambda, int display, double* normvec, double* pointonplane, float distweight);
+                          int iter, double lambda, int display, double* normvec, double* pointonplane, float distweight, bool reInit, int *rad);
 
 void interactive_chanvese(energy3c *segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                     LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,

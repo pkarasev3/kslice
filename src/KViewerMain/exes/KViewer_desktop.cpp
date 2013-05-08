@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
     vtkImageData* imgVol;
     vtkImageData* uiVol;
 
-    int rad=6;
-    double spacing[3]={1, 2, 3};
+    int rad=5;
+    double spacing[3]={.97, .97, 2.5};
     float distWeight=.3;
     int currSlice=256;
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 
 
 
-    int test=3;
+    int test=2;
     int numIts=1;
     for(int i=0; i<numIts; i++)
     {

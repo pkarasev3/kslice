@@ -83,7 +83,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     img=NULL;
     mask=NULL;
 
-    //image->GetSpacing( m_Spacing_mm );
+
     rad[0]=(int) std::max(1.0,ceil(brushRad/imgSpacing[0]));
     rad[1]=(int) std::max(1.0,ceil(brushRad/imgSpacing[1]));
     rad[2]=(int) std::max(1.0,ceil(brushRad/imgSpacing[2]));
@@ -97,7 +97,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
 
 
     m_IJK_orient = std::string("IJ");
-    cout << "segmentor using ROI size: " << rad << endl;
+    //cout << "segmentor using ROI size: " << rad << endl;
 
     U_Integral_image = UIVol;
 

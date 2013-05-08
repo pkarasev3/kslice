@@ -174,6 +174,7 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     int dim0=0;
     int dim1=0;
     int dim2=0;
+
     int radShuffle[3]; //will be use to store re-shuffled radii, according to orientation
 
     vrcl::Orient sliceView = vrcl::SLICE_IJ;
@@ -181,30 +182,30 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         dim0 = mdims[0];
         dim1 = mdims[1];
         dim2 = mdims[2];
-        radShuffle[0]=this->segEngine->GetRadius()[1];
-        radShuffle[1]=this->segEngine->GetRadius()[0];
+        radShuffle[0]=this->segEngine->GetRadius()[0];
+        radShuffle[1]=this->segEngine->GetRadius()[1];
         radShuffle[2]=this->segEngine->GetRadius()[2];
         sliceView = vrcl::SLICE_IJ;
     }else if( m_IJK_orient == "JK" ) {
         dim0 = mdims[1];
         dim1 = mdims[2];
         dim2 = mdims[0];
-        radShuffle[0]=this->segEngine->GetRadius()[2];
-        radShuffle[1]=this->segEngine->GetRadius()[1];
+        radShuffle[0]=this->segEngine->GetRadius()[1];
+        radShuffle[1]=this->segEngine->GetRadius()[2];
         radShuffle[2]=this->segEngine->GetRadius()[0];
         sliceView = vrcl::SLICE_JK;
     }else if( m_IJK_orient == "IK" ) {
         dim0 = mdims[0];
         dim1 = mdims[2];
         dim2 = mdims[1];
-        radShuffle[0]=this->segEngine->GetRadius()[2];
-        radShuffle[1]=this->segEngine->GetRadius()[0];
+        radShuffle[0]=this->segEngine->GetRadius()[0];
+        radShuffle[1]=this->segEngine->GetRadius()[2];
         radShuffle[2]=this->segEngine->GetRadius()[1];
         sliceView = vrcl::SLICE_IK;
     }
     std::cout<<"orientation is: "<<m_IJK_orient<<std::endl;
 
-    std::vector<long> dimsSlice(5);
+    std::vector<long> dimsSlice(5); //this is never used, should be removed
     dimsSlice[0] = dim0;
     dimsSlice[1] = dim1;
     dimsSlice[2] = 1;
@@ -272,6 +273,8 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
         prevMode="2D";   //keep track for next call
         last2DOrient=m_IJK_orient;
     }
+
+    std::cout<<"running "<<iter<<" iterations"<<std::endl;
 
     interactive_rbchanvese(segEngine, imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
@@ -391,7 +394,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         interactive_rbchanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,&(m_PlaneNormalVector[0]),
-                               &(m_PlaneCenter[0]),this->m_DistWeight);
+                               &(m_PlaneCenter[0]),this->m_DistWeight, reInit, this->segEngine->GetRadius() );
     }
     else if( 0 == m_EnergyName.compare("LocalCV") )
     {

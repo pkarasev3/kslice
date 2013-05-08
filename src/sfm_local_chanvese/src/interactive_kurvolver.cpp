@@ -99,10 +99,10 @@ void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short 
     /** TODO: currently uses approximation for input observer. port the full double-loop version from
         matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
     // apply controller, modify F in-place
-    apply_control_function( Lz, phi, F, U_integral, img, iter, dims );  //TURN THIS BACK ON!!!
+    apply_control_function( Lz, phi, F, U_integral, img, iter, dims );
 
     //perform iteration
-    ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);  //TURN THIS BACK ON!!!
+    ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);
 
     //update statistics
     segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
@@ -116,12 +116,20 @@ void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short 
 
 void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL*Lchanged,
-                            int iter, double lambda, int display, double* normvec, double* pointonplane,float distweight)
+                            int iter, double lambda, int display, double* normvec, double* pointonplane,float distweight, bool reInit, int *rad)
 {
   float *F;
   double scale[1];
   scale[0] = 0.0;
   //initialize datastructures and statistics
+
+  //Must test if 2D/3D, otherwise wrong if alternating between 2D and 3D, arrays: Ain, Aout, Sin , Sout would contain mixed data
+  if(reInit){
+      segEngine->en_lrbac_destroy();
+      segEngine->en_lrbac_init(Lz,img,phi,dims, rad);
+      std::cout<<"re-Initialized"<<std::endl;
+      std::cout<<"radius is:"<<rad[0]<<" , "<<rad[1]<<" , "<<rad[2]<<std::endl;
+  }
 
   segEngine->en_lrbac_init(Lz,img,phi,dims,segEngine->GetRadius());
 

@@ -84,6 +84,7 @@ void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
     bool currSliceCheck   = checkSliceValid(this->Orientation, CurrSlice);
     if(initCorrectFlag==1 && currSliceCheck==1){ //already initialized and slice is in bounds
         this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->setNumIterations(NumIts);
         this->ksegmentor->Update2D(reInitFromMask);
         std::cout<<"did the update for slice:" <<CurrSlice<<std::endl;
         //LabelVol->Modified(); // don't need this but keep in mind that this call will
@@ -101,6 +102,7 @@ void vtkKSlice::runUpdate2p5D(bool reInitFromMask){      // U key now
         this->ksegmentor->SetEnergyLocalCVLimited();
         this->ksegmentor->SetDistanceWeight(DistWeight);
         this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->setNumIterations(NumIts);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 2p5d" <<std::endl;
     }else
@@ -116,6 +118,7 @@ void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
     if(initCorrectFlag==1 && currSliceCheck==1){ //already initialized
         this->ksegmentor->SetEnergyLocalCV();
         this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->setNumIterations(NumIts);
         this->ksegmentor->Update3D(reInitFromMask);
         std::cout<<"did the update for 3d" <<std::endl;
     }else
