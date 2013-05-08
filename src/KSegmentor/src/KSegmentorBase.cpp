@@ -48,7 +48,7 @@ double KSegmentorBase::defaultKappaParam = 0.1;
 
 
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel)
+                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel, double *imgSpacing)
 {
     this->m_CustomSpeedImgPointer=NULL;
 
@@ -83,16 +83,16 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     img=NULL;
     mask=NULL;
 
-    image->GetSpacing( m_Spacing_mm );
-    rad[0]=ceil(brushRad/m_Spacing_mm[0]);
-    rad[1]=ceil(brushRad/m_Spacing_mm[1]);
-    rad[2]=ceil(brushRad/m_Spacing_mm[2]);
+    //image->GetSpacing( m_Spacing_mm );
+    rad[0]=(int) std::max(1.0,ceil(brushRad/imgSpacing[0]));
+    rad[1]=(int) std::max(1.0,ceil(brushRad/imgSpacing[1]));
+    rad[2]=(int) std::max(1.0,ceil(brushRad/imgSpacing[2]));
 
     std::cout<<"the dimensions are : "<<mdims[0]<<" , "<<mdims[1]<<" , "<<mdims[2]<<std::endl;
     double originLoc[3];
     image->GetOrigin(originLoc);
     std::cout<<"the origin is : "<<originLoc[0]<<" , "<<originLoc[1]<<" , "<<originLoc[2]<<std::endl;
-    std::cout<<"the spacing is : "<<m_Spacing_mm[0]<<" , "<<m_Spacing_mm[1]<<" , "<<m_Spacing_mm[2]<<std::endl;
+    std::cout<<"the spacing is : "<<imgSpacing[0]<<" , "<<imgSpacing[1]<<" , "<<imgSpacing[2]<<std::endl;
     std::cout<<"the radii used are : "<<rad[0]<<" , "<<rad[1]<<" , "<<rad[2]<<std::endl;
 
 

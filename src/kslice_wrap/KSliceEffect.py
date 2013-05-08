@@ -360,6 +360,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:                                 # do nothing, exit function if user has played with images
       return
 
+    self.imgSpacing	= self.sliceLogic.GetLowestVolumeSliceSpacing()                   # get the pixel spacing
     steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
     self.uiName         = steeredVolume.GetName()                                         # the name that was actually assigned by slicer
     steeredArray        = slicer.util.array(self.uiName )                                 # get the numpy array
@@ -423,8 +424,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     node    = EditUtil.EditUtil().getParameterNode()        # get the parameters from MRML
     currRad = int(node.GetParameter("KSliceEffect,radius"))
     ksliceMod.SetBrushRad(currRad)                          # only get to set radius at the beginning
+    ksliceMod.SetSpacing(self.imgSpacing)
     ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
+
+    ksliceMod.printSpacing();
 
     # initialize state variables
     #self.currSlice    = None

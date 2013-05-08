@@ -34,6 +34,7 @@ public:
   vtkSetMacro(DistWeight, float);         //void SetDistWeight(float distWeight);
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
   vtkSetMacro(CurrLabel, int);            //void CopySlice(int fromSlice);
+  vtkSetVector3Macro(Spacing, double);
 
   // needs implementation
   void SetOrientation(const std::string& orient); // IJ, JK, IK
@@ -48,6 +49,7 @@ public:
   void runUpdate2p5D(bool reInitFromMask);
   void PrintEmpty();
   void PrintImage();
+  void printSpacing();
 protected:
   vtkKSlice();
   virtual ~vtkKSlice();
@@ -69,6 +71,7 @@ private:
   int CurrLabel;
   std::string Orientation;
   int *mdims;
+  double Spacing[3];
  // virtual char const* GetClassNameInternal() const;
 
 

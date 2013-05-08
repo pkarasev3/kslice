@@ -75,7 +75,7 @@ void vtkKSlice::Initialize(){  // Called on "start bot" button
 
     //set up the segmentor
     this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
-                                       contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel);
+                                       contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel, Spacing);
     this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }
@@ -123,6 +123,11 @@ void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
         std::cout<<"Execution stopped bc slice, initialization checks not passed"<<std::endl;
         std::cout<<"Attempted to access slice "<< CurrSlice<<std::endl;
     }
+}
+
+
+void vtkKSlice::printSpacing(){
+    std::cout<<Spacing[0]<<" , "<<Spacing[1]<<" , "<<Spacing[2]<<std::endl;
 }
 
 void vtkKSlice::PrintSelf(ostream &os, vtkIndent indent)
