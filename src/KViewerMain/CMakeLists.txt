@@ -19,4 +19,7 @@ set(KV_SRC                 ./src/KSandbox.cpp
 add_library( KSlice STATIC ${KV_SRC})
 target_link_libraries( KSlice  ${KV_LIBS})
 set_target_properties( KSlice PROPERTIES PREFIX "" ) # want KSlice.so, not libKSlice.so
+
+if(NOT WIN32)
 set_target_properties( KSlice PROPERTIES COMPILE_FLAGS "-fPIC" )
+endif()
