@@ -24,7 +24,7 @@ set(MIDAS_PACKAGE_API_KEY  tqsS/lB5zAE7xcI3i52P0NFVvJx0x8EQ)
 set(EXTENSION_HOMEPAGE     http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/KSliceInteractiveSegmentor)
 set(EXTENSION_CATEGORY    "Segmentation")
 set(EXTENSION_ICONURL    http://www.slicer.org/slicerWiki/images/b/bc/KSliceEffect.png)
-set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov (GT), Peter Karasev (GT), Karl Fritscher (BWH & MGH)")
+set(EXTENSION_CONTRIBUTORS  "Ivan Kolesov (GT), Peter Karasev (GT), Allen Tannenbaum (UAB), Karl Fritscher (BWH & MGH)")
 set(EXTENSION_DESCRIPTION   "This extension provides an interactive 3D segmentation tool.")
 #-----------------------------------------------------------------------------
 
