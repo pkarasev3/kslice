@@ -76,7 +76,9 @@ slicerMacroBuildQtModule(
 
 
 set(MODULE_PYTHON_SCRIPTS
-  KSliceEffect.py
+ #__init__
+  KUtil
+  KSliceEffect
   )
 
 set(MODULE_PYTHON_RESOURCES
@@ -84,20 +86,22 @@ set(MODULE_PYTHON_RESOURCES
   )
 
 #-----------------------------------------------------------------------------
-ctkMacroCompilePythonScript(
-  TARGET_NAME KUtil
-  SCRIPTS "KUtil.py"
-  RESOURCES ""
-  DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
-  INSTALL_DIR ${Slicer_INSTALL_ROOT}
-  )
+#ctkMacroCompilePythonScript(
+ # TARGET_NAME KUtil
+ # SCRIPTS "KUtil.py"
+ # RESOURCES ""
+ # DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
+#  INSTALL_DIR ${Slicer_INSTALL_ROOT}
+ # )
+
+set(CMAKE_INSTALL_PREFIX  ${Slicer_DIR} CACHE PATH  "cmake install prefix")
 
 ctkMacroCompilePythonScript(
   TARGET_NAME KSliceEffect
   SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
   RESOURCES "${MODULE_PYTHON_RESOURCES}"
   DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
-  INSTALL_DIR ${Slicer_INSTALL_ROOT}
+  INSTALL_DIR ${Slicer_INSTALL_BIN_DIR}
   )
 
 
@@ -109,6 +113,9 @@ if(BUILD_TESTING)
 endif()
 
 #-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  include(${Slicer_EXTENSION_CPACK})
-endif()
+#if(NOT Slicer_SOURCE_DIR)   # why? look at slicerRT
+include(${Slicer_EXTENSION_CPACK})
+#endif()
+#-----------------------------------------------------------------------------
+set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+
