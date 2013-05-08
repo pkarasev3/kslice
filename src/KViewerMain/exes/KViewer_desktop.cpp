@@ -28,9 +28,10 @@ int main(int argc, char** argv) {
     vtkImageData* imgVol;
     vtkImageData* uiVol;
 
-    int rad=3;
+    int rad=6;
+    double spacing[3]={1, 2, 3};
     float distWeight=.3;
-    int currSlice=50;
+    int currSlice=256;
 
     //test if we can read each file
     int canReadImg = imgReader->CanReadFile(imgVolName);
@@ -85,7 +86,7 @@ int main(int argc, char** argv) {
 
 
 
-    int test=1;
+    int test=3;
     int numIts=1;
     for(int i=0; i<numIts; i++)
     {
@@ -97,9 +98,11 @@ int main(int argc, char** argv) {
         bbKSlice->SetUIVol(uiVol);
         bbKSlice->SetNumIts(numIts);
         bbKSlice->SetBrushRad(rad);
+        bbKSlice->SetSpacing(spacing);
         bbKSlice->SetCurrSlice(currSlice);
         bbKSlice->SetDistWeight(distWeight);
         bbKSlice->Initialize();
+        bbKSlice->SetOrientation("JK");
 
         switch(test)
         {

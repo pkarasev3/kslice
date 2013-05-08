@@ -415,8 +415,8 @@ void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int 
     irad_j = (int)(floor(rad[1]));
     irad_k = (int)(floor(rad[2]));
 
-    idia_i = irad_i*2+1; //fix this usage
-    idia_j = irad_j*2+1; //fix this usage
+    idia_i = irad_i*2+1;
+    idia_j = irad_j*2+1;
 
 
     for(i=-irad_i;i<=irad_i;i++){

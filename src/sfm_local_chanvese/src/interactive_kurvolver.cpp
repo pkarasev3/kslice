@@ -76,19 +76,25 @@ void interactive_edgebased_ext(energy3c* segEngine, double *img, float *phi, sho
 
 void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short *U_integral, short *label, long *dims,
                           LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,
-                          int iter, double lambda, int display, bool firstPass)
+                          int iter, double lambda, int display, bool reInit, int *rad)
 {
   float *F;
   double scale[1];
   scale[0] = 0.0;
   //initialize datastructures and statistics
-  if(firstPass){
-      segEngine->en_lrbac_init(Lz,img,phi,dims, segEngine->GetRadius());
+
+  //Must test if 2D/3D, otherwise wrong if alternating between 2D and 3D, arrays: Ain, Aout, Sin , Sout would contain mixed data
+  if(reInit){
+      segEngine->en_lrbac_destroy();
+      segEngine->en_lrbac_init(Lz,img,phi,dims, rad);
+      std::cout<<"re-Initialized"<<std::endl;
+      std::cout<<"radius is:"<<rad[0]<<" , "<<rad[1]<<" , "<<rad[2]<<std::endl;
   }
+
 
   for(int i=0;i<iter;i++){
     // compute force
-    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,segEngine->GetRadius());
+    F = segEngine->en_lrbac_compute(Lz,phi,img,dims, scale,lambda,rad);
 
     /** TODO: currently uses approximation for input observer. port the full double-loop version from
         matlab here. Tricky because this fast C sfls code overwrites global/file scoped variables. */
@@ -99,7 +105,7 @@ void interactive_rbchanvese(energy3c* segEngine, double *img, float *phi, short 
     ls_iteration(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in);  //TURN THIS BACK ON!!!
 
     //update statistics
-    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, segEngine->GetRadius());
+    segEngine->en_lrbac_update(img, dims, Lin2out, Lout2in, rad);
 
   }
   if( display > 0 )
@@ -116,7 +122,7 @@ void interactive_rbchanvese_ext(energy3c* segEngine, double *img, float *phi, sh
   double scale[1];
   scale[0] = 0.0;
   //initialize datastructures and statistics
-  segEngine->SetRadius(segEngine->GetRadius());
+
   segEngine->en_lrbac_init(Lz,img,phi,dims,segEngine->GetRadius());
 
   for(int i=0;i<iter;i++){

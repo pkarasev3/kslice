@@ -71,6 +71,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.locRadSpinBox.maximum = 50
     self.locRadSpinBox.suffix = ""
     self.locRadFrame.layout().addWidget(self.locRadSpinBox)
+    self.locRadSpinBox.connect('valueChanged(double)', self.onRadiusSpinBoxChanged)
     self.widgets.append(self.locRadSpinBox)
 
     HelpButton(self.frame, "TO USE: \n Start the interactive segmentor and initialize the segmentation with any other editor tool. \n KEYS: \n Press the following keys to interact: \n C: copy label slice \n V: paste label slice \n Q: evolve contour in 2D \n W: evolve contour in 3D \n A: toggle between draw/erase modes" )
@@ -80,6 +81,11 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     super(KSliceEffectOptions,self).destroy()
     print("Destroy in KSliceOptions has been called")
 
+  def onRadiusSpinBoxChanged(self,value):
+    print("radius value has changed")
+    self.parameterNode.SetParameter("KSliceEffect,radius", str(value))
+    #self.locRadSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,radius")) )
+    self.updateMRMLFromGUI()
   
   def updateParameterNode(self, caller, event):
     '''# in each leaf subclass so that "self" in the observer
@@ -414,6 +420,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     # make KSlice class
     print(self.backgroundNode.GetImageData().GetOrigin())
     print(self.backgroundNode.GetImageData().GetSpacing())
+    print(self.imgSpacing)
 
     print("making a kslice")
     ksliceMod=vtkSlicerKSliceModuleLogicPython.vtkKSlice()
@@ -422,7 +429,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ksliceMod.SetUIVol( self.uiImg )
     ksliceMod.SetCurrLabel(self.labVal)
     node    = EditUtil.EditUtil().getParameterNode()        # get the parameters from MRML
-    currRad = int(node.GetParameter("KSliceEffect,radius"))
+    currRad = int(float(node.GetParameter("KSliceEffect,radius")))
     ksliceMod.SetBrushRad(currRad)                          # only get to set radius at the beginning
     ksliceMod.SetSpacing(self.imgSpacing)
     ksliceMod.Initialize()
@@ -698,7 +705,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(30)
+    self.ksliceMod.SetNumIts(1)
 
     #execute a run, we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
     useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
@@ -725,7 +732,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(10)                    # should be less than 2D!
+    self.ksliceMod.SetNumIts(1)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
     useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )

@@ -47,6 +47,8 @@ KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageDat
   this->m_IJK_orient="IJ";
   this->prevSlice   =-1;
   this->currSlice   =-1;
+  this->prevMode    = "None"; // have not done 2D or 3D
+  this->last2DOrient= "None"; // null init for orientation
   this->firstPassInit = true; // have not done initializeData() yet
 
 }
@@ -169,21 +171,38 @@ bool check_U_behavior(const std::vector<float>& phi0, float* phi1, short* U )
 void KSegmentor3D::Update2D(bool reInitFromMask)
 {
     //set the orientation
-    int dim0=0; int dim1=0; int dim2=0;
+    int dim0=0;
+    int dim1=0;
+    int dim2=0;
+    int radShuffle[3]; //will be use to store re-shuffled radii, according to orientation
+
     vrcl::Orient sliceView = vrcl::SLICE_IJ;
     if( m_IJK_orient == "IJ" ) {
         dim0 = mdims[0];
         dim1 = mdims[1];
-        sliceView = vrcl::SLICE_IJ; dim2=mdims[2];
+        dim2 = mdims[2];
+        radShuffle[0]=this->segEngine->GetRadius()[1];
+        radShuffle[1]=this->segEngine->GetRadius()[0];
+        radShuffle[2]=this->segEngine->GetRadius()[2];
+        sliceView = vrcl::SLICE_IJ;
     }else if( m_IJK_orient == "JK" ) {
         dim0 = mdims[1];
-        dim1 = mdims[2]; dim2=mdims[0];
+        dim1 = mdims[2];
+        dim2 = mdims[0];
+        radShuffle[0]=this->segEngine->GetRadius()[2];
+        radShuffle[1]=this->segEngine->GetRadius()[1];
+        radShuffle[2]=this->segEngine->GetRadius()[0];
         sliceView = vrcl::SLICE_JK;
     }else if( m_IJK_orient == "IK" ) {
         dim0 = mdims[0];
-        dim1 = mdims[2]; dim2=mdims[1];
+        dim1 = mdims[2];
+        dim2 = mdims[1];
+        radShuffle[0]=this->segEngine->GetRadius()[2];
+        radShuffle[1]=this->segEngine->GetRadius()[0];
+        radShuffle[2]=this->segEngine->GetRadius()[1];
         sliceView = vrcl::SLICE_IK;
     }
+    std::cout<<"orientation is: "<<m_IJK_orient<<std::endl;
 
     std::vector<long> dimsSlice(5);
     dimsSlice[0] = dim0;
@@ -193,8 +212,9 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     dimsSlice[4] = dimsSlice[0]*dimsSlice[1]*dimsSlice[2];
 
     cout << "orient=" << m_IJK_orient << ", prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
+    bool sameSlice=(prevSlice == this->currSlice);
 
-    if( (prevSlice == this->currSlice) && !reInitFromMask ) {
+    if( sameSlice==1 && !reInitFromMask ) {
         cout <<  "\033[01;32m\033]" << "using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL2D.Lz);
         ll_init(LL2D.Ln1);
@@ -243,9 +263,19 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
 
     //run the active contour, ** modify phiSlice in-place! (IVAN: yes?) **
     // Why does the U_I_slice keep seeming like zeros when clicking??
+
+    bool reInit;
+    if(prevMode=="2D" && last2DOrient==m_IJK_orient && sameSlice==1){
+        reInit=0;
+    }else{
+        reInit=1;
+        prevMode="2D";   //keep track for next call
+        last2DOrient=m_IJK_orient;
+    }
+
     interactive_rbchanvese(segEngine, imgSlice,phiSlice,U_I_slice,labelSlice,&(dimsSlice[0]),
                            LL2D.Lz,LL2D.Ln1,LL2D.Lp1,LL2D.Ln2,LL2D.Lp2,LL2D.Lin2out,LL2D.Lout2in,
-                           iter,lambda*0.5,display, true);
+                           iter,lambda*0.5,display, reInit, radShuffle);
 
     bool isGood = check_U_behavior(cache_phi, phiSlice, U_I_slice);
     if( !isGood ) { std::cout << "BAD!" << std::endl; }
@@ -303,7 +333,6 @@ void KSegmentor3D::CalcViewPlaneParams( )
 void KSegmentor3D::Update3D(bool reInitFromMask)
 {
 
-    bool firstPass=this->firstPassInit; //first time running cached/non-cached? save variable before it flips in initializeData()
     if( !reInitFromMask ) {// do this only if re-making the level set function
         cout <<  "\033[01;33m\033]" << "3D, using cached phi " << "\033[00m\033]" << endl;
         ll_init(LL3D.Lz);
@@ -327,6 +356,16 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     ptrIntegral_Image = static_cast<short*>( U_Integral_image->GetScalarPointer() );
 
     cout << "m_EnergyName = " << m_EnergyName << endl;
+
+    bool reInit;
+    if(prevMode=="3D"){
+        reInit=0;
+    }else{
+        reInit=1;
+        prevMode="3D";   //keep track for next call
+    }
+
+
     if( 0 == m_EnergyName.compare("ChanVese") )
     {
         cout << " run basic chan-vese on it "<< endl;
@@ -360,7 +399,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         interactive_rbchanvese(    /* TODO: compute this energy!*/
                                  segEngine, img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
-                                 iter,lambda*0.5,display, firstPass );
+                                 iter,lambda*0.5,display, reInit, this->segEngine->GetRadius() );
     }
     else
     {

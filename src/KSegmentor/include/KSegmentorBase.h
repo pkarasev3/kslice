@@ -215,6 +215,8 @@ class KSegmentorBase
 
         std::string m_EnergyName;
         std::string m_IJK_orient; // IJ, JK, IK
+        std::string prevMode;
+        std::string last2DOrient;
         double m_Umax;
 
         /** struct containing formerly global low-level crap in sfm_local library */
