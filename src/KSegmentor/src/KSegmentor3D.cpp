@@ -3,10 +3,10 @@
 //#include "sfm_local_chanvese_mex.h"
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
-#ifndef WIN32
-	#include <omp.h>
-    #include <initializer_list>
-#endif
+//#ifndef WIN32
+//	#include <omp.h>
+//    #include <initializer_list>
+//#endif
 #include <string>
 #include <sstream>
 #include "vtkImageGaussianSmooth.h"
@@ -295,7 +295,8 @@ void KSegmentor3D::Update2D(bool reInitFromMask)
     m_CoordinatesVector.clear();
 }
 
-#ifndef WIN32
+//#ifndef WIN32
+#if 0 
 void KSegmentor3D::CalcViewPlaneParams( )
 {
     /** should this use physical spacing instead of slice steps? */

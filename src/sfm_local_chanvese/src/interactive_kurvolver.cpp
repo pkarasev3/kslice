@@ -1,4 +1,5 @@
 #include "interactive_kurvolver.h"
+#include "stdio.h"
 //#include "sfm_local_chanvese_mex.h"
 #include <iostream>
 using std::endl;

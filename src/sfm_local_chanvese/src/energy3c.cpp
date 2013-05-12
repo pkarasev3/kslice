@@ -21,7 +21,7 @@
 #define assert( X ) { }
 #else
   #include <assert.h>
-  #include <omp.h>
+//  #include <omp.h>
 #endif
 
 std::vector<double> uin_rgb(3,0.0);

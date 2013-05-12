@@ -21,7 +21,7 @@
 #include "vtkSmartPointer.h"
 #include "KSandbox.h"
 #include <sstream>
-#include "Logger.h"
+//#include "Logger.h"
 #include "algorithm"
 #include "vector"
 using std::stringstream;
