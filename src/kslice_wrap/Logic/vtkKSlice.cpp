@@ -36,6 +36,22 @@ vtkKSlice::vtkKSlice( ) {
 
 
 vtkKSlice::~vtkKSlice() {
+  //these functions decrement reference count on the vtkImageData's (incremented by the SetMacros)
+  if (this->UIVol)
+  {
+    this->SetUIVol(NULL);
+  }
+
+  if (this->ImageVol)
+  {
+    this->SetImageVol(NULL);
+  }
+ 
+  if (this->LabelVol)
+  {
+    this->SetLabelVol(NULL);
+  }
+
   delete this->ksegmentor;
   std::cout<<"KSlice destroyed"<<std::endl;
 }
