@@ -47,10 +47,6 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
     #create a "Start Bot" button
     self.botButton = qt.QPushButton(self.frame)
-    if hasattr(slicer.modules, 'editorBot'):
-      self.botButton.text = "Stop Interactive Segmentor"
-    else:
-      self.botButton.text = "Start Interactive Segmentor"
 
     self.frame.layout().addWidget(self.botButton)
     self.botButton.connect('clicked()', self.onStartBot)
@@ -76,6 +72,15 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
     HelpButton(self.frame, "TO USE: \n Start the interactive segmentor and initialize the segmentation with any other editor tool. \n KEYS: \n Press the following keys to interact: \n C: copy label slice \n V: paste label slice \n Q: evolve contour in 2D \n W: evolve contour in 3D \n A: toggle between draw/erase modes" )
     self.frame.layout().addStretch(1) # Add vertical spacer
+
+    if hasattr(slicer.modules, 'editorBot'):
+      self.botButton.text = "Stop Interactive Segmentor"
+      if self.locRadFrame:
+        self.locRadFrame.hide()
+    else:
+      self.botButton.text = "Start Interactive Segmentor"
+      if self.locRadFrame:
+        self.locRadFrame.show()
 
   def destroy(self):
     super(KSliceEffectOptions,self).destroy()
@@ -124,15 +129,22 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
 
   def onStartBot(self):
     """create the bot for background editing"""
+    print("entered 'onStartBot'")
     if hasattr(slicer.modules, 'editorBot'):
       slicer.modules.editorBot.stop()
       del(slicer.modules.editorBot)
-      self.botButton.text = "Start Interactive Segmentor"
-      self.locRadFrame.show()
+      if self.botButton:
+        self.botButton.text = "Start Interactive Segmentor"
+      if self.locRadFrame:
+        self.locRadFrame.show()
     else:
       KSliceBot(self)
-      self.botButton.text = "Stop Interactive Segmentor"
-      self.locRadFrame.hide()
+      print("adding emergency stop func")
+      slicer.modules.editorBot.logic.emergencyStopFunc = self.botEstop;   #save the function that stops bot, destroys KSlice, if things go wrong 
+      if self.botButton:
+        self.botButton.text = "Stop Interactive Segmentor"
+      if self.locRadFrame:
+        self.locRadFrame.hide()
 
   def updateMRMLFromGUI(self):
     if self.updatingGUI:
@@ -144,7 +156,15 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     if not disableState:
       self.parameterNode.InvokePendingModifiedEvent()
 
-
+  def botEstop(self):
+    print("entered 'botEstop'")
+    if hasattr(slicer.modules, 'editorBot'):
+      slicer.modules.editorBot.stop()
+      del(slicer.modules.editorBot)
+      if self.botButton:
+        self.botButton.text = "Start Interactive Segmentor"
+      if self.locRadFrame:
+        self.locRadFrame.show()
 
 class KSliceBot(object): #stays active even when running the other editor effects
   """
@@ -177,6 +197,7 @@ so it can access tools if needed.
 
   def stop(self):
     #self.active = False
+    print("destroying kslice logic")
     self.logic.destroy()
     
   #def iteration(self):
@@ -207,6 +228,7 @@ nodes to operate on.
 
   def __init__(self, sliceWidget):
     super(KSliceEffectTool,self).__init__(sliceWidget)
+    print("creating a KSliceEffectTool now")
 
   def cleanup(self):
     super(KSliceEffectTool,self).cleanup()
@@ -222,7 +244,7 @@ handle events from the render window interactor
       ijk= smart_xyToIJK(xy,self.sliceWidget)
       if not orient:
         print "Warning, unexpected view orientation!?"
-      values = get_values_at_IJK(ijk,self.sliceWidget)
+      #values = get_values_at_IJK(ijk,self.sliceWidget)   #this fails if KSliceEffect is active, user turns off label on some slice view, clicks 
       #print(values)
     if event == 'EnterEvent':
       pass
@@ -333,6 +355,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     Print_Good("Init KSliceLogic with Label Fixed to " + str(self.labVal) )
     self.acMod = 0
     self.userMod = 0
+    self.emergencyStopFunc = None
+
 
     self.dialogBox=qt.QMessageBox()                                                    #will display messages to draw users attention if he does anything wrong
     self.dialogBox.setWindowTitle("KSlice Interactive Segmentor Error")
@@ -350,9 +374,14 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.backgroundNode = self.editUtil.getBackgroundVolume()                           #backgroundLogic.GetVolumeNode()
 
     #perform safety check on right images/labels being selected,                        #set up images
+    print("checking if initial images exist")
     if type(self.backgroundNode)==type(None) or type(self.labelNode)==type(None):       #if red slice doesnt have a label or image, go no further
        self.dialogBox.setText("Either Image (must be Background Image) or Label not set in slice views.")
        self.dialogBox.show()
+       
+       print("about to pull emergency stop")
+       if self.emergencyStopFunc:
+           self.emergencyStopFunc()
        return
         
     volumesLogic        = slicer.modules.volumes.logic()
@@ -364,9 +393,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.imgName        = self.backgroundNode.GetName()
 
     if self.sliceViewMatchEditor(self.sliceLogic)==False:                                 # do nothing, exit function if user has played with images
+      if self.emergencyStopFunc:
+          self.emergencyStopFunc()
       return
 
-    self.imgSpacing	= self.sliceLogic.GetLowestVolumeSliceSpacing()                   # get the pixel spacing
+    self.imgSpacing	= self.backgroundNode.GetSpacing()		                  # get the pixel spacing
     steeredVolume       = volumesLogic.CloneVolume(slicer.mrmlScene, self.labelNode, steeredName)
     self.uiName         = steeredVolume.GetName()                                         # the name that was actually assigned by slicer
     steeredArray        = slicer.util.array(self.uiName )                                 # get the numpy array
@@ -406,11 +437,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
      
 
 
-
-
-
-
-
     # a number of observers for various events
     self.ladMod_tag            = self.labelImg.AddObserver("ModifiedEvent", self.labModByUser)                   # put a listener on label, so we know when user has drawn
     self.logMod_tag            = self.sliceLogic.AddObserver("ModifiedEvent", self.updateLabelUserInput)         # put test listener on the whole window
@@ -418,8 +444,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.mouse_obs.append([self.sliceLogic,self.logMod_tag])
   
     # make KSlice class
-    print(self.backgroundNode.GetImageData().GetOrigin())
-    print(self.backgroundNode.GetImageData().GetSpacing())
     print(self.imgSpacing)
 
     print("making a kslice")
@@ -491,21 +515,30 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     return isGood
 
   def sliceViewMatchEditor(self, sliceLogic):
+    #if self.dialogBox==type(None):                              #something deleted teh dialogBox, this function then breaks, bail
+    #    if self.emergencyStopFunc:
+    #        self.emergencyStopFunc()
+    #    return False
+    
     imgNode    = sliceLogic.GetBackgroundLayer().GetVolumeNode()
     labelNode  = sliceLogic.GetLabelLayer().GetVolumeNode()
 
-    if type(imgNode)==type(None) or type(labelNode)==type(None):
+    if type(imgNode)==type(None) or type(labelNode)==type(None) :
         self.dialogBox.setText("Either image (must be Background Image) or label not set in slice views.") 
         self.dialogBox.show()
+        if self.emergencyStopFunc:
+            self.emergencyStopFunc()
         return False 
 
     dimImg=self.backgroundNode.GetImageData().GetDimensions()
     dimLab=self.labelNode.GetImageData().GetDimensions()
 
     if not (dimImg[0]==dimLab[0] and dimImg[1]==dimLab[1] and dimImg[2]==dimLab[2]):    #if sizes dont match up(doing this b/c cant reach HelperBox parameters
-       self.dialogBox.setText("Mismatched label to image.")
-       self.dialogBox.show()
-       return False
+        self.dialogBox.setText("Mismatched label to image.")
+        self.dialogBox.show()
+        if self.emergencyStopFunc:
+            self.emergencyStopFunc()
+        return False
 
     #print(self.imgName)
     #print(self.labelName)
@@ -518,6 +551,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     else:
         self.dialogBox.setText("Set image to values used for starting the KSlice bot or stop bot.")
         self.dialogBox.show()
+        if self.emergencyStopFunc:
+            self.emergencyStopFunc()
         return False
 
   def testWindowListener(self, caller, event):
@@ -525,6 +560,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.sw         = self.swLUT[interactor]
     self.interactor = interactor 
     
+    print("testWindowListener has been called")
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
       return
 
@@ -579,6 +615,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     if (event=="ModifiedEvent") and (self.accumInProg==1):
         # Danger: you haven't recalc'd the orientation and currSlice yet        
         # self.labVal doesn't seem to work when erasing
+        print("passed update checks")
         if self.ijkPlane=="IJ":
             if signAccum==-1:                                            # We're drawing
                 deltPaint=self.labArr[self.linInd]                       # find the next stuff that was painted
@@ -610,7 +647,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         self.accumInProg=0                                              # done accumulating
         self.uiImg.Modified()
         #self.check_U_sync()
-        
+    print("done updating label user input")
     
     if event == "RightButtonPressEvent":
         print "right mouse ..."
@@ -794,19 +831,26 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         #print "disconnected 'activatedAmbiguously'?:" + str(test2)                
 
 
-    #delete steeredArray
-    slicer.mrmlScene.RemoveNode( getNode(self.uiName) )
 
+    print("deleting list observers")
     #remove observers
     for style,tag in self.mouse_obs:
         style.RemoveObserver(tag)
 
+    print("deleting label observers")
     #remove label observer
     self.labelImg.RemoveObserver(self.ladMod_tag)
 
+    print("deleting logic observers")
     #remove logic observer
     self.sliceLogic.RemoveObserver(self.logMod_tag)
     
+    #removing the ui Node
+    print("deleting ui")
+    #slicer.mrmlScene.RemoveNode( getNode(self.uiName) )   #this makes Slicer crash if close scene, then try to run KSlice, but NEED to turn this on!
+
+
+
     # destroy 
     self.ksliceMod=None    #self.ksliceMod.FastDelete()
     self.dialogBox=None
