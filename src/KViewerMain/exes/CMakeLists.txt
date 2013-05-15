@@ -11,7 +11,9 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../kslice_wrap/Logic/
 
 if(WIN32)
 	message(STATUS "skipping KViewer standalone on windows")
+	# why: probably the app needs to define something like "VTK_IMPORT_HEADERS" to use .dll's correctly
 else()
 	add_executable( KViewer_desktop KViewer_desktop.cpp ${KV_SRC} )
 	target_link_libraries( KViewer_desktop ${KV_LIBS})
 endif(WIN32)
+

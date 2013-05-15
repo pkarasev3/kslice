@@ -8,15 +8,10 @@ from EditorLib import LabelEffect
 import vtkSlicerKSliceModuleLogicPython
 from copy import copy, deepcopy
 import numpy as np
-from KUtil import *
+from KUtil import KUtil, Print_Bad, Print_Good
 
-#import KSliceEffect_GUI
-
-#
 # The Editor Extension itself.
-#
-# This needs to define the hooks to be come an editor effect.
-#
+# Must define the interface hooks to be come an editor effect.
 
 #
 # KSliceEffectOptions - see LabelEffect, EditOptions and Effect for superclasses
@@ -210,7 +205,6 @@ nodes to operate on.
   def cleanup(self):
     super(KSliceEffectTool,self).cleanup()
 
-#print("Got a %s at %s in %s", (event,str(xy),viewName))
   def processEvent(self, caller=None, event=None):
     """
 handle events from the render window interactor
@@ -221,11 +215,8 @@ handle events from the render window interactor
       ijk= smart_xyToIJK(xy,self.sliceWidget)
       if not orient:
         print "Warning, unexpected view orientation!?"
-      #values = get_values_at_IJK(ijk,self.sliceWidget)   #this fails if KSliceEffect is active, user turns off label on some slice view, clicks 
-      #print(values)
     if event == 'EnterEvent':
-      pass
-      #print "EnterEvent in KSliceEffect."
+      pass      #print "EnterEvent in KSliceEffect."
     else:
       pass
 
@@ -238,7 +229,6 @@ def get_view_names( sw ):
     for vo in valid_orient:
       if vo == orient:
         viewOrient = vo
-        #print str(viewName) + "," + str(vo)
     return viewName,viewOrient
 
 
@@ -255,11 +245,7 @@ def smart_xyToIJK(xy,sliceWidget):
     except ValueError:
       index = 0
     ijk.append(index)
-  #print "the x,y,z coordinate is: " + str(xyz[0]) + "  " + str(xyz[1]) + "  " + str(xyz[2]) #debug
-  #RAS= sliceWidget.sliceView().convertXYZToRAS(xyz);
-  #print "the RAS coordinate is: " + str(RAS[0]) + "  " + str(RAS[1]) + "  " + str(RAS[2]) #debug
-  #print "the x,y used is: " + str(xy[0])+ "  " + str(xy[1]) #debug
-  #print "ijk is: " + str(ijk) #debug
+    #Print_Coord_Debug(xyz, RAS, xy, ijk, sliceWidget)
   return ijk
 
 
@@ -390,6 +376,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
+    
+    print  " keys for 2d, 3d, 2.5d  are      Q, W, R "
+    print  " toggle, copy, paste:               A, C, V"
     
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
@@ -579,8 +568,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   def updateLabelUserInput(self, caller, event):
     print("updating label user input")
 
-    if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
-      return
+    if self.sliceViewMatchEditor(self.sliceLogic)==False:    
+      return  #do nothing, exit function if user has played with images
 
     currLabelValue = EditorLib.EditUtil.EditUtil().getLabel()    # return integer value, *scalar*
     signAccum=(-1)*(currLabelValue!=0) + (1)*(currLabelValue==0) # change sign based on drawing/erasing
@@ -784,10 +773,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
 
   def destroy(self):
+    # PK to IK: can you purge the deprecated comments? This func is confusing to review. 
     #super(KSliceEffectLogic,self).destroy()
     if self.fullInitialized==False:                                                          #if initialized, remove, otherwise do nothing
         return
-
+    
     print("Destroy in KSliceLogic has been called")
     #disconnect key shortcut
     for i in range(len(self.qtkeydefs)):
@@ -802,8 +792,6 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         keydef.delete() #this causes errors
         #print "disconnected 'activated'?:" + str(test1)
         #print "disconnected 'activatedAmbiguously'?:" + str(test2)                
-
-
 
     #remove observers
     for style,tag in self.mouse_obs:
@@ -865,7 +853,8 @@ as a loadable scripted module
     parent.categories = ["Developer Tools.Editor Extensions"]
     parent.contributors = ["Ivan Kolesov, Peter Karasev, Patricio Vela (Georgia Institute of Technology) , Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.)"] # insert your name in the list
     parent.helpText = """Interactive segmentation editor extension."""
-    parent.acknowledgementText = """ This editor extension was developed by Ivan Kolesov, Peter Karasev, Patricio Vela (Georgia Institute of Technology),
+    parent.acknowledgementText = """ This editor extension was developed by Ivan Kolesov,  
+    Peter Karasev, Patricio Vela (Georgia Institute of Technology),
 Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.).  """
 
     # TODO:
@@ -903,20 +892,4 @@ class KSliceEffectWidget:
   def exit(self):
     pass
 
-'''
-def get_IJK_orientation(self,xy,ijk,sw):
-xy0 = (0,0)
-if 1.0 < (abs(xy[0]-xy0[0])+abs(xy[1]-xy0[1])):
-xy0=(2,2)
-i0,j0,k0 = smart_xyToIJK( xy0, sw)
-i1,j1,k1 = ijk[:]
-if i0 == i1 and j0 == j1 and k0 == k1:
-return None
-if i0 == i1:
-return 'JK'
-if j0 == j1:
-return 'IK'
-if k0 == k1:
-return 'IJ'
-return None
-'''
+
