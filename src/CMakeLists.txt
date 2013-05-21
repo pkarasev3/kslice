@@ -19,6 +19,7 @@ set(EXTENSION_SCREENSHOTURLS   "http://www.slicer.org/slicerWiki/images/thumb/2/
 # "boost") # Specified as a space separated list or 'NA' if any
 #set(EXTENSION_BUILD_SUBDIRECTORY  
 
+set(MIDAS_PACKAGE_URL   http://slicer.kitware.com/midas3)
 set(MIDAS_PACKAGE_EMAIL  karasevpa@gmail.com)
 set(MIDAS_PACKAGE_API_KEY  tqsS/lB5zAE7xcI3i52P0NFVvJx0x8EQ)
 set(EXTENSION_HOMEPAGE     http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/KSliceInteractiveSegmenter)
