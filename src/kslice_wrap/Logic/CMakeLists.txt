@@ -5,9 +5,9 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/KSegmentor/include/
-  ${CMAKE_SOURCE_DIR}/KViewerMain/include/
-  ${CMAKE_SOURCE_DIR}/util/vrcl/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../KSegmentor/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../KViewerMain/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../util/vrcl/include/
   )
 
 set(${KIT}_SRCS
