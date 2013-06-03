@@ -1,3 +1,7 @@
+if(FALSE)
+
+# this directory is questionable on all platforms it seems
+
 set(KV_LIBS KSlice QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics
          vtkIO  vtkCommon   ) #${OpenCV_LIBS}
 
@@ -17,3 +21,4 @@ else()
 	target_link_libraries( KViewer_desktop ${KV_LIBS})
 endif(WIN32)
 
+endif(FALSE)
