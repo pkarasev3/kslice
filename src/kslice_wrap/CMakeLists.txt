@@ -26,10 +26,9 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 # Current_{source,binary} and Slicer_{Libs,Base} already included
 set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
+  ${CMAKE_CURRENT_BINARY_DIR}/Logic
   ${CMAKE_CURRENT_SOURCE_DIR}/Widgets
   ${CMAKE_CURRENT_BINARY_DIR}/Widgets
-  ${CMAKE_CURRENT_BINARY_DIR}/Logic
-  # нельзя предполагать, что бин уже существует 
   )
 
 set(MODULE_SRCS
@@ -86,15 +85,22 @@ set(MODULE_PYTHON_RESOURCES
   KSliceEffect.png
   )
 
-set(CMAKE_INSTALL_PREFIX  ${CMAKE_BINARY_DIR}   CACHE PATH  "cmake install prefix" FORCE)
-#${Slicer_DIR} CACHE PATH  "cmake install prefix")
+#-----------------------------------------------------------------------------
+#ctkMacroCompilePythonScript(
+ # TARGET_NAME KUtil
+ # SCRIPTS "KUtil.py"
+ # RESOURCES ""
+ # DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
+#  INSTALL_DIR ${Slicer_INSTALL_ROOT}
+ # )
+
+set(CMAKE_INSTALL_PREFIX  ${Slicer_DIR} CACHE PATH  "cmake install prefix")
 
 ctkMacroCompilePythonScript(
   TARGET_NAME KSliceEffect
   SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
   RESOURCES "${MODULE_PYTHON_RESOURCES}"
-  DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}
-  #SCRIPTEDMODULES_LIB_DIR}
+  DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
   INSTALL_DIR ${Slicer_INSTALL_BIN_DIR}
   )
 
@@ -112,4 +118,3 @@ include(${Slicer_EXTENSION_CPACK})
 #endif()
 #-----------------------------------------------------------------------------
 set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
-
