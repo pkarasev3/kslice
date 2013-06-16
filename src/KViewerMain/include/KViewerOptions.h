@@ -53,6 +53,7 @@ public:
   int   minIntensity;
   int   maxIntensity;
   int   m_DrawSpreadOffViewPlane;
+  int   initialSlice;
 
   double drawLabelMaxVal; // value of "inside" labelmap
   int    segmentor_iters; // # of curve evolution update iterations

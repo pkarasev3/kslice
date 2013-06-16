@@ -28,8 +28,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 //#include "LevelSetCurve.h"
+#include <string>
 
 using std::vector;
+using std::string;
 using std::cout;
 using std::endl;
 using namespace vrcl;
@@ -47,9 +49,9 @@ namespace  vrcl
   void waterMark(const std::string& text, Mat & img)
   {
     int baseline = 0;
-    Size textSize = getTextSize(text, CV_FONT_HERSHEY_PLAIN, 3, 2, &baseline);
+    Size textSize = getTextSize(text, cv::FONT_HERSHEY_PLAIN, 3, 2, &baseline);
     Point textOrg((img.cols - textSize.width) / 2, (img.rows + textSize.height) / 2);
-    putText(img, text, textOrg, CV_FONT_HERSHEY_PLAIN, 3, Scalar::all(1), 2, 8);
+    putText(img, text, textOrg, cv::FONT_HERSHEY_PLAIN, 3, Scalar::all(1), 2, 8);
 
   }
 

@@ -13,6 +13,10 @@
 #include <ctime>
 #include <cstring>
 
+#define THREE_DIGITS(X)  std::setw(3) << std::setfill('0') << X
+#define FIVE_DIGITS(X)   std::setw(5) << std::setfill('0') << X
+
+
 using std::string;
 using cv::Mat;
 
@@ -159,6 +163,8 @@ namespace {
 
   std::vector<double> cache_phi(0);
 
+  std::vector<int>    save_count_per_slice(0); // store index for sequential saves of a given slice #
+
 }
 
 void KSegmentor3D::Update2D()
@@ -173,6 +179,10 @@ void KSegmentor3D::Update2D()
   size_t sz = mdims[0]*mdims[1];
   if( cache_phi.size() != (size_t)sz )
     cache_phi.resize(sz);
+
+  if( save_count_per_slice.size() != mdims[2] ) {
+      save_count_per_slice=std::vector<int>(mdims[2],0);
+  }
 
   double* phiSlice         = new double[ mdims[0]*mdims[1] ];
   double* imgSlice         = new double[ mdims[0]*mdims[1] ];
@@ -230,6 +240,8 @@ void KSegmentor3D::Update2D()
 
   //threshold phi to find segmentation label, assign it to appropriate range of label!
   elemNum=0;
+  cv::Mat tmp(mdims[1],mdims[0],CV_64FC1);
+  cv::Mat tmpI(mdims[1],mdims[0],CV_64FC1);
   for (int j=0; j<=mdims[1]-1; j++)  {
     for (int i=0; i<=mdims[0]-1; i++) {
       double phi_val = phiSlice[elemNum];
@@ -241,7 +253,10 @@ void KSegmentor3D::Update2D()
       unsigned short value_PK= ( (unsigned short) ( ( (phi_out > 0.95)
                                                       + (phi_out > 0.8) + (phi_out > 0.65)
                                                       + (phi_out > 0.5) ) * labelRange[1] / 4.0 ) );
-      ptrCurrLabel[element3D]= value_IK;
+      ptrCurrLabel[element3D]  = value_IK;
+      tmp.at<double>(j,i)      = (phi_val<=0.0)*255.0f;
+      tmpI.at<double>(j,i)     = (imgSlice[elemNum]);
+      //labelSlice[elemNum]    = (double) value_IK;
       //if( (value_PK == 0) && !( 0 == value_IK ) ) {
       if(value_IK != value_PK){
         //cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
@@ -251,7 +266,30 @@ void KSegmentor3D::Update2D()
     }
   }
 
-  cout <<  ", KSegmentor3D.cpp :   Lz size: "       << LL2D.Lz->length << endl;
+  bool bSavePNG = true;
+  if( bSavePNG ) {
+    std::stringstream ss,ssI;
+    ss << "label_slice_" << THREE_DIGITS(currSlice) << "_"
+                         << THREE_DIGITS(save_count_per_slice[currSlice]) << "_"
+                         << FIVE_DIGITS(num_actuated_voxels) << ".png";
+    ssI<< "image_slice_" << THREE_DIGITS(currSlice) << ".png";
+    static std::vector<cv::Mat> chans(3); static cv::Mat tmpPng;
+    cv::flip( tmp.clone(), tmp, 0  ); double dmin,dmax; cv::minMaxLoc(tmp,&dmin,&dmax);
+    cout << "min_label=" << dmin << ", max_label=" << dmax << ";  ";
+    for(int c=0;c<3;c++){ tmp.convertTo(chans[c],CV_8UC1); }
+    cv::merge(chans,tmpPng);
+    cout << "write to " << ss.str() << " result: " << cv::imwrite(ss.str(),tmpPng) << endl;
+    cv::flip( tmpI.clone(), tmpI, 0  ); cv::minMaxLoc(tmpI,&dmin,&dmax);
+    cout << "min_image=" << dmin << ", max_image=" << dmax << ";  ";
+    for(int c=0;c<3;c++){ tmpI.convertTo(chans[c],CV_8UC1); }
+    cv::merge(chans,tmpPng);
+    cout << "write to " << ssI.str() << " result: " << cv::imwrite(ssI.str(),tmpPng) << endl;
+
+    save_count_per_slice[currSlice] += 1;
+    //saveMatToPNG( tmp, ss.str() );
+  }
+
+  cout <<  string("update2D in ") + string(__FILE__) + ":   Lz size: "       << LL2D.Lz->length << endl;
 
   // store cached \phi level set func
   std::memcpy( &(cache_phi[0]),&(phiSlice[0]),sizeof(double)*sz );

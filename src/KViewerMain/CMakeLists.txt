@@ -8,7 +8,7 @@ include_DIRECTORIES(
 if(WIN32)
   execute_process(COMMAND ${SHELL} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/moc_creator_win.bat  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts )
 else(WIN32)
-  execute_process(COMMAND "sh" ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_moc.sh  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts )
+  execute_process(COMMAND "sh"  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_moc.sh   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts )
 endif(WIN32)
 
 file( GLOB KVIEWER_SRCS ./src/*.cxx ./include/*.h  ./src/*.cpp )

@@ -51,8 +51,8 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     satLUT_shared->GetTableRange(satRange);
     double  stepSize                               = (satRange[1]-satRange[0])*0.01;
     vtkRenderWindowInteractor* imgWindowInteractor = this->Window->GetInteractor();
-    char keyPressed = *imgWindowInteractor->GetKeySym();
-    Lout(Logger::INFO) << "(char) keyPressed: " << keyPressed << endl;
+    unsigned int keyPressed = *imgWindowInteractor->GetKeySym();
+    Lout(Logger::INFO) << "(uint) keyPressed: " << keyPressed << endl;
     switch ( keyPressed ) {
     case keyMinusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad-1;

@@ -123,6 +123,10 @@ struct UserInputVerboseRecorder
       unsigned short* ptr = static_cast<unsigned short*>( timestamp_volume->GetScalarPointer() );
       ptr[element] = (unsigned short) timeDiff; assert(timeDiff < 1e4);
   }
+
+  int get_number_actuated_voxels() const {
+      return (int)inputLocationandTime.size();
+  }
 };
 
 #endif

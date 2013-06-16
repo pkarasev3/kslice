@@ -237,6 +237,7 @@ public:
         double *ptrIntegral_Image;
         double *ptrU_t_Image;
 
+        int num_actuated_voxels; // from the uk_recorder (kinda hacky to put it here...)
 
         int currSlice;       //the slice we are segmenting
         int prevSlice;

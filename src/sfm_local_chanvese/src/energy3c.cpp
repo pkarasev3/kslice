@@ -17,6 +17,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <omp.h>
+#include <assert.h>
 
 #define DIMX dims[1]
 #define DIMY dims[0]
@@ -1704,7 +1705,7 @@ void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
         int y1=histImage.rows-round((pdf[i]/a)*histImage.rows);
         int x2=(i+1)*bin_w;
         int y2=histImage.rows-round((pdf[i+1]/a)*histImage.rows);
-        cv::line(histImage, cv::Point(x1,y1), cv::Point(x2,y2), CV_RGB(255, 0, 0), 1, 8, 0);
+        cv::line(histImage, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255, 0, 0), 1, 8, 0);
         if (myfile.is_open())
         {
             myfile << pdf[i]<<"     "<<x1<<"     "<<y1<<"     "<<x2<<"     "<<y2<<"\n";
@@ -1713,7 +1714,7 @@ void draw_histogram(double *pdf,char* pdfInFileName, double a, int display ){
     myfile.close();
 
     if(display==1){
-        cv::namedWindow(pdfInFileName,CV_WINDOW_AUTOSIZE);
+        cv::namedWindow(pdfInFileName,cv::WINDOW_AUTOSIZE);
         cv::imshow(pdfInFileName,histImage );
 
         //hold the images until a key is pressed
@@ -1774,7 +1775,7 @@ void display_slice(double *img,int *dims, int sliceNum, char *name, double *imgR
     cv::Mat histImage =  cv::Mat(dims[0],dims[1], CV_64FC1,&img[offsetInt]);
     histImage  = (histImage - imgRange[0])* (1.0 / (imgRange[1]-imgRange[0]) );
 
-    cv::namedWindow(name,CV_WINDOW_AUTOSIZE);
+    cv::namedWindow(name,cv::WINDOW_AUTOSIZE);
     cv::imshow(name,histImage );
 
     //hold the images until a key is pressed

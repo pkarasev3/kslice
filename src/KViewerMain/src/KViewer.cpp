@@ -39,6 +39,8 @@
 #include "KSandbox.h"
 #include "KDataWarehouse.h"
 
+#include <string>
+
 //TESTING
 #include "vtkRegularPolygonSource.h"
 
@@ -50,7 +52,7 @@
 using namespace cv;
 using namespace vrcl;
 using std::vector;
-
+using std::string;
 
 KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
 
@@ -77,6 +79,7 @@ KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
          kwidget_3d_right->UpdateSubVolumeExtractor(kv_data->labelDataArray,labnum);
        }
   }
+  this->MoveSlider(kv_opts->initialSlice);
 
 }
 
@@ -570,6 +573,8 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               if( (distance < 1.0 ) && kv_opts->m_bVerboseSave ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
+                  boost::shared_ptr<KSegmentorBase> ksegm  = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
+                  ksegm->num_actuated_voxels = kwidget_2d_left->uk_recorder.get_number_actuated_voxels();
               }
 
               bool drawInImgRange=
@@ -709,9 +714,9 @@ void KViewer::setupQVTKandData( )
   image_callback->SetSaturationLookupTable( kwidget_2d_left->color_HSV_LookupTable );
 
   vtkRenderWindowInteractor* interactor = qVTK1->GetRenderWindow()->GetInteractor();
-  interactor->AddObserver(vtkCommand::LeftButtonPressEvent, image_callback);
-  interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, image_callback);
-  interactor->AddObserver(vtkCommand::KeyPressEvent, image_callback);
+  interactor->AddObserver(vtkCommand::LeftButtonPressEvent, image_callback,5.0f);
+  interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, image_callback,5.0f);
+  interactor->AddObserver(vtkCommand::KeyPressEvent, image_callback,5.0f);
 
   if( ! kv_opts->LabelArrayFilenames.size()==0 ) {
     saveAsLineEdit->setText( QString( kv_opts->LabelArrayFilenames[0].c_str() ) );

@@ -131,13 +131,14 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("imgThreshWeight,W",po::value<float>(&m_ThreshWeight)->default_value(0.0),"image threshold weight (truncate label after segmentation)")
       ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("verboseSave,V",po::value<bool>(&m_bVerboseSave)->default_value(false),"True or False (0,1), use verbose saving (slows things down)?")
+      ("initialSlice,s",po::value<int>(&initialSlice)->default_value(0),"initial value of the slider")
       ("useEdgeBased,e",po::value<bool>(&m_bUseEdgeBased)->default_value(0),"Use Edge Based Cost !?")
        //currently not used
       // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
       ("ContRad,r",po::value<int>(&rad)->default_value(5),"radius used for active contour, default 5 pixels")
-      ("Lambda,l",po::value<float>(&lambda)->default_value(0),"lambda, penalty for curvature of contour, default 0")
+      ("Lambda,l",po::value<float>(&lambda)->default_value(0.5),"lambda, penalty for curvature of contour, default 0.5")
       ("help","print help");
 
   po::variables_map vm;

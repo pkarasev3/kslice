@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 #include <opencv2/highgui/highgui.hpp>
-
+#include <opencv2/imgproc.hpp>
 using std::string;
 using cv::Mat;
 
@@ -211,15 +211,17 @@ void KSegmentorBase::saveMatToPNG( double* data, const std::string& fileName )
       ss << ".png" ;
     }
     string png_name = ss.str();
-    cout << " reference png file: " << png_name << endl;
+    //cout << " reference png file: " << png_name << endl;
     cv::Mat source(mdims[1],mdims[0],CV_64F);
     memcpy(source.ptr<double>(0), data, mdims[0]*mdims[1]);
     cv::flip( -1.0 * source.clone(), source, 1 /* flipVert */ );
     double dmin, dmax;
     cv::minMaxLoc( source, &dmin, &dmax );
     cv::Mat saveImg = (255.0 / (dmax - dmin )) * (source - dmin);
+    saveImg.clone().convertTo(saveImg,CV_8UC1);
+    cv::cvtColor(saveImg.clone(),saveImg,cv::COLOR_GRAY2RGB);
     cv::imwrite(png_name, saveImg );
-    cout<<"wrote to " << png_name << endl;
+    cout<<"wrote to " << png_name << ", min=" << dmin << ", max=" << dmax << endl;
 }
 
 void KSegmentorBase::initializeUserInputImageWithContour(bool accumulate){

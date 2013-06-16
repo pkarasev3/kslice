@@ -74,7 +74,7 @@ int main( int argc, char **argv)
 
       if( img.channels() > 1 ) {
         img.clone().convertTo(img,CV_32FC3);
-          cv::cvtColor(img.clone(),img,CV_RGB2GRAY);
+          cv::cvtColor(img.clone(),img,cv::COLOR_RGB2GRAY);
       } else {
         img.clone().convertTo(img,CV_32FC1);
       }
