@@ -5,7 +5,8 @@ from EditorLib.EditOptions import HelpButton
 from EditorLib.EditOptions import EditOptions
 from EditorLib import EditUtil
 from EditorLib import LabelEffect
-import vtkSlicerKSliceModuleLogicPython
+
+
 from copy import copy, deepcopy
 import numpy as np
 from KUtil import KUtil, Print_Bad, Print_Good
@@ -300,6 +301,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
   """
 
   def __init__(self,sliceLogic):
+    import vtkSlicerKSliceModuleLogicPython
     self.fullInitialized=False                                                          #tracks if completed the initializtion (so can do stop correctly)
     self.sliceLogic = sliceLogic
     print("Made a KSliceEffectLogic")
@@ -849,6 +851,7 @@ This class is the 'hook' for slicer to detect and recognize the extension
 as a loadable scripted module
 """
   def __init__(self, parent):
+    parent.dependencies = ["Editor"]
     parent.title = "Editor KSliceEffect Effect"
     parent.categories = ["Developer Tools.Editor Extensions"]
     parent.contributors = ["Ivan Kolesov, Peter Karasev, Patricio Vela (Georgia Institute of Technology) , Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.)"] # insert your name in the list
@@ -857,6 +860,7 @@ as a loadable scripted module
     Peter Karasev, Patricio Vela (Georgia Institute of Technology),
 Allen Tannenbaum (University of Alabama Birmingham), and Steve Pieper (Isomics, Inc.).  """
 
+  
     # TODO:
     # don't show this module - it only appears in the Editor module
     #parent.hidden = True
