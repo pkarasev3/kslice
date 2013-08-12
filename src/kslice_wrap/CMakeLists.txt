@@ -59,17 +59,17 @@ set(MODULE_RESOURCES
 link_directories(${KSLICE_LIB_PATH})
 
 #-----------------------------------------------------------------------------
-slicerMacroBuildQtModule(
-  NAME ${MODULE_NAME}
-  TITLE ${MODULE_TITLE}
-  EXPORT_DIRECTIVE ${MODULE_EXPORT_DIRECTIVE}
-  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
-  SRCS ${MODULE_SRCS}
-  MOC_SRCS ${MODULE_MOC_SRCS}
-  UI_SRCS ${MODULE_UI_SRCS}
-  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
-  RESOURCES ${MODULE_RESOURCES}
-  )
+#slicerMacroBuildQtModule(
+#  NAME ${MODULE_NAME}
+#  TITLE ${MODULE_TITLE}
+#  EXPORT_DIRECTIVE ${MODULE_EXPORT_DIRECTIVE}
+#  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+#  SRCS ${MODULE_SRCS}
+#  MOC_SRCS ${MODULE_MOC_SRCS}
+#  UI_SRCS ${MODULE_UI_SRCS}
+#  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+#  RESOURCES ${MODULE_RESOURCES}
+#  )
 
 #-----------------------------------------------------------------------------
 ##Set up the Editor module
@@ -96,14 +96,26 @@ set(MODULE_PYTHON_RESOURCES
 
 set(CMAKE_INSTALL_PREFIX  ${Slicer_DIR} CACHE PATH  "cmake install prefix")
 
-ctkMacroCompilePythonScript(
-  TARGET_NAME KSliceEffect
-  SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
-  RESOURCES "${MODULE_PYTHON_RESOURCES}"
-  DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
-  INSTALL_DIR ${Slicer_INSTALL_BIN_DIR}
+
+# ctkMacroCompilePythonScript(
+#   TARGET_NAME KSliceEffect
+#   SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
+#   RESOURCES "${MODULE_PYTHON_RESOURCES}"
+#   DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
+#   INSTALL_DIR ${Slicer_INSTALL_BIN_DIR}
+#  )
+#-----------------------------------------------------------------------------
+slicerMacroBuildScriptedModule(
+  NAME      ${MODULE_NAME}
+  SCRIPTS   ${MODULE_PYTHON_SCRIPTS}
+  RESOURCES ${MODULE_PYTHON_RESOURCES}
+  #WITH_SUBDIR
+  #WITH_GENERIC_TESTS
+  VERBOSE
   )
 
+# Export target
+set_property(GLOBAL APPEND PROPERTY Slicer_TARGETS ${MODULE_NAME} )
 
 #-----------------------------------------------------------------------------
 
@@ -117,4 +129,14 @@ add_subdirectory(Testing)
 include(${Slicer_EXTENSION_CPACK})
 #endif()
 #-----------------------------------------------------------------------------
-set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};
+                                  ${CMAKE_BINARY_DIR};
+                                  ${EXTENSION_NAME};
+                                  ${MODULE_NAME};
+                                  ALL;/")
+
+
+
+
+
+
