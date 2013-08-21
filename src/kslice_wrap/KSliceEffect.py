@@ -304,6 +304,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     import vtkSlicerKSliceModuleLogicPython
     self.fullInitialized=False                                                          #tracks if completed the initializtion (so can do stop correctly)
     self.sliceLogic = sliceLogic
+
+    #disconnect all shortcuts that may exist, to allow KSlice's to work, reconnect once bot is turned off
+    slicer.modules.EditorWidget.removeShortcutKeys()
+
     print("Made a KSliceEffectLogic")
 
 
@@ -380,7 +384,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
     
     print  " keys for 2d, 3d, 2.5d  are      Q, W, R "
-    print  " toggle, copy, paste:               A, C, V"
+    print  " toggle, copy, paste:            A, C, V "
     
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
@@ -394,8 +398,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     for keydef in self.qtkeydefs:
         s = qt.QShortcut(keydef[0], mainWindow()) # connect this qt event to mainWindow focus
+        #s.setContext(1)
         s.connect('activated()', keydef[1])
-        s.connect('activatedAmbiguously()', keydef[1])
+        #s.connect('activatedAmbiguously()', keydef[1])
         self.qtkeyconnections.append(s)
 
      
@@ -813,6 +818,10 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.dialogBox=None
     self.UIarray=None      # keep reference for easy computation of accumulation
     self.uiImg=None
+
+    #put back the editor shortcuts we removed
+    slicer.modules.EditorWidget.installShortcutKeys()
+
     print("Deletion completed")
 
 #
