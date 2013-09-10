@@ -100,6 +100,7 @@ int main(int argc, char** argv) {
         bbKSlice->SetBrushRad(rad);
         bbKSlice->SetSpacing(spacing);
         bbKSlice->SetCurrSlice(currSlice);
+        bbKSlice->SetLambdaPenalty(.15);
         bbKSlice->SetDistWeight(distWeight);
         bbKSlice->Initialize();
         bbKSlice->SetOrientation("JK");

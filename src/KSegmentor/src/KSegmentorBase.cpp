@@ -43,12 +43,12 @@ void test_OpenMP()
 //  }
 }
 
-/** default curvature penalty term. can be set externally when a KSegmentorBase is made. */
-double KSegmentorBase::defaultKappaParam = 0.1;
+
 
 
 void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                                        bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel, double *imgSpacing)
+                                        bool contInit, int currSlice, int numIts, float distWeight, double lambdaPenalty,
+                                        int brushRad, int currLabel, double *imgSpacing)
 {
     this->m_CustomSpeedImgPointer=NULL;
 
@@ -68,7 +68,7 @@ void KSegmentorBase::InitializeVariables(vtkImageData* image, vtkImageData* labe
     this->seed=0;
     this->display=0;
     this->m_ThreshWeight=0;
-    this->lambda=defaultKappaParam; // this could/should be user togglable!
+    this->lambda=lambdaPenalty;
     this->mdims = new int[3];
     image->GetDimensions( mdims );
 

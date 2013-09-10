@@ -32,6 +32,7 @@ public:
   vtkSetMacro(BrushRad, int);             //void SetBrushRad(int rad);
   vtkSetMacro(CurrSlice, int);            //void SetCurrSlice(int currSlice);
   vtkSetMacro(DistWeight, float);         //void SetDistWeight(float distWeight);
+  vtkSetMacro(LambdaPenalty, double);         //void SetDistWeight(float distWeight);
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
   vtkSetMacro(CurrLabel, int);            //void CopySlice(int fromSlice);
   vtkSetVector3Macro(Spacing, double);
@@ -66,6 +67,7 @@ private:
   int BrushRad;
   int CurrSlice;
   int DistWeight;
+  double LambdaPenalty;
   int FromSlice;
   int ToSlice;
   int CurrLabel;

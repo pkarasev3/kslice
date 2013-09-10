@@ -19,10 +19,10 @@
 using std::string;
 
 KSegmentor3D::KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                           bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel, double *imgSpacing)
+                           bool contInit, int currSlice, int numIts, float distWeight, double lambdaPenalty, int brushRad, int currLabel, double *imgSpacing)
 {
   m_EnergyName = GetSupportedEnergyNames()[1];
-  this->InitializeVariables(image,label, UIVol, contInit, currSlice, numIts, distWeight, brushRad, currLabel, imgSpacing);
+  this->InitializeVariables(image,label, UIVol, contInit, currSlice, numIts, distWeight, lambdaPenalty, brushRad, currLabel, imgSpacing);
 
 // TODO: re-integrate this, check that label value is handled correctly from slicer
 // "set U based on input label", e.g. when input is large complex label that user wants to edit slightly

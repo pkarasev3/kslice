@@ -26,6 +26,7 @@ vtkKSlice::vtkKSlice( ) {
     NumIts=50;
     CurrSlice=1;
     DistWeight=.2;
+    LambdaPenalty = 0.1;
     m_bUseEdgeBased=0;
     contInit=0;        //is doing init from contour
     initCorrectFlag=0; //should not run updates before this flag is set to 1
@@ -91,7 +92,8 @@ void vtkKSlice::Initialize(){  // Called on "start bot" button
 
     //set up the segmentor
     this->ksegmentor= new KSegmentor3D(ImageVol, LabelVol, UIVol,
-                                       contInit, CurrSlice, NumIts, DistWeight, BrushRad, CurrLabel, Spacing);
+                                       contInit, CurrSlice, NumIts, DistWeight, LambdaPenalty,
+                                       BrushRad, CurrLabel, Spacing);
     this->ksegmentor->SetDistanceWeight(DistWeight);
     initCorrectFlag=1; //initialization is complete
 }

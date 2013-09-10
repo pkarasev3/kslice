@@ -156,6 +156,11 @@ class KSegmentorBase
             this->m_DistWeight=dw;
         }
 
+        void SetCurvaturePenalty(double lambdaPenalty)
+        {
+            this->lambda=lambdaPenalty;
+        }
+
         void SetThreshWeight(float dw)
         {
             this->m_ThreshWeight=dw;
@@ -189,7 +194,8 @@ class KSegmentorBase
 
 
         void InitializeVariables(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                            bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel, double *imgSpacing);
+                                 bool contInit, int currSlice, int numIts, float distWeight, double lambdaPenalty,
+                                 int brushRad, int currLabel, double *imgSpacing);
 
         void InitializeMaskAndImage();
         //void UpdateMask(bool bForceUpdateAll = false);

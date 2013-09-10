@@ -23,7 +23,8 @@ class KSegmentor3D: public vrcl::KSegmentorBase{
     public:
 
         KSegmentor3D(vtkImageData* image, vtkImageData* label, vtkImageData* UIVol,
-                     bool contInit, int currSlice, int numIts, float distWeight, int brushRad, int currLabel, double *imgSpacing);
+                     bool contInit, int currSlice, int numIts, float distWeight, double lambdaPenalty,
+                     int brushRad, int currLabel, double *imgSpacing);
 
         virtual ~KSegmentor3D();
         void initializeData();

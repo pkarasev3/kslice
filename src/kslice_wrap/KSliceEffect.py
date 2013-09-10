@@ -66,7 +66,21 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.locRadSpinBox.connect('valueChanged(double)', self.onRadiusSpinBoxChanged)
     self.widgets.append(self.locRadSpinBox)
 
-    HelpButton(self.frame, "TO USE: \n Start the interactive segmentor and initialize the segmentation with any other editor tool. \n KEYS: \n Press the following keys to interact: \n C: copy label slice \n V: paste label slice \n Q: evolve contour in 2D \n W: evolve contour in 3D \n A: toggle between draw/erase modes" )
+    self.numItsLabel = qt.QLabel("Number Iterations:", self.locRadFrame)
+    self.numItsLabel.setToolTip("Set the number of iterations to evolve contour.")
+    self.locRadFrame.layout().addWidget(self.numItsLabel)
+    self.widgets.append(self.numItsLabel)
+
+    self.numItsSpinBox = qt.QDoubleSpinBox(self.locRadFrame)
+    self.numItsSpinBox.setToolTip("Set the number of iterations to evolve contour.")
+    self.numItsSpinBox.minimum = 0
+    self.numItsSpinBox.maximum = 50
+    self.numItsSpinBox.suffix = ""
+    self.locRadFrame.layout().addWidget(self.numItsSpinBox)
+    self.numItsSpinBox.connect('valueChanged(double)', self.onNumItsSpinBoxChanged)
+    self.widgets.append(self.numItsSpinBox)
+
+    HelpButton(self.frame, "TO USE: \n Start the interactive segmentor and initialize the segmentation with any other editor tool. \n KEYS: \n Press the following keys to interact: \n C: copy label slice \n V: paste label slice \n Q: evolve contour in 2D \n E: evolve contour in 3D \n A: toggle between draw/erase modes" )
     self.frame.layout().addStretch(1) # Add vertical spacer
 
     if hasattr(slicer.modules, 'editorBot'):
@@ -85,7 +99,13 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.parameterNode.SetParameter("KSliceEffect,radius", str(value))
     #self.locRadSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,radius")) )
     self.updateMRMLFromGUI()
-  
+
+
+  def onNumItsSpinBoxChanged(self,value):
+    self.parameterNode.SetParameter("KSliceEffect,numIts", str(value))
+    self.updateMRMLFromGUI()
+
+
   def updateParameterNode(self, caller, event):
     '''# in each leaf subclass so that "self" in the observer
        # is of the correct type
@@ -104,6 +124,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     self.parameterNode.SetDisableModifiedEvent(1)
     defaults = (
       ("radius", "5"),
+      ("numIts", "10")
     )
     for d in defaults:
       param = "KSliceEffect,"+d[0]
@@ -117,6 +138,7 @@ class KSliceEffectOptions(EditorLib.LabelEffectOptions):
     super(KSliceEffectOptions,self).updateGUIFromMRML(caller,event)
     self.disconnectWidgets()
     self.locRadSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,radius")) )
+    self.numItsSpinBox.setValue( float(self.parameterNode.GetParameter("KSliceEffect,numIts")) )
     self.connectWidgets()
     self.updatingGUI = False
 
@@ -377,13 +399,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #create key shortcuts, make the connections
     s2 = qt.QKeySequence(qt.Qt.Key_Q) # Press q/Q to run segmentor 2d
-    s3 = qt.QKeySequence(qt.Qt.Key_W) # Press w/W to run segmentor 3d
-    s4 = qt.QKeySequence(qt.Qt.Key_R) # Press r/R to run segmentor 2.5d
+    s3 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor 3d
+    s4 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 2.5d
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
     
-    print  " keys for 2d, 3d, 2.5d  are      Q, W, R "
+    print  " keys for 2d, 3d, 2.5d  are      Q, E, T "
     print  " toggle, copy, paste:            A, C, V "
     
     self.qtkeyconnections = []
@@ -423,8 +445,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     ksliceMod.SetCurrLabel(self.labVal)
     node    = EditUtil.EditUtil().getParameterNode()        # get the parameters from MRML
     currRad = int(float(node.GetParameter("KSliceEffect,radius")))
+    self.numIts  = int(float(node.GetParameter("KSliceEffect,numIts")))
     ksliceMod.SetBrushRad(currRad)                          # only get to set radius at the beginning
+    ksliceMod.SetNumIts(self.numIts)
     ksliceMod.SetSpacing(self.imgSpacing)
+    ksliceMod.SetLambdaPenalty(0)                           # ensure effect of user input is local only, with no penalty on curvature
     ksliceMod.Initialize()
     self.ksliceMod= ksliceMod;
 
@@ -711,7 +736,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(35)
+    self.ksliceMod.SetNumIts(self.numIts)
 
     #execute a run, we're on same plane, same run type, user has not drawn => use cache (check for "same slice" is done in c++)
     useCache= (self.lastRunPlane==self.ijkPlane)& (self.lastModBy=='2D') & (self.userMod==0) 
@@ -738,7 +763,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #make connections, parameter settings
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(35)                    # should be less than 2D!
+    self.ksliceMod.SetNumIts(self.numIts)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
     useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
@@ -762,7 +787,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.computeCurrSliceSmarter()
 
     self.ksliceMod.SetCurrSlice(self.currSlice)
-    self.ksliceMod.SetNumIts(35)                          # should be less than 2D!
+    self.ksliceMod.SetNumIts(self.numIts)                          # should be less than 2D!
     self.ksliceMod.SetDistWeight(0.2)                     # weight evolution by distancef rom view-plane
 
     #still doing 3D, user has not drawn => use cache
