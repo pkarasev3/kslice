@@ -32,7 +32,7 @@ public:
   vtkSetMacro(BrushRad, int);             //void SetBrushRad(int rad);
   vtkSetMacro(CurrSlice, int);            //void SetCurrSlice(int currSlice);
   vtkSetMacro(DistWeight, float);         //void SetDistWeight(float distWeight);
-  vtkSetMacro(LambdaPenalty, double);         //void SetDistWeight(float distWeight);
+  vtkSetMacro(LambdaPenalty, double);     //void SetDistWeight(float distWeight);
   vtkSetMacro(FromSlice, int);            //void CopySlice(int fromSlice);
   vtkSetMacro(CurrLabel, int);            //void CopySlice(int fromSlice);
   vtkSetVector3Macro(Spacing, double);
@@ -46,7 +46,8 @@ public:
   void PasteSlice(int toSlice);
   void Initialize();
   void runUpdate2D(  bool reInitFromMask);
-  void runUpdate3D(  bool reInitFromMask);
+  void runUpdate3DLocCV(  bool reInitFromMask);
+  void runUpdate3DCV(  bool reInitFromMask);
   void runUpdate2p5D(bool reInitFromMask);
   void PrintEmpty();
   void PrintImage();

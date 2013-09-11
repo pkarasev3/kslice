@@ -98,7 +98,7 @@ void vtkKSlice::Initialize(){  // Called on "start bot" button
     initCorrectFlag=1; //initialization is complete
 }
 
-void vtkKSlice::runUpdate2D(bool reInitFromMask){      // E key now
+void vtkKSlice::runUpdate2D(bool reInitFromMask){      // Q key now
     bool currSliceCheck   = checkSliceValid(this->Orientation, CurrSlice);
     if(initCorrectFlag==1 && currSliceCheck==1){ //already initialized and slice is in bounds
         this->ksegmentor->SetCurrentSlice(CurrSlice);
@@ -131,10 +131,26 @@ void vtkKSlice::runUpdate2p5D(bool reInitFromMask){      // U key now
 }
 
 
-void vtkKSlice::runUpdate3D(bool reInitFromMask){      // T key now
+void vtkKSlice::runUpdate3DLocCV(bool reInitFromMask){      // E key now
     bool currSliceCheck   = checkSliceValid(this->Orientation, CurrSlice);
     if(initCorrectFlag==1 && currSliceCheck==1){ //already initialized
         this->ksegmentor->SetEnergyLocalCV();
+        this->ksegmentor->SetCurrentSlice(CurrSlice);
+        this->ksegmentor->setNumIterations(NumIts);
+        this->ksegmentor->Update3D(reInitFromMask);
+        std::cout<<"did the update for 3d" <<std::endl;
+    }else
+    {
+        std::cout<<"Execution stopped bc slice, initialization checks not passed"<<std::endl;
+        std::cout<<"Attempted to access slice "<< CurrSlice<<std::endl;
+    }
+}
+
+
+void vtkKSlice::runUpdate3DCV(bool reInitFromMask){      // E key now
+    bool currSliceCheck   = checkSliceValid(this->Orientation, CurrSlice);
+    if(initCorrectFlag==1 && currSliceCheck==1){ //already initialized
+        this->ksegmentor->SetEnergyChanVese();
         this->ksegmentor->SetCurrentSlice(CurrSlice);
         this->ksegmentor->setNumIterations(NumIts);
         this->ksegmentor->Update3D(reInitFromMask);

@@ -375,6 +375,22 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
         cout << " run basic chan-vese on it "<< endl;
         CalcViewPlaneParams();
         assert(m_PlaneNormalVector.size()==3);
+        interactive_chanvese(segEngine, img,phi,ptrIntegral_Image,label,dims,
+                               LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,
+                               iter,0.5*lambda,display);
+        bool bDisplayChanVeseCost = false;
+        if( bDisplayChanVeseCost )
+        {
+            double u0,u1;
+            double cv_cost = this->evalChanVeseCost(u0,u1);
+            cout << "chan vese cost = " << cv_cost << endl;
+        }
+    }
+    if( 0 == m_EnergyName.compare("ChanVeseLimited") )
+    {
+        cout << " run limited basic chan-vese on it "<< endl;
+        CalcViewPlaneParams();
+        assert(m_PlaneNormalVector.size()==3);
         interactive_chanvese_ext(segEngine, img,phi,ptrIntegral_Image,label,dims,
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,&(m_PlaneNormalVector[0]),

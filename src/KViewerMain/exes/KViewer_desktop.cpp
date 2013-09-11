@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
       labVol = labReader->GetOutput();
       imgVol = imgReader->GetOutput();
-      uiVol = uiReader->GetOutput();
+      uiVol  = uiReader->GetOutput();
 
 
 
@@ -116,9 +116,9 @@ int main(int argc, char** argv) {
             break;
         case 2:
             bbKSlice->SetCurrSlice(currSlice-2);
-            bbKSlice->runUpdate3D(1);
+            bbKSlice->runUpdate3DCV(1);
             bbKSlice->SetCurrSlice(currSlice-3);
-            bbKSlice->runUpdate3D(0);
+            bbKSlice->runUpdate3DCV(0);
             break;
         case 3:
             bbKSlice->runUpdate2D(1);

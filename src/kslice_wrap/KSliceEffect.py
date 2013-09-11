@@ -399,19 +399,21 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #create key shortcuts, make the connections
     s2 = qt.QKeySequence(qt.Qt.Key_Q) # Press q/Q to run segmentor 2d
-    s3 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor 3d
+    s3 = qt.QKeySequence(qt.Qt.Key_F) # Press f/F to run segmentor 3d
     s4 = qt.QKeySequence(qt.Qt.Key_T) # Press t/T to run segmentor 2.5d
+    s5 = qt.QKeySequence(qt.Qt.Key_E) # Press e/E to run segmentor(chan-vese) 3D
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
     
-    print  " keys for 2d, 3d, 2.5d  are      Q, E, T "
-    print  " toggle, copy, paste:            A, C, V "
+    print  " keys for 2d, CV 3D, 3d, 2.5d, are      Q, E, F, T"
+    print  " toggle, copy, paste:                   A, C, V "
     
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
-                       [s3,self.runSegment3D],
+                       [s3,self.runSegment3DLocCV],
                        [s4,self.runSegment2p5D],
+                       [s5,self.runSegment3DCV],
                        [tg,self.toggleDrawErase],
                        [cp,self.copyslice],
                        [ps,self.pasteslice] ] # like a cell array in matlab
@@ -754,11 +756,11 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     
     #self.check_U_sync()                            # turn the debug off
 
-  def runSegment3D(self):
+  def runSegment3DLocCV(self):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
       return
 
-    print("doing 3D segmentation")
+    print("doing 3D local chan-vese segmentation")
     self.computeCurrSliceSmarter()
 
     #make connections, parameter settings
@@ -767,7 +769,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
 
     #execute a run, still doing 3D, user has not drawn => use cache
     useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
-    self.ksliceMod.runUpdate3D(not useCache)
+    self.ksliceMod.runUpdate3DLocCV(not useCache)
     print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
@@ -778,6 +780,32 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
 
     #self.check_U_sync()                                   # turn the debug off
+  def runSegment3DCV(self):
+    if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
+      return
+
+    print("doing 3D chan-vese segmentation")
+    self.computeCurrSliceSmarter()
+
+    #make connections, parameter settings
+    self.ksliceMod.SetCurrSlice(self.currSlice)
+    self.ksliceMod.SetNumIts(self.numIts)                    # should be less than 2D!
+
+    #execute a run, still doing 3D, user has not drawn => use cache
+    useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
+    self.ksliceMod.runUpdate3DCV(not useCache)
+    print "use cache?:" + str(useCache)
+
+    #save the 'last run state' information
+    self.acMod=1
+    self.lastModBy='3D'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
+
+    self.labelImg.Modified()
+    self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
+
+    #self.check_U_sync()                                   # turn the debug off
+
+
 
   def runSegment2p5D(self):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
