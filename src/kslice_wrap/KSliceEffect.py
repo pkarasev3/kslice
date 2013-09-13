@@ -768,13 +768,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetNumIts(self.numIts)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
-    useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
+    useCache= ( (self.lastModBy=='3DLocCV') & (self.userMod==0) )
     self.ksliceMod.runUpdate3DLocCV(not useCache)
     print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
     self.acMod=1
-    self.lastModBy='3D'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.lastModBy='3DLocCV'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
 
     self.labelImg.Modified()
     self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
@@ -792,13 +792,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetNumIts(self.numIts)                    # should be less than 2D!
 
     #execute a run, still doing 3D, user has not drawn => use cache
-    useCache= ( (self.lastModBy=='3D') & (self.userMod==0) )
+    useCache= ( (self.lastModBy=='3DCV') & (self.userMod==0) )
     self.ksliceMod.runUpdate3DCV(not useCache)
     print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
     self.acMod=1
-    self.lastModBy='3D'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.lastModBy='3DCV'                                    # was last active contour run in 2D or 3D (cache needs to be recomputed)
 
     self.labelImg.Modified()
     self.labelNode.Modified()                              # labelNode.SetModifiedSinceRead(1)
@@ -819,13 +819,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.ksliceMod.SetDistWeight(0.2)                     # weight evolution by distancef rom view-plane
 
     #still doing 3D, user has not drawn => use cache
-    useCache= (self.lastModBy=='3D') & (self.userMod==0) 
+    useCache= (self.lastModBy=='25D') & (self.userMod==0) 
     self.ksliceMod.runUpdate2p5D(not useCache)
     print "use cache?:" + str(useCache)
 
     #save the 'last run state' information
     self.acMod=1
-    self.lastModBy='3D'                                   # was last active contour run in 2D or 3D (cache needs to be recomputed)
+    self.lastModBy='25D'                                   # was last active contour run in 2D or 3D (cache needs to be recomputed)
     #self.check_U_sync()                                  # very slow operation
     
     self.labelImg.Modified()                              # signal to slicer that the label needs to be updated

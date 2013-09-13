@@ -1,4 +1,4 @@
-if(FALSE)
+if(TRUE)
 
 # this directory is questionable on all platforms it seems
 
@@ -21,4 +21,4 @@ else()
 	target_link_libraries( KViewer_desktop ${KV_LIBS})
 endif(WIN32)
 
-endif(FALSE)
+endif(TRUE)

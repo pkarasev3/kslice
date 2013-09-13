@@ -362,11 +362,11 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
     cout << "m_EnergyName = " << m_EnergyName << endl;
 
     bool reInit;
-    if(prevMode=="3D"){
+    if(prevMode=="3DLocCV"){
         reInit=0;
     }else{
         reInit=1;
-        prevMode="3D";   //keep track for next call
+        prevMode="3DLocCV";   //keep track for next call
     }
 
 
@@ -385,8 +385,9 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
             double cv_cost = this->evalChanVeseCost(u0,u1);
             cout << "chan vese cost = " << cv_cost << endl;
         }
+        prevMode="3DChanVese";
     }
-    if( 0 == m_EnergyName.compare("ChanVeseLimited") )
+    else if( 0 == m_EnergyName.compare("ChanVeseLimited") )
     {
         cout << " run limited basic chan-vese on it "<< endl;
         CalcViewPlaneParams();
@@ -402,6 +403,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
             double cv_cost = this->evalChanVeseCost(u0,u1);
             cout << "chan vese cost = " << cv_cost << endl;
         }
+        prevMode="3DChanVese";
     }
     else if (0== m_EnergyName.compare("LocalCVLimited"))
     {
@@ -412,6 +414,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
                                LL3D.Lz,LL3D.Ln1,LL3D.Lp1,LL3D.Ln2,LL3D.Lp2,LL3D.Lin2out,LL3D.Lout2in,LL3D.Lchanged,
                                iter,0.5*lambda,display,&(m_PlaneNormalVector[0]),
                                &(m_PlaneCenter[0]),this->m_DistWeight, reInit, this->segEngine->GetRadius() );
+        prevMode="3DLocCV";
     }
     else if( 0 == m_EnergyName.compare("LocalCV") )
     {
@@ -420,6 +423,7 @@ void KSegmentor3D::Update3D(bool reInitFromMask)
                                  segEngine, img, phi, ptrIntegral_Image, label, dims,
                                  LL3D.Lz, LL3D.Ln1, LL3D.Lp1, LL3D.Ln2, LL3D.Lp2, LL3D.Lin2out, LL3D.Lout2in,
                                  iter,lambda*0.5,display, reInit, this->segEngine->GetRadius() );
+        prevMode="3DLocCV";
     }
     else
     {
