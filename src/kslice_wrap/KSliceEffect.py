@@ -347,7 +347,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     self.acMod = 0
     self.userMod = 0
     self.emergencyStopFunc = None
-
+    self.inFact=1                      #weight of the user input  (small=soft user suggestion, large=essentially hard constraint)
 
     self.dialogBox=qt.QMessageBox()                                                    #will display messages to draw users attention if he does anything wrong
     self.dialogBox.setWindowTitle("KSlice Interactive Segmentor Error")
@@ -405,6 +405,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     tg = qt.QKeySequence(qt.Qt.Key_A) # toggle between the painting label and 0--erasing label 
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
+    wf = qt.QKeySequence(qt.Qt.Key_B) # flip weight factor between soft, ~hard user constraints
     
     print  " keys for 2d, CV 3D, 3d, 2.5d, are      Q, E, F, T"
     print  " toggle, copy, paste:                   A, C, V "
@@ -416,7 +417,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
                        [s5,self.runSegment3DCV],
                        [tg,self.toggleDrawErase],
                        [cp,self.copyslice],
-                       [ps,self.pasteslice] ] # like a cell array in matlab
+                       [ps,self.pasteslice],
+                       [wf,self.toggleInputFactor] ] # like a cell array in matlab
 
 
 
@@ -641,7 +643,7 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
         #if bUseLabelModTrigger: # trying to add this back in
 
         ''' If you Enable this, It must pass the U Sync check! '''
-        self.UIarray[self.linInd]+=signAccum*deltPaint
+        self.UIarray[self.linInd]+=signAccum*self.inFact*deltPaint
         self.labArr[self.linInd] = self.labVal * newLab   
         self.accumInProg=0                                              # done accumulating
         self.uiImg.Modified()
@@ -678,6 +680,15 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
       EditorLib.EditUtil.EditUtil().setLabel(0)
     else:
       EditorLib.EditUtil.EditUtil().setLabel(self.labVal)
+
+  def toggleInputFactor(self):
+    if self.inFact == 1:
+      self.inFact=10
+      print("Input factor is 10")
+    elif self.inFact==10:
+      self.inFact=1
+      print("Input factor is 1")
+  
 
   def copyslice(self):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images
