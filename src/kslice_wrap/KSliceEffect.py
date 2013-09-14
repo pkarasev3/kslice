@@ -598,6 +598,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
           
       if EditorLib.EditUtil.EditUtil().getLabel() !=0:  #need this only if erasing
           self.labArr[self.linInd]=0
+      else:
+          self.labArr[self.linInd]=1
 
   def updateLabelUserInput(self, caller, event):
     print("updating label user input")
@@ -618,22 +620,22 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
                 deltPaint=self.labArr[self.linInd]                       # find the next stuff that was painted
                 newLab= (self.ij_tmpArr + self.labArr[self.linInd])!=0
             elif signAccum==1:                                           # user is erasing
-                deltPaint=(self.ij_tmpArr - self.labArr[self.linInd])!=0 
-                newLab=self.labArr[self.linInd]  
+                deltPaint=(self.labArr[self.linInd])==0                   #(self.ij_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=(deltPaint==0)*(self.ij_tmpArr!=0)               #self.labArr[self.linInd]  
         elif self.ijkPlane=="JK":
             if signAccum==-1: 
                 deltPaint=self.labArr[self.linInd]
                 newLab=(self.jk_tmpArr + self.labArr[self.linInd])!=0  
             elif signAccum==1:    
-                deltPaint=(self.jk_tmpArr - self.labArr[self.linInd])!=0 
-                newLab=self.labArr[self.linInd] 
+                deltPaint=(self.labArr[self.linInd])==0                   #(self.jk_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=(deltPaint==0)*(self.jk_tmpArr!=0)               #self.labArr[self.linInd] 
         elif self.ijkPlane=="IK":
             if signAccum==-1: 
                 deltPaint=self.labArr[self.linInd]
                 newLab=(self.ik_tmpArr + self.labArr[self.linInd])!=0  
             elif signAccum==1:    
-                deltPaint=(self.ik_tmpArr - self.labArr[self.linInd])!=0 
-                newLab=self.labArr[self.linInd] 
+                deltPaint=(self.labArr[self.linInd])==0                 #(self.ik_tmpArr - self.labArr[self.linInd])!=0 
+                newLab=(deltPaint==0)*(self.ik_tmpArr!=0)             #self.labArr[self.linInd] 
         
         # Argh, overwrites any changes to underlying vtk volume!?
         #if bUseLabelModTrigger: # trying to add this back in
