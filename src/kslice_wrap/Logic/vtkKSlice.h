@@ -49,6 +49,7 @@ public:
   void runUpdate3DLocCV(  bool reInitFromMask);
   void runUpdate3DCV(  bool reInitFromMask);
   void runUpdate2p5D(bool reInitFromMask);
+  void interpolateLabelVolume();
   void PrintEmpty();
   void PrintImage();
   void printSpacing();

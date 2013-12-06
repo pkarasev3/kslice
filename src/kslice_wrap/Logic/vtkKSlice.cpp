@@ -87,6 +87,11 @@ void vtkKSlice::PasteSlice(int toSlice){
     }
 }
 
+void vtkKSlice::interpolateLabelVolume(){
+    vrcl::interpSlices(LabelVol, Orientation);
+}
+
+
 void vtkKSlice::Initialize(){  // Called on "start bot" button
     this->mdims=ImageVol->GetDimensions();
 

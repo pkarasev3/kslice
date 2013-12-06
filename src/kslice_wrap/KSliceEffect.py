@@ -406,10 +406,13 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     cp = qt.QKeySequence(qt.Qt.Key_C) # copy
     ps = qt.QKeySequence(qt.Qt.Key_V) # paste
     wf = qt.QKeySequence(qt.Qt.Key_B) # flip weight factor between soft, ~hard user constraints
-    
+    si = qt.QKeySequence(qt.Qt.Key_I) # interpolate volume
+
+
     print  " keys for 2d, CV 3D, 3d, 2.5d, are      Q, E, F, T"
     print  " toggle, copy, paste:                   A, C, V "
-    
+    print  " interpolate:                           I"
+                     
     self.qtkeyconnections = []
     self.qtkeydefs = [ [s2,self.runSegment2D],
                        [s3,self.runSegment3DLocCV],
@@ -418,7 +421,8 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
                        [tg,self.toggleDrawErase],
                        [cp,self.copyslice],
                        [ps,self.pasteslice],
-                       [wf,self.toggleInputFactor] ] # like a cell array in matlab
+                       [wf,self.toggleInputFactor],
+                       [si,self.interpVolume] ] # like a cell array in matlab
 
 
 
@@ -688,7 +692,9 @@ class KSliceEffectLogic(LabelEffect.LabelEffectLogic):
     elif self.inFact==10:
       self.inFact=1
       print("Input factor is 1")
-  
+
+  def interpVolume(self):
+	self.ksliceMod.interpolateLabelVolume()
 
   def copyslice(self):
     if self.sliceViewMatchEditor(self.sliceLogic)==False:              #do nothing, exit function if user has played with images

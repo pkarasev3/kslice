@@ -54,7 +54,6 @@ namespace  vrcl
 
   }       */
 
-
   void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, const std::string& orient )
 {
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
@@ -114,6 +113,80 @@ namespace  vrcl
          << idxTo << " changed # pixels: " << num_changed << endl;
 }
 
+
+ void interpSlices(vtkImageData *labelContainer, const std::string& orient)
+ {
+      short *ptrLabel = static_cast<short*>(labelContainer->GetScalarPointer());
+      int mdims[3];
+      labelContainer->GetDimensions( mdims );
+
+      //std::string orient="IJ";
+      int dim0=0; int dim1=0; int dim2=0;
+      Orient sliceView = SLICE_IJ;
+      if( orient == "IJ" ) {
+        dim0 = mdims[0];
+        dim1 = mdims[1];
+        sliceView = SLICE_IJ; dim2=mdims[2];
+      } else if( orient == "JK" ) {
+        dim0 = mdims[1];
+        dim1 = mdims[2]; dim2=mdims[0];
+        sliceView = SLICE_JK;
+      } else if( orient == "IK" ) {
+        dim0 = mdims[0];
+        dim1 = mdims[2]; dim2=mdims[1];
+        sliceView = SLICE_IK;
+      }
+
+      long elemNumTo;
+      int idxFrom;
+      idxFrom=0; //initialize zero slice as if it has input to be propagated
+      for (int idxTo=0; idxTo<dim2; idxTo++){
+          bool copyToSlice=1; //prepare to copy unless find a nonzero entry on this slice
+          for (int j=0; j<dim1; j++)  {
+            for (int i=0; i<dim0; i++) {
+              switch(sliceView)
+              {
+                case SLICE_IJ:
+                  elemNumTo   = idxTo   *dim1*dim0 +j*dim0+i;
+                  if(ptrLabel[elemNumTo]!=0){
+                    copyToSlice=0;//keep this slice
+                    idxFrom=idxTo; //this is closest slice with info in it
+                    break;//look no further
+                  }
+                  break;
+                case SLICE_JK:
+                  elemNumTo   = j*dim0*dim2 + i*dim2+idxTo;
+                  if(ptrLabel[elemNumTo]!=0){
+                    copyToSlice=0;//keep this slice
+                    idxFrom=idxTo; //this is closest slice with info in it
+                    break;//look no further
+                  }
+                  break;
+                case SLICE_IK:
+                  elemNumTo   = j*dim0*dim2 + idxTo*dim0+i;
+                  if(ptrLabel[elemNumTo]!=0){
+                    copyToSlice=0;//keep this slice
+                    idxFrom=idxTo; //this is closest slice with info in it
+                    break;//look no further
+                  }
+                  break;
+                default:
+                  //assert(0);
+                  break;
+              }
+            }
+            if(copyToSlice==0){
+              break;//look no further
+            }
+
+          }
+          if(copyToSlice==1){
+              copySliceFromTo( labelContainer, idxFrom, idxTo, "IJ" );
+              //std::cout<<"Copy slice "<<idxFrom<<" to slice "<<idxTo<<std::endl;
+          }
+      }
+
+  }
 
 SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
                                                int erode_sz, int dilate_sz )
