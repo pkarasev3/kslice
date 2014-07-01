@@ -91,7 +91,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
   // set default values if they weren't passed as command line args
   rad=5;
   lambda=0;
-  paintBrushRad       = 7; // size of brush (radius)
+  paintBrushRad       = 2; // size of brush (radius)
   paintBrushThreshold = 0.05; // only draw if within X times image range of click point
   modelOpacity3D      = 0.5;
   labelOpacity2D      = 0.7;
@@ -112,7 +112,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
 
   // Using these is deprecated. Do they even work? Move to boost program options parser if they are desired.
   ops >> Option('X', "labelInterpolate",    labelInterpolate);
-  ops >> Option('p', "paintBrushRad",       paintBrushRad);
+  //ops >> Option('p', "paintBrushRad",       paintBrushRad);
   ops >> Option('c', "writeCompressed",     writeCompressed);
   ops >> Option('M', "drawLabelMaxVal",     drawLabelMaxVal);
 
@@ -136,6 +136,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
        //currently not used
       // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
+      ("paintBrushRad,p",po::value<int>(&paintBrushRad)->default_value(10),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
       ("ContRad,r",po::value<int>(&rad)->default_value(5),"radius used for active contour, default 5 pixels")
       ("Lambda,l",po::value<float>(&lambda)->default_value(0.5),"lambda, penalty for curvature of contour, default 0.5")

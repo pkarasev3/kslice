@@ -146,6 +146,8 @@ public slots:
 
   void SetCircleCursorSize(unsigned int size){
       this->m_Circle->SetRadius(size);
+      this->m_Circle->Update();
+      //this->m_CircleActor->Modified();
   }
 
   void SetCircleCursorOpacity(float opacity)
