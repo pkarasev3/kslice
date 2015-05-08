@@ -49,7 +49,7 @@ private:
 
 int main( int argc, char* argv [] )
 {
-  
+
   Mat img = imread(argv[1]);
   Mat img2 = img2.clone();
   imwrite("test_savepng.png",img2);

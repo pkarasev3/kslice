@@ -18,6 +18,8 @@ endif(NOT ITK_DIR)
 
 
 find_package(OpenCV  REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
                    you also want to have had libgtk2.0-dev *Before* building opencv!" )
 
