@@ -1,32 +1,3 @@
-23 Dec 2011
-
-KSlice3D Beta-Ish
-
----------------------------------------
-
-18 Oct 2011  
-video demo: http://www.youtube.com/watch?v=gW675lEOByc
-Known Bugs:
--3D view is disabled and pressing "update 3D" crashes. Why: it is really slow with high-res volumes.
-Needs interpolation/downsampling. 
-
--when adding a new labelmap, it doesn't update the view until you scroll slices. so, just
-slide the slider or hit left/right keys once, then the new labelmap will be visible. 
-
--only .mha files supported now. should be trivial to support other formats, patches are welcome.
-
--"user input" is not saved along with the label map generated. if you think it should be,
-despite the file-size overhead, patches are welcome. 
-
--the default "active contour energy" works well for MRI but less so for bone-CT because of
-the way bone surfaces tend to have (possibly much) higher intensity than the interior. 
-better CT segmentation needs two things: a) make the "smart brush" have a settable window
-while drawing, b) make the contour energy settable at startup; e.g. edge-based. 
-
--the mha volume files must be (signed or unsigned) short! So, no floats! 
-
-
-
 =======================
 
 Dependencies:   QT 4.7.x, VTK 5.6.1+, OpenCV 2.2+, Optional: ITK, Boost 
