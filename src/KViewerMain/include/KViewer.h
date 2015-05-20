@@ -34,7 +34,7 @@
 #include  "KWidget_3D_right.h"
 #include "vtkRegularPolygonSource.h"
 #include "vtkProperty.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 class vtkImageThreshold;
 class vtkRenderer;
@@ -43,7 +43,7 @@ class vtkObject;
 class vtkCommand;
 class KvtkImageInteractionCallback;
 
-// using cv::Ptr; // Argh, remove this and use boost::shared_boost::shared_ptr instead
+// using cv::Ptr; // Argh, remove this and use boost::shared_std::shared_ptr instead
 
 class KViewer : public QMainWindow , public Ui::GUI
 {
@@ -155,7 +155,7 @@ public slots:
       this->m_CircleActor->GetProperty()->SetOpacity(opacity);
   }
 
-  boost::shared_ptr<KWidget_3D_right> Get3DWidget()
+  std::shared_ptr<KWidget_3D_right> Get3DWidget()
   {
       return kwidget_3d_right;
   }
@@ -166,12 +166,12 @@ protected:
   vtkSmartPointer<vtkEventQtSlotConnect>  Connections;
   vtkSmartPointer<KvtkImageInteractionCallback> image_callback;
   // Stores some input and state parameters that don't fit neatly elsewhere.
-  boost::shared_ptr<KViewerOptions>  kv_opts;
-  boost::shared_ptr<KDataWarehouse>  kv_data;
+  std::shared_ptr<KViewerOptions>  kv_opts;
+  std::shared_ptr<KDataWarehouse>  kv_data;
 
   // top-level state containers and interaction handlers
-  boost::shared_ptr<KWidget_2D_left>   kwidget_2d_left;
-  boost::shared_ptr<KWidget_3D_right>  kwidget_3d_right;
+  std::shared_ptr<KWidget_2D_left>   kwidget_2d_left;
+  std::shared_ptr<KWidget_3D_right>  kwidget_3d_right;
 
 
   clock_t t1, t2;

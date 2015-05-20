@@ -15,7 +15,7 @@
 #include "KVolumeRenderView.h"
 #include "opencv2/core/core.hpp"
 #include "vtkImagePlaneWidget.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 //using cv::Ptr;
 class QVTKWidget;
@@ -54,14 +54,14 @@ public:
   vtkSmartPointer<vtkRenderWindow>         renderWindowRight;
 
   // options and parameter settings
-  boost::shared_ptr<KViewerOptions>                  kv_opts;
+  std::shared_ptr<KViewerOptions>                  kv_opts;
 
   // handles to data objects and file IO
-  boost::shared_ptr<KDataWarehouse>                  kv_data;
+  std::shared_ptr<KDataWarehouse>                  kv_data;
 
   void AddFocusPoint( int x, int y, int z );
 
-  boost::shared_ptr<KVolumeRenderView>               volRenView;
+  std::shared_ptr<KVolumeRenderView>               volRenView;
 
   // written to during mouse callbacks,
   //     can be grabbed from QT side and put into QString.   (???)
@@ -80,9 +80,9 @@ public:
 
   /* Initialization */
 
-  static void Initialize( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,
-                          boost::shared_ptr<KViewerOptions> kv_opts,
-                          boost::shared_ptr<KDataWarehouse> kv_data );
+  static void Initialize( std::shared_ptr<KWidget_3D_right> kwidget_3d_right,
+                          std::shared_ptr<KViewerOptions> kv_opts,
+                          std::shared_ptr<KDataWarehouse> kv_data );
 
   /* Debug/Help */
 
@@ -119,7 +119,7 @@ public:
   }
 
 
-  static void AddNewLabel(boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
+  static void AddNewLabel(std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
 
   vtkImagePlaneWidget* GetImagePlane(){
       return m_PlaneWidgetZ;

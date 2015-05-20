@@ -2,7 +2,10 @@
 #include <string>
 #include <list>
 
+
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -24,7 +27,7 @@ int main( int argc, char* argv[] )
 
   // Create and Initialize Segmentor.
   KoupledKurvolver::Options  opts(argc,argv);
-  boost::shared_ptr<KoupledKurvolver>  coupled_levelsets( new KoupledKurvolver(opts) );
+  std::shared_ptr<KoupledKurvolver>  coupled_levelsets( new KoupledKurvolver(opts) );
   coupled_levelsets->Print();
 
   // Run it.

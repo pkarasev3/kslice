@@ -8,7 +8,7 @@
 //For testing
 #include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 class vtkImageData;
@@ -229,7 +229,7 @@ class KSegmentorBase
         std::string m_EnergyName;
 
         /** struct containing formerly global low-level crap in sfm_local library */
-        boost::shared_ptr<SFM_vars>  m_SFM_vars;
+        std::shared_ptr<SFM_vars>  m_SFM_vars;
 
 public:
         unsigned short *ptrCurrImage; //ptr to current image slice

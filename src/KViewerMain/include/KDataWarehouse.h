@@ -11,7 +11,7 @@
 #include <map>
 #include <set>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 //#include "KSegmentorBase.h"
 #include "KViewerOptions.h"
 
@@ -33,7 +33,7 @@ private:
   }
 
 public:
-  KDataWarehouse( boost::shared_ptr<KViewerOptions> kv_opts_in ) ;
+  KDataWarehouse( std::shared_ptr<KViewerOptions> kv_opts_in ) ;
 
   // smart pointers know to kill themselves
   ~KDataWarehouse( ) { }
@@ -47,7 +47,7 @@ public:
   // modified label array
   vtkSmartPointer<vtkImageData>       labelDataArray_new;
 
-  boost::shared_ptr<KViewerOptions> kv_opts;
+  std::shared_ptr<KViewerOptions> kv_opts;
 
   std::vector<double> intensityModes;
 

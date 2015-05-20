@@ -17,4 +17,7 @@ target_link_libraries( test5_MeshCurvolverDistanceFuncs    MeshContourEvolver ${
 target_link_libraries( test6_MeshCurvolverInitLevelset     MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
 target_link_libraries( test7_MeshCurvolverEvolveLevelset     MeshContourEvolver ${OUR_VTK_REQUIRED_LIBS} )
 
-add_executable( valgrind_demo valgrind_demo.cpp )
+if(EXISTS valgrind_demo.cpp)
+    add_executable( valgrind_demo valgrind_demo.cpp )
+endif()
+

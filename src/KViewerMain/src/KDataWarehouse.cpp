@@ -6,7 +6,7 @@
 using namespace vrcl;
 //using cv::Ptr;
 
-KDataWarehouse::KDataWarehouse( boost::shared_ptr<KViewerOptions> kv_opts_in ) {
+KDataWarehouse::KDataWarehouse( std::shared_ptr<KViewerOptions> kv_opts_in ) {
   kv_opts        = kv_opts_in;
 }
 

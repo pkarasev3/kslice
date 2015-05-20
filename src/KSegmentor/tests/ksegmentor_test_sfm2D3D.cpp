@@ -2,7 +2,10 @@
 #include <string>
 #include <list>
 
-#include <unistd.h>
+#if !defined(_WIN32)
+	#include <unistd.h>
+#endif
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>

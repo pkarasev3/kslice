@@ -47,7 +47,7 @@ KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *l
     seg3DPointer->initializeUserInputImageWithContour();
   }
   assert( 0 < seg3DPointer->GetUmax() );
-  seg3DPointer->m_SFM_vars = boost::shared_ptr<SFM_vars>(new SFM_vars);
+  seg3DPointer->m_SFM_vars = std::shared_ptr<SFM_vars>(new SFM_vars);
   seg3DPointer->initializeData();
   seg3DPointer->CreateLLs(seg3DPointer->LL3D);
 
@@ -422,7 +422,7 @@ void KSegmentor3D::Update3D()
          // Argh, fine use the "bug fix/workaround", but nice to make
          // value_PK work to enable (1) accurate volume computation and  (2) better mesh model generation
          //       i.e. keep a range of values for phi instead of truncating like this
-    changeInLabel += fabs( (outputVal - ptrCurrLabel[idx]) > 1e-3 );
+    changeInLabel += fabs( (double) ( (outputVal - ptrCurrLabel[idx]) > 1e-3 ) );  // TODO: Isn't this a math typo ??
     ptrCurrLabel[idx] =outputVal;
     mask[idx]         =(double) ( 0 < outputVal ); // d'oh, *update the mask!*
   }

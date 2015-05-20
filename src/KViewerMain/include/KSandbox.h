@@ -26,10 +26,10 @@ namespace vrcl {
 
   void multiplyImageByLabels( vtkImageData* imgData, vtkImageData* lblData );
 
-  void setup_file_reader( boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_ptr<KDataWarehouse> kv_data );
+  void setup_file_reader( std::shared_ptr<KViewerOptions> kv_opts, std::shared_ptr<KDataWarehouse> kv_data );
 
-  vtkSmartPointer<vtkImageData> run_KViewer_Gao3D_interface( boost::shared_ptr<KViewerOptions> kv_opts,
-                                                             boost::shared_ptr<KDataWarehouse> kv_data );
+  vtkSmartPointer<vtkImageData> run_KViewer_Gao3D_interface( std::shared_ptr<KViewerOptions> kv_opts,
+                                                             std::shared_ptr<KDataWarehouse> kv_data );
 
   void compute_intensity_modes( vtkImageData* image, std::vector<double>& intensityModes );
 

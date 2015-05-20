@@ -216,7 +216,7 @@ SP(vtkLookupTable)  create_default_labelLUT( double maxVal, const std::vector<do
       return labelLUT;
 }
 
-void setup_file_reader(boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_ptr<KDataWarehouse> kv_data) {
+void setup_file_reader(std::shared_ptr<KViewerOptions> kv_opts, std::shared_ptr<KDataWarehouse> kv_data) {
 
   //create two readers one for the image and one for the labels
   SP(vtkMetaImageReader) labelFileReader = SP(vtkMetaImageReader)::New();

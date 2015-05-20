@@ -10,7 +10,7 @@
 #include "vtkLookupTable.h"
 #include "KSegmentorBase.h"
 #include "KSegmentor3D.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 struct KViewerOptions;
 class  KWidget_2D_left;
@@ -28,7 +28,7 @@ public:
     vtkSmartPointer<vtkImageMapToColors>  colorMap;
     vtkSmartPointer<vtkImageData>         labelDataArray;
     vtkSmartPointer<vtkImageShiftScale>   label2D_shifter_scaler;
-    boost::shared_ptr<KSegmentorBase>     ksegmentor;
+    std::shared_ptr<KSegmentorBase>     ksegmentor;
 
 
     /** raw pointers: stuff someone else owns */

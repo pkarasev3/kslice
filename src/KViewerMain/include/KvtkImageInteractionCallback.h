@@ -2,7 +2,7 @@
 #define KvtkImageInteractionCallback_H
 
 #endif // KvtkImageInteractionCallback_H
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "vtkCommand.h"
 #include "vtkRenderWindow.h"
 #include "KViewerOptions.h"
@@ -31,7 +31,7 @@ public:
   void SetRenderWindow(vtkRenderWindow* Window)  {
     this->Window = Window;
   }
-  void SetOptions(boost::shared_ptr<KViewerOptions> kv_opts)  {
+  void SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
     this->kv_opts = kv_opts;
   }
 
@@ -62,6 +62,6 @@ private:
   vtkRenderWindow*          Window;        // I don't own it, someone else cleans up
   vtkLookupTable*           satLUT_shared; // I don't own it, someone else cleans up
   KViewer*                  masterWindow;  // reverse handle on my source
-  boost::shared_ptr<KViewerOptions>   kv_opts;       // not sure who owns it, be paranoid
+  std::shared_ptr<KViewerOptions>   kv_opts;       // not sure who owns it, be paranoid
 
 };

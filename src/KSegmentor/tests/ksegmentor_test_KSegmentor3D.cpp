@@ -2,7 +2,9 @@
 #include <string>
 #include <list>
 
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -110,7 +112,7 @@ int main( int argc, char* argv[] )
 
   double Ebest = 1e99;
   double Efirst;
-  boost::shared_ptr<KSegmentorBase>  kseg;
+  std::shared_ptr<KSegmentorBase>  kseg;
   int result = -1;
 
   lblReader->SetFileName(opts.labelFilenames[0].c_str());
@@ -122,7 +124,7 @@ int main( int argc, char* argv[] )
   label = lblReader->GetOutput();
 
   KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(image,label,true);
-  kseg = boost::shared_ptr<KSegmentorBase>(raw_ptr);
+  kseg = std::shared_ptr<KSegmentorBase>(raw_ptr);
   kseg->setNumIterations( opts.segmentor_iters );
   kseg->SetEnergyChanVese( );
 

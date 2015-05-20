@@ -46,7 +46,7 @@ namespace {
 
 
 
-void SetupSubVolumeExtractor( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
+void SetupSubVolumeExtractor( std::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
     int size=0;
     kwidget_3d_right->multiLabelMaps3D.push_back(std::pair< vtkLODActor*, vtkExtractVOI* >(vtkLODActor::New(),vtkExtractVOI::New() ));
@@ -56,7 +56,7 @@ void SetupSubVolumeExtractor( boost::shared_ptr<KWidget_3D_right> kwidget_3d_rig
 
 
 
-void SetupLabelActor3D( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
+void SetupLabelActor3D( std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color )
 {
 
     /** TODO: Don't use marching cubes to make surface! Utilize the levelset layers that we have,
@@ -162,7 +162,7 @@ void SaveTimestampedPolyData( vtkPolyData* polydata )
     writer->Write();
 }
 
-void SetupRenderWindow( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
+void SetupRenderWindow( std::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
     //////////////////// Render Window Right : 3D Display /////////////////////////////
     //vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
@@ -213,7 +213,7 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
 
 }
 
-void KWidget_3D_right::AddNewLabel(boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
+void KWidget_3D_right::AddNewLabel(std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
     SetupSubVolumeExtractor( kwidget_3d_right );
     SetupLabelActor3D( kwidget_3d_right,color);
 }
@@ -233,9 +233,9 @@ void KWidget_3D_right::UpdateVolumeRenderer( vtkImageData* image, vtkImageData* 
 
 }
 
-void KWidget_3D_right::Initialize( boost::shared_ptr<KWidget_3D_right> kwidget_3d_right,
-                                   boost::shared_ptr<KViewerOptions> kv_opts_input,
-                                   boost::shared_ptr<KDataWarehouse> kv_data_input ) {
+void KWidget_3D_right::Initialize( std::shared_ptr<KWidget_3D_right> kwidget_3d_right,
+                                   std::shared_ptr<KViewerOptions> kv_opts_input,
+                                   std::shared_ptr<KDataWarehouse> kv_data_input ) {
 
 
     bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
@@ -248,7 +248,7 @@ void KWidget_3D_right::Initialize( boost::shared_ptr<KWidget_3D_right> kwidget_3
         // Turn off volume view temporarily for speed
         kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
         kwidget_3d_right->kv_data = kv_data_input;
-        kwidget_3d_right->volRenView = boost::shared_ptr<KVolumeRenderView>( new KVolumeRenderView );
+        kwidget_3d_right->volRenView = std::shared_ptr<KVolumeRenderView>( new KVolumeRenderView );
         if( !kwidget_3d_right->kv_data )
             throw "kv_data does not exist yet!" ;
 

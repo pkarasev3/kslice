@@ -661,7 +661,7 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
 {
     int x,y,z,idx;
     double *F, *kappa;
-    double a,u,v,I;
+	double a = 0; double u = 0; double v = 0; double I = 0;
 
     CheckLevelSetSizes( Lz->length );
     F          = &(FVec[0]);
@@ -681,11 +681,18 @@ double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
         idx = Lz->curr->idx;
         I = img[idx];
 
-        if(Ain[idx] <0){
+        if(Ain[idx] <0)
             en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
-        }
-        if(Ain[idx] >0) u = Sin[idx] /Ain[idx];
-        if(Aout[idx]>0) v = Sout[idx]/Aout[idx];
+
+		if (Ain[idx] < 1e-12 )
+		{}//u = I;
+		else
+			u = Sin[idx] /Ain[idx];
+		if (Aout[idx] < 1e-12)
+		{}//v = I;
+		else
+			v = Sout[idx]/Aout[idx];
+		
         a = (I-u)*(I-u)-(I-v)*(I-v);
         if(fabs(a)> Fmax)   Fmax = fabs(a);
         F[n] = a;

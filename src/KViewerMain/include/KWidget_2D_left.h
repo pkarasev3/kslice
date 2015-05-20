@@ -14,7 +14,7 @@
 #include "KSegmentorBase.h"
 #include "KInteractiveLabelMap.h"
 #include "vtkTransform.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 //using  cv::Ptr;   /* Evil */
 class  QVTKWidget;
@@ -34,7 +34,7 @@ public:
   vtkSmartPointer<vtkImageActor>          labelActor2D;
 
 
-  std::vector< boost::shared_ptr<KInteractiveLabelMap> > multiLabelMaps;
+  std::vector< std::shared_ptr<KInteractiveLabelMap> > multiLabelMaps;
   int activeLabelMapIndex; // which label is being functed
 
   int currentSliceIndex;   // which slice we're viewing now
@@ -68,10 +68,10 @@ public:
   vtkSmartPointer<vtkLookupTable>          color_HSV_LookupTable;
 
   // options and parameter settings
-  boost::shared_ptr<KViewerOptions>                  kv_opts;
+  std::shared_ptr<KViewerOptions>                  kv_opts;
 
   // handles to data objects and file IO
-  boost::shared_ptr<KDataWarehouse>                  kv_data;
+  std::shared_ptr<KDataWarehouse>                  kv_data;
 
   // written to during ^ouse callbacks, QT side can put in a QString.
   std::string mouse_position_string;
@@ -88,7 +88,7 @@ public:
   /** Create the necessary framework for displaying label and image in a render window,
     * connected to a QTVTK widget and interactor
     */
-  void Initialize( boost::shared_ptr<KViewerOptions> kv_opts, boost::shared_ptr<KDataWarehouse> kv_data );
+  void Initialize( std::shared_ptr<KViewerOptions> kv_opts, std::shared_ptr<KDataWarehouse> kv_data );
   void InitializeTransform(char trans=' ',float angle=90);
 
 

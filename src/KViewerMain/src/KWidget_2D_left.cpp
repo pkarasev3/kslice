@@ -264,8 +264,8 @@ KWidget_2D_left::KWidget_2D_left( QVTKWidget* qvtk_handle ) {
 }
 
 
-void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_input,
-                                  boost::shared_ptr<KDataWarehouse> kv_data_input ) {
+void KWidget_2D_left::Initialize( std::shared_ptr<KViewerOptions> kv_opts_input,
+                                  std::shared_ptr<KDataWarehouse> kv_data_input ) {
   // set Logger flags for test/debug
   SETLOG(KWidget_2D_left::VERBOSE,1);
 
@@ -313,7 +313,7 @@ void KWidget_2D_left::Initialize( boost::shared_ptr<KViewerOptions> kv_opts_inpu
     KSegmentorBase* raw_ptr       = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,  kthLabel,!bNoInputLabelFiles);
     raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
     raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
-    multiLabelMaps[k]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
+    multiLabelMaps[k]->ksegmentor = std::shared_ptr<KSegmentorBase>( raw_ptr );
     //multiLabelMaps[k]->ksegmentor->SetUseEdgeBasedEnergy( kv_opts->m_bUseEdgeBased );
     multiLabelMaps[k]->ksegmentor->SetDistanceWeight(kv_opts->distWeight);
     multiLabelMaps[k]->ksegmentor->SetUmax( 3.0 /* whew... */ );
@@ -484,7 +484,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
   if( !bAllLabels )
   {                 // update active label only
     int label_idx = activeLabelMapIndex;
-    boost::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+    std::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
     kseg->SetSaturationRange( satLUT->GetSaturationRange()[0], satLUT->GetSaturationRange()[1]);
     kseg->setCurrIndex( slice_index );
     kseg->setNumIterations( kv_opts->segmentor_iters );
@@ -505,7 +505,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
   {            // update all labels at once
     for( int label_idx = 0; label_idx < (int) multiLabelMaps.size(); label_idx++ )
     { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
-      boost::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
+      std::shared_ptr<KSegmentorBase> kseg          = multiLabelMaps[label_idx]->ksegmentor;
       kseg->setNumIterations( kv_opts->segmentor_iters );
       kseg->setCurrIndex( slice_index );
       if (use2D)
@@ -545,7 +545,7 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 {
   cout << "LoadMultiLabels();" << endl;
   for( size_t k = 0; k < multiLabelMaps.size(); k++ ) {
-    boost::shared_ptr<KInteractiveLabelMap>  klm = multiLabelMaps[k];
+    std::shared_ptr<KInteractiveLabelMap>  klm = multiLabelMaps[k];
     klm.reset();
   }
   multiLabelMaps.clear(); // clean slate
@@ -553,7 +553,7 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
   int nLabels = label_files.size();  assert(nLabels > 0 ); // how many files to load
 
   for( int k = 0; k < nLabels; k++ ) {
-    boost::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
+    std::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
     SP( vtkImageData ) label_from_file;// = SP( vtkImageData )::New();
     SP( vtkMetaImageReader ) reader    = SP( vtkMetaImageReader )::New();
 
@@ -593,7 +593,7 @@ void KWidget_2D_left::LoadMultiLabels( const std::vector<std::string>& label_fil
 void KWidget_2D_left::AddNewLabelMap( )
 {
   bool bIsInitialization = ( 0 == multiLabelMaps.size() );
-  boost::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
+  std::shared_ptr<KInteractiveLabelMap>   labelMap(new KInteractiveLabelMap);
 
   // give the label map handles to kv_opts, image volume, and this widget
   labelMap->RegisterSourceWidget( this,true );
@@ -611,7 +611,7 @@ void KWidget_2D_left::AddNewLabelMap( )
     KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap(), false);
     raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
     raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
-    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>( raw_ptr );
+    this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>( raw_ptr );
     //this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
     this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);

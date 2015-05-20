@@ -56,8 +56,8 @@ using std::string;
 
 KViewer::KViewer( const KViewerOptions& kv_opts_in ) {
 
-  kv_opts           =  boost::shared_ptr<KViewerOptions>( new KViewerOptions( kv_opts_in ) );
-  kv_data           =  boost::shared_ptr<KDataWarehouse>( new KDataWarehouse( kv_opts ) );
+  kv_opts           =  std::shared_ptr<KViewerOptions>( new KViewerOptions( kv_opts_in ) );
+  kv_data           =  std::shared_ptr<KDataWarehouse>( new KDataWarehouse( kv_opts ) );
 
   kv_opts->InitializeTransform();
 
@@ -236,7 +236,7 @@ void KViewer::LoadLabelMap(){
   kwidget_2d_left->kv_data->UpdateLabelDataArray( kwidget_2d_left->GetActiveLabelMap( ));
   cout << "is active ksegmentor Null!? " << kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor << endl;
   KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
-  kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor = boost::shared_ptr<KSegmentorBase>(raw_ptr);
+  kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
 
   /** Argh, this is tough because the 3D-right still has references that haven't been cleared.
           Doesn't crash but leaves a "ghost" label behind. */
@@ -573,7 +573,7 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
 
               if( (distance < 1.0 ) && kv_opts->m_bVerboseSave ) {
                   kwidget_2d_left->uk_recorder.process_click( elemNum );
-                  boost::shared_ptr<KSegmentorBase> ksegm  = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
+                  std::shared_ptr<KSegmentorBase> ksegm  = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
                   ksegm->num_actuated_voxels = kwidget_2d_left->uk_recorder.get_number_actuated_voxels();
               }
 
@@ -671,12 +671,12 @@ void KViewer::setupQVTKandData( )
 
 
   // Setup the 2D Widget: image, label map(s), some user interaction objects
-  kwidget_2d_left = boost::shared_ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
+  kwidget_2d_left = std::shared_ptr<KWidget_2D_left>( new KWidget_2D_left( qVTK1 ) );
   kwidget_2d_left->Initialize( kv_opts, kv_data);
   kwidget_2d_left->PrintHelp( );
 
   // Setup the 3D Widget: volume, label map(s), some user interaction objects
-  kwidget_3d_right = boost::shared_ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
+  kwidget_3d_right = std::shared_ptr<KWidget_3D_right>( new KWidget_3D_right( qVTK2 ) );
   KWidget_3D_right::Initialize( kwidget_3d_right, kv_opts, kv_data );
   kwidget_3d_right->PrintHelp( );
 
