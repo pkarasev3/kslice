@@ -205,7 +205,9 @@ class KSegmentorBase
 
         void InitializeVariables(KSegmentorBase* segPointer,vtkImageData *image,
                                  vtkImageData *label, bool contInit);
-        void InitializeMaskAndImage();
+        
+		void InitializeMaskAndImage();
+
         void UpdateMask(bool bForceUpdateAll = false);
 
         virtual void initializeData()=0;

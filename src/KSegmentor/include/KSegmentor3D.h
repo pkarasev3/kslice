@@ -11,7 +11,7 @@
 #include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
 
-
+struct energy3c;
 class vtkImageData;
 
 class vtkTransform;
@@ -41,12 +41,13 @@ class KSegmentor3D : public KSegmentorBase
 
     private:
 
-        KSegmentor3D(){}
+		KSegmentor3D();
         typedef KSegmentor3D Self;
 
         /** internal 'update from input' function */
         virtual void integrateUserInput();
-
+		bool firstPassInit; // only load image to double *once*
+		std::unique_ptr<energy3c> segEngine;
         virtual void UpdateArraysAfterTransform();
 
 };
