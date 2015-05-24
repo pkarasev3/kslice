@@ -1,6 +1,8 @@
 #include "interactive_kurvolver.h"
 #include "sfm_local_chanvese_mex.h"
 #include <iostream>
+#include <cmath>
+
 using std::endl;
 using std::cout;
 
@@ -187,40 +189,6 @@ void interactive_chanvese_ext(double *img, double *phi, double* U_integral, doub
     }
 }
 
-/*
-void interactive_customspeed(double* speedimg, double *img, double *phi, double* U_integral, double *label, long *dims,
-                             LL *Lz, LL *Ln1, LL *Lp1, LL *Ln2, LL *Lp2, LL *Lin2out, LL *Lout2in,LL* Lchanged,
-                             int iter, double rad, double lambda, int display, double* normvec, double* pointonplane,float distweight)
-
-{
-    double *F;
-    double scale[1]; scale[0] = 0;
-    int countdown;
-
-    //initialize datastructures and statistics
-    en_chanvese_init(img,phi,dims);
-    std::cout<<clock()<<std::endl;
-    for(int i=0;i<iter;i++){
-        //compute force
-        F=en_custom_compute(Lz,speedimg,phi,dims,scale,lambda);
-        // apply controller, modify F in-place
-        apply_control_function_ext( Lz, phi, F, U_integral, img, iter, dims,normvec, pointonplane,distweight );
-        //perform iteration
-        ls_iteration_ext(F,phi,label,dims,Lz,Ln1,Lp1,Ln2,Lp2,Lin2out,Lout2in,Lchanged);
-        //update statistics
-        en_chanvese_update(img, dims, Lin2out, Lout2in);
-
-        //display stuff (maybe)
-        if(display){
-            if ( (i % display)==0) {
-                std::cout<<"This is iteration # "<<i<<std::endl;
-            }
-        }
-    }
-    std::cout<<clock()<<std::endl;
-
-}
-*/
 
 
 void apply_control_function(LL *Lz,double *phi, double* F,
@@ -232,6 +200,7 @@ void apply_control_function(LL *Lz,double *phi, double* F,
   ll_init(Lz);
   n=0;
   double maxU = -1e99;
+  double gamma_ = 1/(1+std::sqrt(iter));
   while(Lz->curr != NULL){          //loop through list
     x = Lz->curr->x;
     y = Lz->curr->y;
@@ -241,15 +210,16 @@ void apply_control_function(LL *Lz,double *phi, double* F,
     double U     = U_integral[idx];
     if( U > maxU ) { maxU = U; }
 
-    //double err   = ( 3.0 * tanh(U / 3.0) - phi[idx] );
-    //double f     = gamma * abs(U) * (F[n] - err);
-    // F[n]         = F[n] - f; // equiv to  F + [Gain] x [H(U) - H(phi)]
 
-    // U = 3[design choice] should always force phi
-    double err   = tanh(U) - tanh(phi[idx]);
-    double f     = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
-    F[n]         = F[n] + f;
-
+    if( 1 ) {
+      double err   = ( 3.0 * tanh(U / 1.5) - phi[idx] );
+      double f     = gamma_ * abs(U) * (F[n] - err);
+       F[n]         = F[n] - f; // equiv to  F + [Gain] x [H(U) - H(phi)]
+    } else {
+      double err   = tanh(U) - tanh(phi[idx]);
+      double f     = pow(U/3.0,2.0) * err * (1+fabs(F[n]));
+      F[n]         = F[n] + f;
+    }
     ll_step(Lz);
     n++;       //next point
   }

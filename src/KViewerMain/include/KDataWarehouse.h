@@ -12,7 +12,7 @@
 #include <set>
 
 #include <memory>
-//#include "KSegmentorBase.h"
+#include <assert.h>
 #include "KViewerOptions.h"
 
 //using cv::Ptr;
