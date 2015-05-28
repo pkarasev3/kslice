@@ -18,10 +18,14 @@ endif(NOT ITK_DIR)
 
 if(DEFINED  Boost_INCLUDE_DIRS)
 	include_directories(${Boost_INCLUDE_DIRS})
+else()
+    message(FATAL_ERROR "false: if(DEFINED  Boost_INCLUDE_DIRS)")
 endif()
 
 if(DEFINED Boost_LIBRARY_DIRS)
 	link_directories(${Boost_LIBRARY_DIRS})
+else()
+    message(FATAL_ERROR "false: if(DEFINED  Boost_LIBRARY_DIRS)")
 endif()
 
 
