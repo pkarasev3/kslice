@@ -224,12 +224,12 @@ void KSegmentor3D::Update2D()
 
   cout << "prevslice=" << prevSlice << ", " << "currslice= " << currSlice << endl;
   if( (prevSlice == this->currSlice) ) {
-    cout <<  "\033[01;32m\033]"
-         << "using cached phi " << "\033[00m\033]" << endl;
+    //    cout <<  "\033[01;32m\033]"
+    //         << "using cached phi " << "\033[00m\033]" << endl;
     std::memcpy( &(phiSlice[0]),&(cache_phi[0]),sizeof(double)*mdims[0]*mdims[1] );
   } else {
-    cout <<  "\033[01;42m\033]"
-         << "first time on slice! " << "\033[00m\033]" << endl;
+    //    cout <<  "\033[01;42m\033]"
+    //         << "first time on slice! " << "\033[00m\033]" << endl;
   }
   prevSlice=currSlice;
 
@@ -256,17 +256,16 @@ void KSegmentor3D::Update2D()
       ptrCurrLabel[element3D]  = value_IK;
       tmp.at<double>(j,i)      = (phi_val<=0.0)*255.0f;
       tmpI.at<double>(j,i)     = (imgSlice[elemNum]);
-      //labelSlice[elemNum]    = (double) value_IK;
-      //if( (value_PK == 0) && !( 0 == value_IK ) ) {
-      if(value_IK != value_PK){
-        //cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
-        //cout << "crap, extraneous loss of levelset! " << endl; assert(0);
-      }
+      labelSlice[elemNum]      = (double) value_IK;
+      if( (value_PK == 0) && !( 0 == value_IK ) ) {
+        if(value_IK != value_PK){
+        cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
+      } }
       elemNum++;
     }
   }
 
-  bool bSavePNG = true;
+  bool bSavePNG = false;
   if( bSavePNG ) {
     std::stringstream ss,ssI;
     ss << "label_slice_" << THREE_DIGITS(currSlice) << "_"
