@@ -30,7 +30,13 @@ void test_OpenMP()
   }
 }
 
-
+KSegmentorBase::KSegmentorBase()
+{
+    iter = 5;
+    lambda = 0.5;
+    rad    = 0.0;
+    useContInit = false;
+}
 
 
 void KSegmentorBase::SetLambda(float lambda){ //set the curvature penalty
@@ -87,7 +93,7 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->U_Integral_image->SetExtent(image->GetExtent());
     segPointer->U_Integral_image->SetScalarTypeToDouble();
     segPointer->U_Integral_image->SetSpacing(image->GetSpacing());
-    segPointer->U_Integral_image->AllocateScalars();
+    segPointer->U_Integral_image->AllocateScalars();    
     segPointer->ptrIntegral_Image = static_cast<double*>(segPointer->U_Integral_image->GetScalarPointer());
 
     segPointer->U_t_image->SetExtent(image->GetExtent());
@@ -95,6 +101,12 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     segPointer->U_t_image->SetSpacing(image->GetSpacing());
     segPointer->U_t_image->AllocateScalars();
     segPointer->ptrU_t_Image = static_cast<double*>(segPointer->U_t_image->GetScalarPointer());
+
+    size_t nElements = segPointer->mdims[2] * segPointer->mdims[1] * segPointer->mdims[0];
+    for( size_t k=0; k < nElements; k++ ) {
+        segPointer->ptrU_t_Image[k] = 0.0;
+        segPointer->ptrIntegral_Image[k] = 0.0;
+    }
 
     segPointer->m_Reslicer = vtkSmartPointer<vtkImageReslice>::New();
 
@@ -105,9 +117,9 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
          << ", # cols is: " << segPointer->mdims[0] << endl;
 
     //Set dimensions
-    segPointer->dimz = (int)segPointer->mdims[2];
-    segPointer->dimy = (int)segPointer->mdims[1];
-    segPointer->dimx = (int)segPointer->mdims[0];
+    segPointer->dimz = segPointer->mdims[2];
+    segPointer->dimy = segPointer->mdims[1];
+    segPointer->dimx = segPointer->mdims[0];
 
     try { // TODO: these are really really redundant; imposed by sfm_local_chanvese (fragile/confusing)
       segPointer->phi        = new double[segPointer->dimx*segPointer->dimy*segPointer->dimz];

@@ -69,6 +69,7 @@ class KSegmentorBase
                 Lin2out=NULL ;
                 Lout2in=NULL ;
             }
+            LLset(){ init(); }
         };
 
         struct SFM_vars;
@@ -82,6 +83,7 @@ class KSegmentorBase
         }
     public:
         virtual ~KSegmentorBase()=0;
+        KSegmentorBase();
         void SetLambda(float lambda);
         void SetContRad(int rad);
         void setNumIterations(int itersToRun);
@@ -137,16 +139,6 @@ class KSegmentorBase
             for (int i=0;i<3;i++)
                 spacing[i]=m_Spacing_mm[i];
         }
-
-//       void SetUseEdgeBasedEnergy( bool useEdgeBased )
-//        {
-//            m_bUseEdgeBased = useEdgeBased;
-//        }
-
-//        bool GetUseEdgeBasedEnergy( )
-//        {
-//            return m_bUseEdgeBased;
-//        }
 
         void SetSaturationRange( double dmin, double dmax ) {
             if( dmax > dmin ) {
