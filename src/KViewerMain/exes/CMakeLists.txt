@@ -1,9 +1,15 @@
+remove_definitions( -DKVIEWER_LIB )
+
 set(KV_LIBS KViewer QVTK  ${QT_LIBRARIES}  vtkRendering  vtkGraphics  vtkIO  vtkCommon  ${OpenCV_LIBS} ${Boost_LIBRARIES} )
 
 
 add_executable( KViewer_desktop KViewer_desktop.cpp)
 target_link_libraries( KViewer_desktop ${KV_LIBS})
 
+add_executable( test_KViewerParamWidget  test_KViewerParamWidget.cpp)
+target_link_libraries(test_KViewerParamWidget  ${KV_LIBS})
+
+add_test( test_KViewerParamWidget_1  test_KViewerParamWidget  -r )
 
 add_executable( imageglob2mha imageglob2mha.cpp)
 target_link_libraries( imageglob2mha ${KV_LIBS} )

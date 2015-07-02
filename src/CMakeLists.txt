@@ -32,8 +32,9 @@ message(STATUS "  OpenCV_LIBS = ${OpenCV_LIBS} ;
 set(CMAKE_VERBOSE_MAKEFILE CACHE bool true FORCE)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH  "Single Directory for all Executables")
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE PATH  "Single Directory for all Libraries")
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH  "Single Directory for all Executables" FORCE)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE PATH  "Single Directory for all Libraries" FORCE)
+set(ARCHIVE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE PATH  "Single Directory for all static archives" FORCE)
 
 # semi-hack: copy the scripts dir so the relative structure still jives, and temp files can be wiped easily
 set(SCRIPT_PATH ${CMAKE_SOURCE_DIR}/../scripts CACHE PATH  "scripts folder")

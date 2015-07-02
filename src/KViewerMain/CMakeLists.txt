@@ -78,7 +78,7 @@ set(KVIEWER_HDRS
 
 
 message(STATUS "kviewer sources:  ${KVIEWER_SRCS}")
-add_library( KViewer  ${KVIEWER_SRCS} ${KVIEWER_HDRS} ${mocSRC} ${mocUI}  )
+add_library( KViewer SHARED ${KVIEWER_SRCS} ${KVIEWER_HDRS} ${mocSRC} ${mocUI}  )
 
 target_link_libraries( KViewer
   QVTK
