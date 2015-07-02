@@ -234,16 +234,11 @@ void KViewer::LoadLabelMap(){
   kv_opts->LoadLabel(path.toStdString()); // records the string names
   kwidget_2d_left->LoadMultiLabels( kv_opts->LabelArrayFilenames ); // does the actual work
   kwidget_2d_left->kv_data->UpdateLabelDataArray( kwidget_2d_left->GetActiveLabelMap( ));
-  cout << "is active ksegmentor Null!? " << kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor << endl;
+
   KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw,kv_data->labelDataArray, true);
   kwidget_2d_left->multiLabelMaps[kwidget_2d_left->activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
 
-  /** Argh, this is tough because the 3D-right still has references that haven't been cleared.
-          Doesn't crash but leaves a "ghost" label behind. */
   cout << "# multiLabelMaps3D present = " << kwidget_3d_right->multiLabelMaps3D.size() << endl;
-
-  //  kwidget_3d_right->multiLabelMaps3D.clear();
-//  this->UpdateModel3D();
 
   string name = "Label.mha";
   saveAsLineEdit->setText( QString( name.c_str() ) );

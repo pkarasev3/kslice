@@ -6,17 +6,14 @@ include_directories(
 
 add_definitions( -DKVIEWER_LIB )
 
-if(WIN32)
-    set(ghetto_moc_cmd  ${QT_MOC_EXECUTABLE}  include/KViewer.h  -o  src/moc_KViewer.cpp)    
-else()
-    set(ghetto_moc_cmd  "sh  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_moc.sh")
-endif(WIN32)
+
+set(ghetto_moc_cmd  ${QT_MOC_EXECUTABLE}  include/KViewer.h  -o  src/moc_KViewer.cpp)
 
 set(ghetto_moc_workdir  ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_command(
-    OUTPUT   ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_KViewer.cpp                          
-    COMMAND  ${ghetto_moc_cmd} #${QT_MOC_EXECUTABLE}  include/KViewer.h  -o  src/moc_KViewer.cpp
+    OUTPUT   ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_KViewer.cpp
+    COMMAND  ${ghetto_moc_cmd}
     DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/include/KViewer.h
              ${CMAKE_CURRENT_SOURCE_DIR}/include/GUISetup.h
              ${CMAKE_CURRENT_SOURCE_DIR}/include/KViewerOptions.h
