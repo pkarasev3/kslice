@@ -29,6 +29,7 @@
 
 #include  <QMainWindow>
 #include  <vtkSmartPointer.h>
+#include  "kv_export.h"
 #include  "GUISetup.h"
 #include  "KWidget_2D_left.h"
 #include  "KWidget_3D_right.h"
@@ -145,14 +146,16 @@ public slots:
   void MoveSlider( int shiftNumberOfSlices = 0 );
 
   void SetCircleCursorSize(unsigned int size){
+      if (!m_Circle.GetPointer())
+          return;
       this->m_Circle->SetRadius(size);
-      this->m_Circle->Update();
-      //this->m_CircleActor->Modified();
+      this->m_Circle->Update();      
   }
 
   void SetCircleCursorOpacity(float opacity)
   {
       this->m_CircleActor->GetProperty()->SetOpacity(opacity);
+      this->m_CircleActor->Modified();
   }
 
   std::shared_ptr<KWidget_3D_right> Get3DWidget()
@@ -200,37 +203,3 @@ protected:
 
 #endif // KVIEWER_GUI_h
 
-
-// Getting it to build in Linux or Mac: you must follow guidelines noted here:
-// http://gcc.gnu.org/faq.html#vtables
-// Namely, since you inherit from QMainWindow and Ui::GUI, you have to provide
-// bodies for all pure virtual functions declared in those base classes.
-// Microsoft C++ compiler circumvents this in a weird way, but it is the kosher c++ spec.
-// so, if there's a method "virtual void foo()" in QMainWindow, you could write
-// void KViewer::foo() { /* null */ }
-// to handle it.
-
-
-#if 0   // gulag
-
-  /** \brief Create thresholding operator during startup, connect it to UI interactors
-    */
-  void CreateThresholdFilter( );
-
-  /**  \brief Callback for update min threshold slider
-    */
-  void minThreshSliderChanged(int lowerLimit);
-
-  /**  \brief Callback for update max threshold slider
-    */
-  void maxThreshSliderChanged(int upperLimit);
-
-  /////////////////////////// Move to KSegmentor, or a new KWidget?
-      vtkSmartPointer<vtkImageActor>          threshActor2D;
-      vtkSmartPointer<vtkImageThreshold>      thresholdFilt;
-      vtkSmartPointer<vtkImageReslice>        threshReslicer;
- ////////////////////////
-
-
-
-#endif

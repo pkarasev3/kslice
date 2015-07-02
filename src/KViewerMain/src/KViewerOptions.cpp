@@ -31,6 +31,10 @@ std::string ExtractDirectory( const std::string& path )  {
   return path.substr( 0, path.find_last_of( '/' ) +1 ); // note: no dice on windows, needs backslash
 }
 
+KViewerOptions::KViewerOptions(){ }
+
+KViewerOptions::~KViewerOptions(){ }
+
 void KViewerOptions::LoadImage( )
 {
   std::string data_path = "../data/";

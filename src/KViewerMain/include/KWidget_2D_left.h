@@ -16,12 +16,10 @@
 #include "vtkTransform.h"
 #include <memory>
 
-//using  cv::Ptr;   /* Evil */
 class  QVTKWidget;
 class  vtkLookupTable;
 
-
-class KWidget_2D_left
+class KVIEWER_EXPORT KWidget_2D_left
 {
 
 public:

@@ -1,15 +1,19 @@
 #ifndef KVIEWEROPTIONS_H_
 #define KVIEWEROPTIONS_H_
 
+#include "kv_export.h"
 #include <string>
 #include <vector>
 #include "vtkSmartPointer.h"
 #include "vtkMetaImageReader.h"
 #include "vtkTransform.h"
 
-struct KViewerOptions
+struct KVIEWER_EXPORT KViewerOptions
 {
 public:
+    KViewerOptions();
+   ~KViewerOptions();
+
   static double getDefaultDrawLabelMaxVal() {
     return 1000.0;
   }

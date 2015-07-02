@@ -28,7 +28,7 @@ public:
     vtkSmartPointer<vtkImageMapToColors>  colorMap;
     vtkSmartPointer<vtkImageData>         labelDataArray;
     vtkSmartPointer<vtkImageShiftScale>   label2D_shifter_scaler;
-    std::shared_ptr<KSegmentorBase>     ksegmentor;
+    std::shared_ptr<KSegmentorBase>       ksegmentor;
 
 
     /** raw pointers: stuff someone else owns */
@@ -46,7 +46,8 @@ public:
     /** true or false interpolate myself while drawing (speed vs visual niceness) */
     bool  labelInterpolate;
 
-
+    void  setLowerBoundImageValueForInterior( double lowerbound);
+    
 
     /** ghetto but allows flexibility: reverse handle on the widget */
     void RegisterSourceWidget( KWidget_2D_left* kwidget2D, bool regNewImage );

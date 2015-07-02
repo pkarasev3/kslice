@@ -1,8 +1,10 @@
 #include "KvtkImageInteractionCallback.h"
+#include "ParameterWidget.h"
 #include "vtkRenderWindowInteractor.h"
 #include "Logger.h"
 #include "vtkLookupTable.h"
 #include "KViewer.h"
+#include "KViewerOptions.h"
 
 using cv::Ptr;
 using namespace vrcl;
@@ -28,6 +30,48 @@ const char keyUpLabelOpacity    ='p';
 const char keyDownLabelOpacity  ='o';
 
 
+}
+
+KvtkImageInteractionCallback* KvtkImageInteractionCallback::New()  
+{
+    return new KvtkImageInteractionCallback;
+}
+
+KvtkImageInteractionCallback::~KvtkImageInteractionCallback( )
+{
+    m_paramWidget.reset();
+}
+
+
+KvtkImageInteractionCallback::KvtkImageInteractionCallback()  
+{
+    this->Window = NULL;
+    this->m_paramWidget = std::make_unique<KViewerParameterWidget>();
+
+    auto cb = std::bind(&KvtkImageInteractionCallback::notifyAllFromOptions,
+                         this,std::placeholders::_1);
+    m_paramWidget->setOptionsUpdateCallback(cb);
+}
+
+void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
+    this->kv_opts = kv_opts;
+    this->m_paramWidget->populateFromOptions( this->kv_opts );
+}
+
+void KvtkImageInteractionCallback::notifyChangeBrushSize(size_t k)
+{
+    masterWindow->SetCircleCursorSize(k);    
+}
+
+void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewerOptions> opts )
+{
+    kv_opts = opts;
+    notifyChangeBrushSize(kv_opts->paintBrushRad);
+    masterWindow->UpdateMultiLabelDisplay();
+
+    masterWindow->update();
+
+    std::cout << " did notify in: " << __FUNCTION__ << "\n";
 }
 
 void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, void *)
@@ -56,11 +100,11 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     switch ( keyPressed ) {
     case keyMinusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad-1;
-      masterWindow->SetCircleCursorSize(kv_opts->paintBrushRad);
+      this->notifyChangeBrushSize(kv_opts->paintBrushRad);
       break;
     case keyPlusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad+1;
-      masterWindow->SetCircleCursorSize(kv_opts->paintBrushRad);
+      this->notifyChangeBrushSize(kv_opts->paintBrushRad);      
       break;
     case keyUpLabelOpacity:
       kv_opts->labelOpacity2D *= 1.05;
@@ -142,6 +186,8 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
 
   // trigger the main window to update text displaying paintbrush info
   this->masterWindow->updatePaintBrushStatus( NULL );
+
+  m_paramWidget->populateFromOptions(kv_opts);
 
 
 }

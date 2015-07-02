@@ -9,12 +9,6 @@ if(NOT VTK_DIR)
 endif(NOT VTK_DIR)
 include(${VTK_USE_FILE})
 
-find_package(ITK)
-if(NOT ITK_DIR)
-  message(STATUS "If you need ITK, Please set ITK_DIR to build stuff that needs ITK.")
-else(NOT ITK_DIR)
-  # include(${ITK_USE_FILE}) # only gao3d should need this ...
-endif(NOT ITK_DIR)
 
 if(DEFINED  Boost_INCLUDE_DIRS)
 	include_directories(${Boost_INCLUDE_DIRS})
@@ -56,11 +50,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 message(STATUS "    force clean this round? (set to 0 or 1) " )
 set(FORCE_CLEAN_SH  CACHE bool true)
 if(${FORCE_CLEAN_SH})
-message(STATUS "   running force_clean.sh once and setting flag back to false! " )
-execute_process(COMMAND "sh"  ${SCRIPT_PATH}/force_clean.sh  "${EXECUTABLE_OUTPUT_PATH}"  "${LIBRARY_OUTPUT_PATH}" )
-set(FORCE_CLEAN_SH  CACHE bool true)
+    message(STATUS "   running force_clean.sh once and setting flag back to false! " )
+    execute_process(COMMAND "sh"  ${SCRIPT_PATH}/force_clean.sh  "${EXECUTABLE_OUTPUT_PATH}"  "${LIBRARY_OUTPUT_PATH}" )
+    set(FORCE_CLEAN_SH  CACHE bool true)
 else(${FORCE_CLEAN_SH})
-message(STATUS " not running force_clean! " )
+    message(STATUS " not running force_clean! " )
 endif(${FORCE_CLEAN_SH})
 
 
@@ -71,11 +65,8 @@ set(QT_UIC_EXECUTABLE ${VTK_QT_UIC_EXECUTABLE} CACHE FILEPATH "")
 set(DESIRED_QT_VERSION 4 CACHE FILEPATH "")
 
 find_package(Qt)
-if(QT_USE_FILE)
-  include(${QT_USE_FILE})
-else(QT_USE_FILE)
-  set(QT_LIBRARIES   ${QT_QT_LIBRARY})
-endif(QT_USE_FILE)
+include(${QT_USE_FILE})
+
 
 if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1" CACHE STRING "extra compiler flags for debug" FORCE )
@@ -117,6 +108,16 @@ include_directories(
         ${KSlice_include}
 )
 
+#
+# moc warning settings
+#
+if( NOT MOC_WARNING_FLG_ON )
+    if( NOT DEFINED MOC_WARNING_FLG )
+        set( MOC_WARNING_FLG  -nw  -nn )
+    endif()
+endif( )
+
+
 add_subdirectory(util/getopt)  # DEPRECATED, Use boost::program_options instead, or raw argv[k] when lazy
 add_subdirectory(util/vrcl)
 add_subdirectory(KViewerMain)
@@ -138,13 +139,6 @@ add_subdirectory(MeshCurvolver-2.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-#message(STATUS "    build qtGUI_Demo? (set to 0 or 1) " )
-#if(${BUILD_QTGUI_DEMO_SH})
-#    message(STATUS "   yes, building qtGUI_Demo!  " )
-#    add_subdirectory(SampleApplications/qtGUI_Demo)
-#else(${BUILD_QTGUI_DEMO_SH})
-#    message(STATUS "   no qtGUI_Demo for you " )
-#endif(${BUILD_QTGUI_DEMO_SH})
 
 message(STATUS "    Compiler:                  ${CMAKE_COMPILER} ")
 message(STATUS "    C++ flags (Release):       ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
@@ -152,6 +146,3 @@ message(STATUS "    C++ flags (Debug):         ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FL
 message(STATUS "    QT_LIBRARIES:              ${QT_LIBRARIES} " )
 message(STATUS "    qt include dir:            ${QT_include_DIR} "  )
 
-message(STATUS " fyi, bunch of image data is here ----   tsfat.bme.gatech.edu:/u4/public/karasev/data_medical/mha_grantmuller_kslice/mha_all/ " )
-
-#...

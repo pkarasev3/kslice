@@ -149,6 +149,12 @@ class KSegmentorBase
             }
         }
 
+        void SetLowerBoundImageThreshold(double d)
+        {
+            // After segmenting, threshold such that below this image value cannot be in the result.
+            // TODO
+        }
+
         void SetPlaneCenter(double* center)
         {
             this->m_PlaneCenter=center;

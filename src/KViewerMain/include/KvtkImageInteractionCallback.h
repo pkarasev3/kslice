@@ -1,39 +1,34 @@
 #ifndef KvtkImageInteractionCallback_H
 #define KvtkImageInteractionCallback_H
+#endif
 
-#endif // KvtkImageInteractionCallback_H
 #include <memory>
 #include "vtkCommand.h"
 #include "vtkRenderWindow.h"
 #include "KViewerOptions.h"
-//#include "opencv2/core/core.hpp"
 
 // forward declaration
+class KViewerParameterWidget;
 class KViewer;
 class vtkLookupTable;
 
 // The mouse motion callback, to pick the image and recover pixel values
-class KvtkImageInteractionCallback : public vtkCommand
+class KVIEWER_EXPORT KvtkImageInteractionCallback : public vtkCommand
 {
 public:
-  static KvtkImageInteractionCallback *New()  {
-    return new KvtkImageInteractionCallback;
-  }
+  static KvtkImageInteractionCallback *New();
 
-  KvtkImageInteractionCallback()  {
-    this->Window     = NULL;
-  }
+  KvtkImageInteractionCallback();
 
-  ~KvtkImageInteractionCallback()  {
-    this->Window     = NULL;
-  }
+  ~KvtkImageInteractionCallback();
 
   void SetRenderWindow(vtkRenderWindow* Window)  {
     this->Window = Window;
   }
-  void SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
-    this->kv_opts = kv_opts;
-  }
+
+  void notifyAllFromOptions(std::shared_ptr<KViewerOptions> arg);
+  
+  void SetOptions(std::shared_ptr<KViewerOptions> arg);
 
   void SetSaturationLookupTable( vtkLookupTable* satLUT ) {
     this->satLUT_shared = satLUT;
@@ -54,6 +49,8 @@ public:
 
   bool Erase() { return erase; }
 
+  void notifyChangeBrushSize( size_t k );
+
 private:
   bool buttonDown;
   bool erase;
@@ -62,6 +59,6 @@ private:
   vtkRenderWindow*          Window;        // I don't own it, someone else cleans up
   vtkLookupTable*           satLUT_shared; // I don't own it, someone else cleans up
   KViewer*                  masterWindow;  // reverse handle on my source
-  std::shared_ptr<KViewerOptions>   kv_opts;       // not sure who owns it, be paranoid
-
+  std::shared_ptr<KViewerOptions>   kv_opts;      
+  std::unique_ptr<KViewerParameterWidget> m_paramWidget;
 };
