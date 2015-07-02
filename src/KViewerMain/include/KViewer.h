@@ -46,7 +46,7 @@ class KvtkImageInteractionCallback;
 
 // using cv::Ptr; // Argh, remove this and use boost::shared_std::shared_ptr instead
 
-class KViewer : public QMainWindow , public Ui::GUI
+class KVIEWER_EXPORT KViewer : public QMainWindow , public Ui::GUI
 {
   Q_OBJECT
 

@@ -6,6 +6,7 @@
 #include "vtkCommand.h"
 #include "vtkRenderWindow.h"
 #include "KViewerOptions.h"
+#include <vtkWeakPointer.h>
 
 // forward declaration
 class KViewerParameterWidget;
@@ -30,9 +31,7 @@ public:
   
   void SetOptions(std::shared_ptr<KViewerOptions> arg);
 
-  void SetSaturationLookupTable( vtkLookupTable* satLUT ) {
-    this->satLUT_shared = satLUT;
-  }
+  void SetSaturationLookupTable( vtkLookupTable* satLUT ) ;
 
   /** \brief handle the mouse interface for Kviewer VTK window
     * update the paint brush size, send update info to somewhere
@@ -57,7 +56,7 @@ private:
   int indexSliceCopyFrom;
   int indexSlicePasteTo;
   vtkRenderWindow*          Window;        // I don't own it, someone else cleans up
-  vtkLookupTable*           satLUT_shared; // I don't own it, someone else cleans up
+  vtkWeakPointer<vtkLookupTable>           satLUT_shared; // I don't own it, someone else cleans up
   KViewer*                  masterWindow;  // reverse handle on my source
   std::shared_ptr<KViewerOptions>   kv_opts;      
   std::unique_ptr<KViewerParameterWidget> m_paramWidget;

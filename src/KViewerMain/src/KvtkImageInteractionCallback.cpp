@@ -63,6 +63,12 @@ void KvtkImageInteractionCallback::notifyChangeBrushSize(size_t k)
     masterWindow->SetCircleCursorSize(k);    
 }
 
+void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
+{
+    this->satLUT_shared = lut;
+    this->m_paramWidget->setSaturationLUT(satLUT_shared);
+}
+
 void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewerOptions> opts )
 {
     kv_opts = opts;
