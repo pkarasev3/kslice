@@ -6,8 +6,8 @@
 
 
 KViewerParameterWidget::KViewerParameterWidget()
-{    
-    m_dialog = std::make_unique<QDialog>(nullptr);    
+{
+    m_dialog.reset(new QDialog(nullptr) ); // = std::make_unique<QDialog>(nullptr);
     setupUi(m_dialog.get());
     m_dialog->show();
 
@@ -22,7 +22,7 @@ KViewerParameterWidget::KViewerParameterWidget()
     <<connect(labelOpacitySpinbox,SIGNAL(valueChanged(double)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(satLUT_MinSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(satLUT_MaxSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
-    
+
     /*                              */; Q_ASSERT(!bOK.contains(false));
 }
 
@@ -50,28 +50,28 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
     auto current_opts = m_kvopts.lock();
     if (current_opts.get( ) != opts_in.get( ))
         this->m_kvopts = opts_in;
-    
+
     current_opts = m_kvopts.lock();
     if (!current_opts)
         return *this;
 
     auto& opts = *opts_in;
-    
+
     this->brushSizeSpinbox->setValue( opts.paintBrushRad );
     if (!m_satLUT) {
         this->satLUT_MinSpinbox->setValue(0);
         this->satLUT_MaxSpinbox->setValue(1e4);
     } else
         setSaturationLUT(m_satLUT);
-    
+
     this->lambdaSmoothnessSpinbox->setValue(opts.lambda);
     this->autoTriggerContourSpinbox->setValue(opts.seg_time_interval);
     this->labelOpacitySpinbox->setValue(opts.labelOpacity2D);
 
     this->m_dialog->update();
     this->m_dialog->raise();
-    this->m_dialog->show( );    
-    
+    this->m_dialog->show( );
+
     return *this;
 }
 

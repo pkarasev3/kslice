@@ -32,7 +32,7 @@ const char keyDownLabelOpacity  ='o';
 
 }
 
-KvtkImageInteractionCallback* KvtkImageInteractionCallback::New()  
+KvtkImageInteractionCallback* KvtkImageInteractionCallback::New()
 {
     return new KvtkImageInteractionCallback;
 }
@@ -43,10 +43,10 @@ KvtkImageInteractionCallback::~KvtkImageInteractionCallback( )
 }
 
 
-KvtkImageInteractionCallback::KvtkImageInteractionCallback()  
+KvtkImageInteractionCallback::KvtkImageInteractionCallback()
 {
     this->Window = NULL;
-    this->m_paramWidget = std::make_unique<KViewerParameterWidget>();
+    this->m_paramWidget.reset(new KViewerParameterWidget); // = std::make_unique<KViewerParameterWidget>();
 
     auto cb = std::bind(&KvtkImageInteractionCallback::notifyAllFromOptions,
                          this,std::placeholders::_1);
@@ -60,7 +60,7 @@ void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv
 
 void KvtkImageInteractionCallback::notifyChangeBrushSize(size_t k)
 {
-    masterWindow->SetCircleCursorSize(k);    
+    masterWindow->SetCircleCursorSize(k);
 }
 
 void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
@@ -118,7 +118,7 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       break;
     case keyPlusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad+1;
-      this->notifyChangeBrushSize(kv_opts->paintBrushRad);      
+      this->notifyChangeBrushSize(kv_opts->paintBrushRad);
       break;
     case keyUpLabelOpacity:
       kv_opts->labelOpacity2D *= 1.05;
