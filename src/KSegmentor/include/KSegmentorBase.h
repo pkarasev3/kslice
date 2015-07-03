@@ -5,11 +5,13 @@
 #include "vtkSmartPointer.h"
 #include "vtkImageReslice.h"
 
+#include "kv_export.h"
+
 //For testing
 #include"vtkMetaImageWriter.h"
 #include <opencv2/core/core.hpp>
 #include <memory>
-
+#include <array>
 
 class vtkImageData;
 
@@ -41,6 +43,7 @@ void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  std::vector<double>& maxXYZ, bool numberOnly = false );
 
 /** in-place, copy a slice from index a to index b in volume */
+KVIEWER_EXPORT
 void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
 
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
@@ -49,7 +52,7 @@ vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
 
 
 
-class KSegmentorBase
+class  KSegmentorBase
 {
     public:
 
@@ -141,18 +144,14 @@ class KSegmentorBase
         }
 
         void SetSaturationRange( double dmin, double dmax ) {
-            if( dmax > dmin ) {
+            
+            if( dmax >= dmin ) {
                 m_SatRange[0] = dmin;
                 m_SatRange[1] = dmax;
             } else {
                 std::cout << "bogus min/max attempted set! " << std::endl;
+                SetSaturationRange(dmax,dmin);
             }
-        }
-
-        void SetLowerBoundImageThreshold(double d)
-        {
-            // After segmenting, threshold such that below this image value cannot be in the result.
-            // TODO
         }
 
         void SetPlaneCenter(double* center)
@@ -257,14 +256,7 @@ public:
         int display;         //is the debug display on/off if ~=0, will display every X iterations
 
         double m_Spacing_mm[3];
-        double m_SatRange[2];
-
-        // Ivan: these are bogus !? Plz delete if so
-        double penaltyAlpha; //regularizer for "user constraints" experiments
-        double *seed;        //again, only used in functions for "user constraints" experiments
-        bool useContInit;    //for "user constraints" do we intitialize from seed or initial contour
-
-        //     bool   m_bUseEdgeBased; // do we use edge-based energy?
+        std::array<double,2> m_SatRange;
 
         // stupid duplication?
         double *B;
@@ -290,23 +282,9 @@ public:
 
 }
 
-
-
 #endif
 
-#if 0    // Lyublyanka Dungeon
 
-
-//        unsigned short *seg; //seg result from last run of the segmentor
-//        short *iList;        //row indices of points on zero level set from last run
-//        short *jList;        //column indices of points on zero level set from last run
-//        long lengthZLS;      //number of point on the zero level set from last run
-//LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-//LL *Lin2out, *Lout2in,*Lchanged;
-  //LL *Lz, *Ln1, *Ln2, *Lp1, *Lp2;
-
-  //LL *Lin2out, *Lout2in,*Lchanged;
-#endif
 
 
 

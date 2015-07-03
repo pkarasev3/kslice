@@ -34,8 +34,7 @@ KSegmentorBase::KSegmentorBase()
 {
     iter = 5;
     lambda = 0.5;
-    rad    = 0.0;
-    useContInit = false;
+    rad    = 0.0;    
 }
 
 
@@ -58,9 +57,9 @@ void KSegmentorBase::InitializeVariables(KSegmentorBase* segPointer,vtkImageData
     //segPointer->numberdims=3;
 
     //segPointer->m_bUseEdgeBased = false;
-    segPointer->penaltyAlpha=0;
+    /*segPointer->penaltyAlpha=0;
     segPointer->seed=0;
-    segPointer->useContInit=contInit;
+    segPointer->useContInit=contInit;*/
     segPointer->display=0;
 
     //Should we keep these abolute values in here

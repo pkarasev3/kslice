@@ -165,6 +165,8 @@ public slots:
 
   void ResetRotation(bool rotX,bool rotY, bool rotZ);
 
+  std::vector<std::shared_ptr<KSegmentorBase>> GetSegmentors() const;
+
 protected:
   vtkSmartPointer<vtkEventQtSlotConnect>  Connections;
   vtkSmartPointer<KvtkImageInteractionCallback> image_callback;
