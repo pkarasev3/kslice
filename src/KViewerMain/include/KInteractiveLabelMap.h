@@ -16,7 +16,7 @@ struct KViewerOptions;
 class  KWidget_2D_left;
 using  vrcl::KSegmentorBase;
 
-class KInteractiveLabelMap
+class KVIEWER_EXPORT KInteractiveLabelMap
 {
 public:
     KInteractiveLabelMap();
@@ -45,9 +45,6 @@ public:
 
     /** true or false interpolate myself while drawing (speed vs visual niceness) */
     bool  labelInterpolate;
-
-    void  setLowerBoundImageValueForInterior( double lowerbound);
-    
 
     /** ghetto but allows flexibility: reverse handle on the widget */
     void RegisterSourceWidget( KWidget_2D_left* kwidget2D, bool regNewImage );

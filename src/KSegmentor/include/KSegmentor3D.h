@@ -5,6 +5,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkImageReslice.h"
 
+#include "kv_export.h"
 #include "KSegmentorBase.h"
 
 //For testing
@@ -23,7 +24,7 @@ namespace vrcl
 
 
 
-class KSegmentor3D : public KSegmentorBase
+class  KSegmentor3D : public KSegmentorBase
 {
     public:
         static KSegmentor3D* CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit);

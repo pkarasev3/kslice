@@ -7,11 +7,16 @@
 #include "vtkRenderWindow.h"
 #include "KViewerOptions.h"
 #include <vtkWeakPointer.h>
+#include <map>
 
 // forward declaration
 class KViewerParameterWidget;
 class KViewer;
 class vtkLookupTable;
+
+namespace vrcl {
+    class KSegmentorBase;
+}
 
 // The mouse motion callback, to pick the image and recover pixel values
 class KVIEWER_EXPORT KvtkImageInteractionCallback : public vtkCommand
@@ -60,4 +65,6 @@ private:
   KViewer*                  masterWindow;  // reverse handle on my source
   std::shared_ptr<KViewerOptions>   kv_opts;      
   std::unique_ptr<KViewerParameterWidget> m_paramWidget;
+
+  std::map<vrcl::KSegmentorBase*,std::weak_ptr<vrcl::KSegmentorBase>> m_segmentors;
 };

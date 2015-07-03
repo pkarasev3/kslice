@@ -73,6 +73,14 @@ void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewer
 {
     kv_opts = opts;
     notifyChangeBrushSize(kv_opts->paintBrushRad);
+
+    {
+        double* sat_range = satLUT_shared->GetRange();
+        auto segmentors   = masterWindow->GetSegmentors();
+        for( auto s : segmentors)
+            s->SetSaturationRange(sat_range[0],sat_range[1]); 
+    }
+
     masterWindow->UpdateMultiLabelDisplay();
 
     masterWindow->update();
