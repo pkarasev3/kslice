@@ -463,7 +463,8 @@ void KWidget_2D_left::CopyLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
     }
     else {
         kv_data->labelDataArray = multiLabelMaps[activeLabelMapIndex]->labelDataArray;
-        copySliceFromTo(kv_data->labelDataArray, iFrom, iTo);
+        double imgMIN = multiLabelMaps[activeLabelMapIndex]->ksegmentor->m_SatRange[0];
+        copySliceFromTo(kv_data->labelDataArray, iFrom, iTo,kv_data->imageVolumeRaw,imgMIN);
         kv_data->labelDataArray->Modified( );
         multiLabelMaps[activeLabelMapIndex]->ksegmentor->copyIntegralDuringPaste(iFrom, iTo);
     }

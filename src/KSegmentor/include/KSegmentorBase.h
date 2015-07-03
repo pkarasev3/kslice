@@ -44,7 +44,8 @@ void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
 
 /** in-place, copy a slice from index a to index b in volume */
 KVIEWER_EXPORT
-void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo );
+void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, 
+                      vtkImageData* image=nullptr, double imageMin = -1e99);
 
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,

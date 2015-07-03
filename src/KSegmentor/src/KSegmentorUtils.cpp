@@ -56,9 +56,18 @@ namespace  vrcl
   }
 
 
-  void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo )
+void copySliceFromTo(vtkImageData* label_map,int idxFrom,int idxTo,
+                     vtkImageData* image,double imgMIN_in)
 {
+    double imgMIN   = -std::numeric_limits<double>::max();
+    short* ptrImage = nullptr;
+    if( image ) 
+    {
+        imgMIN = imgMIN_in;
+        ptrImage = static_cast<short*>(image->GetScalarPointer());
+    }
     short *ptrLabel = static_cast<short*>(label_map->GetScalarPointer());
+    
     int dims[3];
     label_map->GetDimensions( dims );
     assert( idxFrom >= 0 && idxTo >= 0 && idxFrom < dims[2] && idxTo < dims[2] );
@@ -69,6 +78,11 @@ namespace  vrcl
             long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[0] + i;
             short prevVal    = ptrLabel[elemNumTo];
             short newVal     = ptrLabel[elemNumFrom];
+
+            if(ptrImage)
+                if(ptrImage[elemNumTo] < imgMIN_in)
+                    newVal = 0;
+
             ptrLabel[elemNumTo] = newVal;
             num_changed  +=  ( newVal != prevVal );
       }

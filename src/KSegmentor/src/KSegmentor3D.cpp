@@ -263,6 +263,11 @@ namespace vrcl
                 unsigned short value_PK = ((unsigned short)(((phi_out > 0.95)
                     + (phi_out > 0.8) + (phi_out > 0.65)
                     + (phi_out > 0.5)) * labelRange[1] / 4.0));
+                
+                bool imageOK = (imgMinValue < ptrCurrImage[element3D]);
+                value_IK *= imageOK;
+                value_PK *= imageOK;
+
                 ptrCurrLabel[element3D] = value_IK;
                 tmp.at<double>(j, i) = (phi_val <= 0.0)*255.0f;
                 tmpI.at<double>(j, i) = (imgSlice[elemNum]);
