@@ -19,7 +19,7 @@
 #include "vtkImageReslice.h"
 #include "KInteractiveLabelMap.h"
 #include "KWidget_2D_left.h"
-
+#include <QDebug>
 
 ///Only for testing purposes
 #include "vtkImagePlaneWidget.h"
@@ -475,12 +475,11 @@ void KWidget_2D_left::CopyLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
 
 void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
 {
-    if (slice_index < 0) {
-        slice_index = currentSliceIndex;
-    }
+    if (slice_index < 0)
+        slice_index = currentSliceIndex;    
 
     assert(0 < multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( ));
-    double UmaxInit = this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->GetUmax( );
+    double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( );
     cout << "Umax Init = " << UmaxInit << endl;
 
     if (!bAllLabels)
@@ -602,8 +601,7 @@ void KWidget_2D_left::AddNewLabelMap( )
 
     // give the label map handles to kv_opts, image volume, and this widget
     labelMap->RegisterSourceWidget(this, true);
-    ///Updating label map after Transform
-
+    
     multiLabelMaps.push_back(labelMap);            // bag it in the array
     activeLabelMapIndex = multiLabelMaps.size( ) - 1; // increment active index
 
@@ -616,24 +614,26 @@ void KWidget_2D_left::AddNewLabelMap( )
     {
         KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw, this->GetActiveLabelMap( ), false);
         raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
-        raw_ptr->SetContRad(kv_opts->rad); //set the radius used in active contour
-        this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
-        //this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetUseEdgeBasedEnergy(kv_opts->m_bUseEdgeBased);
-        this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
-        this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
-        double UmaxInit = this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->GetUmax( ); cout << "Umax Init = " << UmaxInit << endl;
+        raw_ptr->SetContRad(kv_opts->rad);   //set the radius used in active contour
+        multiLabelMaps[activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
+        
+        multiLabelMaps[activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
+        multiLabelMaps[activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
+        double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( ); 
+        PRINT_AND_EVAL(UmaxInit);
+
         if (!(kv_opts->m_SpeedImageFileName.empty( )))
         {
             vtkMetaImageReader*reader = vtkMetaImageReader::New( );
             if (!reader->CanReadFile(kv_opts->m_SpeedImageFileName.c_str( ))) {
                 cout << "Failed to read speed image file " << kv_opts->m_SpeedImageFileName << "  ! setting to NULL..." << endl;
-                multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = NULL;
+                multiLabelMaps[activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = NULL;
             }
             else {
                 reader->SetFileName(kv_opts->m_SpeedImageFileName.c_str( ));
                 reader->SetDataScalarTypeToDouble( );
                 reader->Update( );
-                multiLabelMaps[this->activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = static_cast<double*>(reader->GetOutput( )->GetScalarPointer( ));
+                multiLabelMaps[activeLabelMapIndex]->ksegmentor->m_CustomSpeedImgPointer = static_cast<double*>(reader->GetOutput( )->GetScalarPointer( ));
             }
         }
     }
@@ -796,7 +796,7 @@ void KWidget_2D_left::SetupLabelDisplay()  {
 //}
 
 //else
-// this->multiLabelMaps[this->activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
+// multiLabelMaps[activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
 //not used at the moment
 /*vtkMetaImageReader*reader = vtkMetaImageReader::New();
 if( !kv_opts_input->m_SpeedImageFileName.empty() )

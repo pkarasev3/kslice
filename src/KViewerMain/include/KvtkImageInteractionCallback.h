@@ -38,10 +38,7 @@ public:
 
   void SetSaturationLookupTable( vtkLookupTable* satLUT ) ;
 
-  /** \brief handle the mouse interface for Kviewer VTK window
-    * update the paint brush size, send update info to somewhere
-    * TODO: is the way that this interacts with data thought out?
-    * Right now it only communicates via KViewerOptions, is that OK?
+  /** \brief handle the mouse interface for Kviewer VTK window    
     */
   void Execute(vtkObject *, unsigned long event, void *);
 

@@ -57,16 +57,17 @@ public:
   void setupGUI(QMainWindow *GUI, double sliderMin,double  sliderMax, double sliceZSpace,
                                   double threshMin = 0.0, double threshMax = 1.0e5 )
   {
-     GUI_MAIN_WINDOW_NAME = "KViewer-0.6";
-     GUI_WINDOW_HEIGHT = 800;
-     GUI_WINDOW_WIDTH  = 1200;
+     GUI_MAIN_WINDOW_NAME = "KViewer-1.1";
+     GUI_WINDOW_HEIGHT = 900;
+     GUI_WINDOW_WIDTH  = 1300;
 
     if (GUI->objectName().isEmpty()) {
         GUI->setObjectName(QString::fromUtf8( GUI_MAIN_WINDOW_NAME.c_str() ));
     }
 
-    GUI->resize(GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT);
-
+    QPoint current_loc = QCursor::pos();    
+    GUI->setGeometry( current_loc.x(),current_loc.y(), GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT);
+    
     /* Main Window Creation */
     centralwidget = new QWidget(GUI);
     centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
@@ -246,7 +247,6 @@ public:
     GUI->setCentralWidget(centralwidget);
     GUI->setMenuBar(menubar);
 
-    cout<<"Harvesting Tiberium..." << endl;
     retranslateGUI(GUI);
 
     QObject::connect(actionExit, SIGNAL(triggered()), GUI, SLOT(close()));

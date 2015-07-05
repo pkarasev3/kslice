@@ -5,6 +5,7 @@
 #include "vtkLookupTable.h"
 #include "KViewer.h"
 #include "KViewerOptions.h"
+#include <QDebug>
 
 using cv::Ptr;
 using namespace vrcl;
@@ -13,8 +14,8 @@ using std::endl;
 
 namespace {
 
-const char keyMinusBrushSize    ='y';
-const char keyPlusBrushSize     ='x';
+const char keyMinusBrushSize    ='[';
+const char keyPlusBrushSize     =']';
 
 const char keyCopyLabelSlice    ='c';
 const char keyPasteLabelSlice   ='v';
@@ -61,6 +62,8 @@ void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv
 void KvtkImageInteractionCallback::notifyChangeBrushSize(size_t k)
 {
     masterWindow->SetCircleCursorSize(k);
+
+    this->masterWindow->updatePaintBrushStatus( NULL );
 }
 
 void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
@@ -77,23 +80,25 @@ void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewer
     {
         double* sat_range = satLUT_shared->GetRange();
         auto segmentors   = masterWindow->GetSegmentors();
-        for( auto s : segmentors)
+        PRINT_AND_EVAL("updating params: "<<QVector<double>::fromStdVector({kv_opts->lambda,(double)kv_opts->rad,(double)kv_opts->segmentor_iters}));
+        for( auto s : segmentors) 
+        {
             s->SetSaturationRange(sat_range[0],sat_range[1]); 
+            s->SetLambda(kv_opts->lambda);
+            s->SetContRad(kv_opts->rad);
+            s->setNumIterations(kv_opts->segmentor_iters);                        
+        }
     }
-
+    
     masterWindow->UpdateMultiLabelDisplay();
-
-    masterWindow->update();
-
-    std::cout << " did notify in: " << __FUNCTION__ << "\n";
+    masterWindow->update();    
 }
 
 void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, void *)
 {
 
   if(event == vtkCommand::LeftButtonPressEvent )
-  {
-    //cout<<"Left button has been pressed"<<endl;
+  {    
     buttonDown = !buttonDown; // paint brush down: start draw/erase
     if(!buttonDown)
     {

@@ -9,21 +9,28 @@ KViewerParameterWidget::KViewerParameterWidget()
 {
     m_dialog.reset(new QDialog(nullptr) ); // = std::make_unique<QDialog>(nullptr);
     setupUi(m_dialog.get());
+    QPoint current_loc = QCursor::pos();
+    m_dialog->setGeometry(current_loc.x(),current_loc.y()+10,m_dialog->width(),m_dialog->height());    
     m_dialog->show();
+    AlwaysOnTop(*m_dialog);
 
     setOptionsUpdateCallback([](std::shared_ptr<KViewerOptions>){});
 
-    this->brushSizeSpinbox->setRange(0,1000);
-    this->satLUT_MinSpinbox->setRange(-1e5,1e5);
-    this->satLUT_MaxSpinbox->setRange(-1e5,1e5);
-
+    //! @note{ valid ranges + stepsizes are defined via .ui file }
     auto bOK = QList<bool>()
-    <<connect(brushSizeSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()),Qt::QueuedConnection)
-    <<connect(labelOpacitySpinbox,SIGNAL(valueChanged(double)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
-    <<connect(satLUT_MinSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
-    <<connect(satLUT_MaxSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
-
-    /*                              */; Q_ASSERT(!bOK.contains(false));
+    <<connect(this->brushSizeSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()),Qt::QueuedConnection)
+    <<connect(this->labelOpacitySpinbox,SIGNAL(valueChanged(double)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->satLUT_MinSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->satLUT_MaxSpinbox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->lambdaSmoothnessSpinbox,SIGNAL(valueChanged(double)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->autoTriggerContourSpinbox,SIGNAL(valueChanged(double)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->regionSizeRBACSpinBox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->contourIterationsSpinBox,SIGNAL(valueChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->checkBoxCopyPasteAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->checkBoxEvolveAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->checkBoxEnableAutoTriggerSegmentor,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    
+    /**/; Q_ASSERT(!bOK.contains(false));
 }
 
 KViewerParameterWidget::~KViewerParameterWidget()
@@ -67,6 +74,13 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
     this->lambdaSmoothnessSpinbox->setValue(opts.lambda);
     this->autoTriggerContourSpinbox->setValue(opts.seg_time_interval);
     this->labelOpacitySpinbox->setValue(opts.labelOpacity2D);
+    this->autoTriggerContourSpinbox->setValue(opts.seg_time_interval);
+    this->regionSizeRBACSpinBox->setValue(opts.rad);
+    this->contourIterationsSpinBox->setValue(opts.segmentor_iters);
+
+    this->checkBoxCopyPasteAllLabels->setChecked(opts.multilabel_paste_mode);
+    this->checkBoxEvolveAllLabels->setChecked(opts.multilabel_sgmnt_mode);
+    this->checkBoxEnableAutoTriggerSegmentor->setChecked(opts.time_triggered_seg_update);
 
     this->m_dialog->update();
     this->m_dialog->raise();
@@ -89,6 +103,17 @@ void KViewerParameterWidget::updatedBasicParams( )
 
     opts->paintBrushRad   = this->brushSizeSpinbox->value();
     opts->labelOpacity2D  = this->labelOpacitySpinbox->value();
+
+    opts->lambda = this->lambdaSmoothnessSpinbox->value();
+    opts->seg_time_interval = this->autoTriggerContourSpinbox->value();
+    opts->labelOpacity2D = this->labelOpacitySpinbox->value();
+    opts->seg_time_interval = this->autoTriggerContourSpinbox->value();
+    opts->rad = this->regionSizeRBACSpinBox->value();
+    opts->segmentor_iters = this->contourIterationsSpinBox->value();
+
+    opts->multilabel_paste_mode = this->checkBoxCopyPasteAllLabels->isChecked();
+    opts->multilabel_sgmnt_mode = this->checkBoxEvolveAllLabels->isChecked();
+    opts->time_triggered_seg_update = this->checkBoxEnableAutoTriggerSegmentor->isChecked();
 
     m_updateCallback(opts);
 }

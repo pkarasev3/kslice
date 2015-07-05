@@ -35,3 +35,22 @@ public:
     KViewerParameterWidget& setSaturationLUT(decltype(m_satLUT) arg);
     
 };
+
+inline bool isWindows() 
+{
+#ifndef _WIN32
+    return false;
+#else
+    return true;
+#endif
+}
+
+template <class W> W&  AlwaysOnTop(W&  _window, bool bForceOnTop_win32=true) 
+{
+    auto w_flags =   Qt::WindowStaysOnTopHint ;
+    bool bOn     = bForceOnTop_win32 || (!isWindows());
+    if(bOn)
+        _window.setWindowFlags(_window.windowFlags() | w_flags);
+    _window.setAttribute(Qt::WA_DeleteOnClose,true);
+    return _window;
+}

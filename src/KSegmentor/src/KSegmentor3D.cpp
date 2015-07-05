@@ -24,6 +24,8 @@ using cv::Mat;
 namespace vrcl
 {
 
+    double getDefaultDrawLabelMaxVal() { return 1000.0; }
+
     struct KSegmentorBase::SFM_vars
     {
         //formerly global variables, for energy3c.cpp
@@ -139,9 +141,8 @@ namespace vrcl
         labelVol->GetScalarRange(labelRange);
         if (abs(labelRange[1]) < 1e-3)
         { // empty label; so set the proper range
-            labelRange[1] = KViewerOptions::getDefaultDrawLabelMaxVal( );
+            labelRange[1] = getDefaultDrawLabelMaxVal( );
         }
-        //assert( 0 != imgRange[1] ); // what the, all black ?? impossible !
 
         this->imgRange = imgRange;
         ptrCurrImage = static_cast<unsigned short*>(imageVol->GetScalarPointer( ));

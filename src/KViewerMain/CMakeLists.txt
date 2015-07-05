@@ -6,6 +6,10 @@ include_directories(
 
 add_definitions( -DKVIEWER_LIB )
 
+if(WIN32)
+    add_definitions( /wd4267 /wd4244 )    
+endif()
+
 
 set(ghetto_moc_cmd  ${QT_MOC_EXECUTABLE}  include/KViewer.h  -o  src/moc_KViewer.cpp)
 

@@ -9,23 +9,19 @@
 
 class vtkLookupTable;
 class vtkImageData;
-//using cv::Ptr;
-
-/**   KSandbox: a place to temporarily place 'compact  stand alone functions' while
-  *   developing. Inside of the vrcl namespace so that you must conciously
-  *   'using namespace vrcl' or  vrcl::Function() to get here, don't want someone
-  *   to think the scrap functions here are
-  *   part of VTK / ITK and trust them more than they should.
-  */
 
 namespace vrcl {
 
+KVIEWER_EXPORT
   std::vector<double> get_good_color_0to7( int idx );
 
+KVIEWER_EXPORT
   vtkSmartPointer<vtkImageData> image2ushort( vtkImageData* imageData );
 
+KVIEWER_EXPORT
   void multiplyImageByLabels( vtkImageData* imgData, vtkImageData* lblData );
 
+KVIEWER_EXPORT
   void setup_file_reader( std::shared_ptr<KViewerOptions> kv_opts, std::shared_ptr<KDataWarehouse> kv_data );
 
   vtkSmartPointer<vtkImageData> run_KViewer_Gao3D_interface( std::shared_ptr<KViewerOptions> kv_opts,
@@ -40,11 +36,13 @@ namespace vrcl {
 
   /** \brief verify the imagedata is valid in terms of bounds
     */
+KVIEWER_EXPORT
   void check_extents( vtkImageData* input );
 
 /** create a 'default lookup table'. optional: rgb triple for the interior color.
   * which is something like magenta by default. something crazy will happen if the
   * arg has length other than 0 or 3. */
+KVIEWER_EXPORT  
   vtkSmartPointer<vtkLookupTable> create_default_labelLUT( double maxVal,
               const std::vector<double>& rgb_primary = std::vector<double>()  );
 
