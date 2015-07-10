@@ -13,6 +13,8 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
+#include <QDesktopWidget>
+#include <QDebug>
 #include "QVTKWidget.h"
 #include "qslider.h"
 #include "qpushbutton.h"
@@ -65,8 +67,14 @@ public:
         GUI->setObjectName(QString::fromUtf8( GUI_MAIN_WINDOW_NAME.c_str() ));
     }
 
-    QPoint current_loc = QCursor::pos();    
-    GUI->setGeometry( current_loc.x(),current_loc.y(), GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT);
+    QPoint current_loc = QCursor::pos();
+    auto desktop_size  = QApplication::desktop()->availableGeometry(current_loc);
+    
+    GUI_WINDOW_WIDTH  = std::max(desktop_size.width()*3/4, (int) GUI_WINDOW_WIDTH);
+    GUI_WINDOW_HEIGHT = std::max(desktop_size.height()*3/4,(int) GUI_WINDOW_HEIGHT);
+    PRINT_AND_EVAL( GUI_WINDOW_WIDTH<<GUI_WINDOW_HEIGHT );
+
+    GUI->setGeometry( desktop_size.width()/8,desktop_size.height()/8, GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT);
     
     /* Main Window Creation */
     centralwidget = new QWidget(GUI);
@@ -146,21 +154,21 @@ public:
     int SliceSliderHeight = 3;
     Slider->setSizeIncrement( SliceSliderWidth, SliceSliderHeight );
 
-		maxThreshSlider = new QSlider(Qt::Horizontal);
-		maxThreshSlider->setFocusPolicy(Qt::StrongFocus);
-		maxThreshSlider->setTickPosition(QSlider::TicksBothSides);
-		maxThreshSlider->setMinimum(threshMin);
-		maxThreshSlider->setMaximum(threshMax );
-		maxThreshSlider->setTickInterval((threshMax-threshMin)/50);
-		maxThreshSlider->setSingleStep(1);
+    maxThreshSlider = new QSlider(Qt::Horizontal);
+    maxThreshSlider->setFocusPolicy(Qt::StrongFocus);
+    maxThreshSlider->setTickPosition(QSlider::TicksBothSides);
+    maxThreshSlider->setMinimum(threshMin);
+    maxThreshSlider->setMaximum(threshMax );
+    maxThreshSlider->setTickInterval((threshMax-threshMin)/50);
+    maxThreshSlider->setSingleStep(1);
 
-		minThreshSlider = new QSlider(Qt::Horizontal);
-		minThreshSlider->setFocusPolicy(Qt::StrongFocus);
-		minThreshSlider->setTickPosition(QSlider::TicksBothSides);
-		minThreshSlider->setMinimum(threshMin);
-		minThreshSlider->setMaximum(threshMax);
-		minThreshSlider->setTickInterval((threshMax-threshMin)/50);
-		minThreshSlider->setSingleStep(1);
+    minThreshSlider = new QSlider(Qt::Horizontal);
+    minThreshSlider->setFocusPolicy(Qt::StrongFocus);
+    minThreshSlider->setTickPosition(QSlider::TicksBothSides);
+    minThreshSlider->setMinimum(threshMin);
+    minThreshSlider->setMaximum(threshMax);
+    minThreshSlider->setTickInterval((threshMax-threshMin)/50);
+    minThreshSlider->setSingleStep(1);
 
 
     /* Status Labels */

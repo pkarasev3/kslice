@@ -37,6 +37,8 @@ void getVolumeAsString( const std::vector<double>& imageSpacing,
                                  std::string & volume, bool numberOnly = false,
                                  const std::string& right_left_both = std::string("both"), double center_line = -1.0);
 
+std::string getVolumeAsString_ret( std::vector<double> imageSpacing, vtkImageData* label_map);
+
 void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
                                  vtkImageData* label_map,
                                  std::string & volumeString, std::vector<double>& minXYZ,
@@ -46,6 +48,10 @@ void getXYZExtentsAsString( const std::vector<double>& imageSpacing,
 KVIEWER_EXPORT
 void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo, 
                       vtkImageData* image=nullptr, double imageMin = -1e99);
+
+KVIEWER_EXPORT
+void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
+                     vtkImageData* image = nullptr, double imageMin = -1e99);
 
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,
@@ -119,6 +125,8 @@ class  KSegmentorBase
         }
 
         virtual void copyIntegralDuringPaste( int kFrom, int kTo );
+
+        virtual void fillIntegralDuringPaste(int kFrom, int kTo);
 
         void setRadius( int radNew ) {
           rad = radNew;

@@ -19,6 +19,7 @@ const char keyPlusBrushSize     =']';
 
 const char keyCopyLabelSlice    ='c';
 const char keyPasteLabelSlice   ='v';
+const char keyPasteRangeSlices  ='V';
 
 const char keyUpShiftSatRange   ='l'; // shift both min and max up
 const char keyDownShiftSatRange ='k'; // shift both min and max down
@@ -115,8 +116,15 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     double  stepSize                               = (satRange[1]-satRange[0])*0.01;
     vtkRenderWindowInteractor* imgWindowInteractor = this->Window->GetInteractor();
     unsigned int keyPressed = *imgWindowInteractor->GetKeySym();
-    Lout(Logger::INFO) << "(uint) keyPressed: " << keyPressed << endl;
-    switch ( keyPressed ) {
+    auto keyChar            = imgWindowInteractor->GetKeyCode();
+    
+    PRINT_AND_EVAL((char)keyPressed << keyChar << keyMinusBrushSize << (unsigned int)keyMinusBrushSize );
+    if( (char)keyPressed == 'R' )
+      keyChar = 'R';
+    if( (char)keyPressed == 'L' ) 
+      keyChar = 'L';
+
+    switch ( keyChar ) {
     case keyMinusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad-1;
       this->notifyChangeBrushSize(kv_opts->paintBrushRad);

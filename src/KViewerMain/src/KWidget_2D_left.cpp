@@ -457,7 +457,8 @@ void KWidget_2D_left::CopyLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
 { /** for every labelmap, copy & paste from index A to index B, then update display */
     if (bPasteAll) {
         for (int k = 0; k < (int)multiLabelMaps.size( ); k++) {
-            copySliceFromTo(multiLabelMaps[k]->labelDataArray, iFrom, iTo);
+            double imgMIN = multiLabelMaps[k]->ksegmentor->m_SatRange[0];
+            copySliceFromTo(multiLabelMaps[k]->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw,imgMIN);
             multiLabelMaps[k]->ksegmentor->copyIntegralDuringPaste(iFrom, iTo);
         }
     }
@@ -470,6 +471,27 @@ void KWidget_2D_left::CopyLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
     }
 
     UpdateMultiLabelMapDisplay( );
+
+}
+
+void KWidget_2D_left::FillLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
+{ /** copy and fill all between from,to ! */
+  if (bPasteAll) {
+    for (int k = 0; k < (int)multiLabelMaps.size(); k++) {
+      double imgMIN = multiLabelMaps[k]->ksegmentor->m_SatRange[0];
+      fillSliceFromTo(multiLabelMaps[k]->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw,imgMIN);
+      multiLabelMaps[k]->ksegmentor->fillIntegralDuringPaste(iFrom, iTo);
+    }
+  }
+  else {
+    kv_data->labelDataArray = multiLabelMaps[activeLabelMapIndex]->labelDataArray;
+    double imgMIN = multiLabelMaps[activeLabelMapIndex]->ksegmentor->m_SatRange[0];
+    fillSliceFromTo(kv_data->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw, imgMIN);
+    kv_data->labelDataArray->Modified();
+    multiLabelMaps[activeLabelMapIndex]->ksegmentor->fillIntegralDuringPaste(iFrom, iTo);
+  }
+
+  UpdateMultiLabelMapDisplay();
 
 }
 

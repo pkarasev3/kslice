@@ -40,6 +40,8 @@
 #include "KDataWarehouse.h"
 
 #include <string>
+#include <future>
+#include <functional>
 
 //TESTING
 #include "vtkRegularPolygonSource.h"
@@ -182,10 +184,10 @@ void KViewer::UpdateVolumeStatus( )
     kv_data->labelDataArray = kwidget_2d_left->GetActiveLabelMap( );
 
     std::string volumeDisplay;
-    getVolumeAsString(kv_opts->imageSpacing,
-        kv_data->labelDataArray, volumeDisplay);
-    QString str = QString(volumeDisplay.c_str( ));
-    volumeOfLabelmap->setText(str);
+    auto strFuture = std::async(std::launch::async,
+                     &getVolumeAsString_ret, 
+                     kv_opts->imageSpacing, kv_data->labelDataArray);
+    
     updatePaintBrushStatus(NULL);
 
     UpdateModel3D( );
@@ -193,6 +195,10 @@ void KViewer::UpdateVolumeStatus( )
     qVTK1->update( );
     qVTK2->update( );
     qVTK1->setFocus( );
+
+    volumeDisplay = strFuture.get();
+    QString str = QString::fromStdString(volumeDisplay);
+    volumeOfLabelmap->setText(str);
 }
 
 void KViewer::UpdateMultiLabelDisplay( )
@@ -335,13 +341,17 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
         char keyPressed = ' ';
         if (NULL != obj) { // not null <=> we got here from a vtkCallBack, not a button press
             vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
-            keyPressed = *imgWindowInteractor->GetKeySym( );
+            //keyPressed = *imgWindowInteractor->GetKeySym( );
+            keyPressed = imgWindowInteractor->GetKeyCode();
         }
         else if (event == (unsigned long) 's') {
             keyPressed = 's';
         }
         else if (event == (unsigned long) 'v'){
             keyPressed = 'v'; // pressing 'paste button' in QT took us here
+        }
+        else if (event == (unsigned long) 'V'){
+          keyPressed = 'V'; 
         }
         else if (event == (unsigned long) '0'){
             keyPressed = '0';
@@ -355,7 +365,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
         int slice_idx = kwidget_2d_left->currentSliceIndex;
         int label_idx = kwidget_2d_left->activeLabelMapIndex;
 
-
+        std::cout << keyPressed << " pressed in " << __FUNCTION__ << std::endl;
 
         switch (keyPressed) {
             case '1':
@@ -366,13 +376,15 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 kwidget_2d_left->SelectActiveLabelMap(label_idx + 1);
                 this->UpdateVolumeStatus( );
                 break;
-            case 'b': // update 3D
-                cout << "b key pressed: update 3D" << endl;
+            case 'b': // update 3D                
                 UpdateVolumeStatus( );
                 break;
             case 'v': // Paste!
                 kwidget_2d_left->CopyLabelsFromTo(cache_idx1, slice_idx, kv_opts->multilabel_paste_mode);
                 break;
+            case 'V': // Paste and Fill!
+              kwidget_2d_left->FillLabelsFromTo(cache_idx1, slice_idx, kv_opts->multilabel_paste_mode);
+              break;
             case 's': // run "KSegmentor"
                 cout << "s key pressed: this-slice 2D segmentation " << endl;
                 kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode, true);
@@ -437,7 +449,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 cout << "m key pressed: toggling time-triggered updates " << endl;
                 kv_opts->time_triggered_seg_update = !kv_opts->time_triggered_seg_update;
                 break;
-            case 'e':
+            case 'e': // also '=' key, "equal" starts with e...
                 cout << "e key pressed: X-rotate 90 degrees " << endl;
                 ResetRotation(1, 0, 0);
                 if (this->m_RotX)
@@ -523,14 +535,21 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
 
 }
 
-void KViewer::mousePaintEvent(vtkObject* obj) {
-
-    if (this->image_callback->ButtonDown( ))
+void KViewer::mousePaintEvent(vtkObject* obj) 
+{
+    bool bUpdateDone = false;
+    int slice_idx = kwidget_2d_left->currentSliceIndex;
+    int label_idx = kwidget_2d_left->activeLabelMapIndex;
+    t2 = clock();
+    if (kv_opts->time_triggered_seg_update && ((t2 - t1) > kv_opts->seg_time_interval*CLOCKS_PER_SEC))
     {
+      kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode);
+      t1 = t2;
+      bUpdateDone = true;
+    }
 
-        int slice_idx = kwidget_2d_left->currentSliceIndex;
-        int label_idx = kwidget_2d_left->activeLabelMapIndex;
-        //Ptr<KSegmentor3D> kseg   = kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor;
+    if (this->image_callback->ButtonDown() && obj)
+    {        
         vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
         double event_pos[3];
 
@@ -612,21 +631,17 @@ void KViewer::mousePaintEvent(vtkObject* obj) {
                     }
                 }
             }
+            bUpdateDone = true;
             //PKDebug
             //kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->PrintUpdateInfo();
-
-            t2 = clock( );
-            if ((t2 - t1) > kv_opts->seg_time_interval * CLOCKS_PER_SEC && kv_opts->time_triggered_seg_update)
-            {
-                kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode);
-                t1 = t2;
-            }
-            //this->UpdateVolumeStatus();
-            kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified( );
-            //kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Update();
-            qVTK1->update( );
-            qVTK2->update( );
         }
+    }
+
+    if(bUpdateDone)  // painted or timer triggered
+    {
+      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified();      
+      qVTK1->update();
+      qVTK2->update();
     }
 }
 

@@ -122,6 +122,9 @@ Multiple Label Maps
   /** for every labelmap, copy & paste from index A to index B */
   void CopyLabelsFromTo( int iFrom, int iTo, bool bPasteAll = false );
 
+  /** for every labelmap, copy & paste from index A into all slices up to index B */
+  void FillLabelsFromTo(int iFrom, int iTo, bool bPasteAll = false);
+
   void RunSegmentor( int slice_index = -1, bool bAllLabels = false, bool use2D=true );
 
   /** called internally when a display update is needed,

@@ -10,7 +10,7 @@ KViewerParameterWidget::KViewerParameterWidget()
     m_dialog.reset(new QDialog(nullptr) ); // = std::make_unique<QDialog>(nullptr);
     setupUi(m_dialog.get());
     QPoint current_loc = QCursor::pos();
-    m_dialog->setGeometry(current_loc.x(),current_loc.y()+10,m_dialog->width(),m_dialog->height());    
+    m_dialog->setGeometry(30,400,m_dialog->width(),m_dialog->height());    
     m_dialog->show();
     AlwaysOnTop(*m_dialog);
 

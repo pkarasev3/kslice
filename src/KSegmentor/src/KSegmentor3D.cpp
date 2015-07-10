@@ -272,7 +272,7 @@ namespace vrcl
                 ptrCurrLabel[element3D] = value_IK;
                 tmp.at<double>(j, i) = (phi_val <= 0.0)*255.0f;
                 tmpI.at<double>(j, i) = (imgSlice[elemNum]);
-                labelSlice[elemNum] = (double)value_IK;
+                labelSlice[elemNum] = (double)/*value_PK*/value_IK;
                 if ((value_PK == 0) && !(0 == value_IK)) {
                     if (value_IK != value_PK){
                         cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;

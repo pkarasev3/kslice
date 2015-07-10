@@ -20,6 +20,7 @@
 #include "vtkImageContinuousDilate3D.h"
 #include "vtkSmartPointer.h"
 #include "KSandbox.h"
+#include "KSegmentorBase.h"
 
 #include "Logger.h"
 #include "algorithm"
@@ -29,6 +30,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 //#include "LevelSetCurve.h"
 #include <string>
+#include <thread>
 
 using std::vector;
 using std::string;
@@ -54,6 +56,30 @@ namespace  vrcl
     putText(img, text, textOrg, cv::FONT_HERSHEY_PLAIN, 3, Scalar::all(1), 2, 8);
 
   }
+
+
+
+
+void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
+  vtkImageData* image, double imgMIN_in)
+{
+  int step = (idxTo > idxFrom) * 2 - 1;
+  int k = idxFrom + step;
+  
+  std::list<std::thread> jobs;
+  while ((k != idxTo) && (k != idxFrom))
+  {
+    jobs.push_back( std::thread(copySliceFromTo,label_map, idxFrom, k, image, imgMIN_in) );
+    k += step;
+  }
+
+   while(!jobs.empty()) 
+   {
+     jobs.front().join();
+     jobs.pop_front();
+   }
+
+}
 
 
 void copySliceFromTo(vtkImageData* label_map,int idxFrom,int idxTo,
@@ -134,7 +160,6 @@ SP(vtkImageData) removeImageOstrava( vtkImageData* img_dirty,
 }
 
 
-
 void getVolumeAsString( const vector<double>& imageSpacing,
                                  vtkImageData* label_map,
                                  string & volumeString, bool numberOnly,
@@ -189,6 +214,13 @@ void getVolumeAsString( const vector<double>& imageSpacing,
                               << ","<<label_range[1]<< endl )
     IFLOG( PrintVerbose, cout << "image spacing: " << cv::Mat( imageSpacing ) )
     IFLOG( PrintVerbose, cout << volumeString )
+}
+
+std::string getVolumeAsString_ret(vector<double> imageSpacing, vtkImageData* label_map)
+{
+  std::string tmp;
+  getVolumeAsString( imageSpacing, label_map, tmp);
+  return tmp;
 }
 
 void getXYZExtents( const std::vector<double>& imageSpacing,
@@ -323,166 +355,3 @@ void getXYZExtentsAsString( const vector<double>& imageSpacing,
 
 
 
-
-#if 0   // Firing Squad
-
-
-template <class IT>
-  void copy_ptr_filter(IT* inPtr, IT* outPtr, int size ) {
-  for(int i=0; i<size; i++) { // 'demo' operation: just copy!
-    outPtr[i] = inPtr[i];
-  }
-}
-
-/** Call the basic 'growing' method from kwidget 2D left
- */
-void KSegment_basic_grow();
-
-/** Call the basic 'shrinking' method from kwidget 2D left
- */
-void KSegment_basic_shrink();
-
-void KWidget_2D_left::KSegment_glob3D_grow( )  {
-  kv_data->labelDataArray_new = vtkSmartPointer<vtkImageData>::New();
-  kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
-  kv_data->labelDataArray_new = Grow3DGlob( kv_data->labelDataArray );
-  kv_data->labelDataArray_new->Update();
-  label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
-  label2D_shifter_scaler->Update();
-  check_extents(kv_data->labelDataArray_new);
-  kv_data->labelDataArray = kv_data->labelDataArray_new;
-}
-
-void KWidget_2D_left::KSegment_glob3D_shrink( ) {
-  kv_data->labelDataArray_new = vtkSmartPointer<vtkImageData>::New();
-  kv_data->labelDataArray_new->ShallowCopy( kv_data->labelDataArray );
-  kv_data->labelDataArray_new = Shrink3DGlob( kv_data->labelDataArray );
-  kv_data->labelDataArray_new->Update();
-  label2D_shifter_scaler->SetInput( kv_data->labelDataArray_new );
-  label2D_shifter_scaler->Update();
-  check_extents(kv_data->labelDataArray_new);
-  kv_data->labelDataArray = kv_data->labelDataArray_new;
-}
-
-
-void KViewer::KSegment_basic_grow() {
-    kwidget_2d_left->KSegment_glob3D_grow(); // widget updates itself
-    kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
-    UpdateModel3D();
-}
-
-void KViewer::KSegment_basic_shrink() {
-  kwidget_2d_left->KSegment_glob3D_shrink(); // widget updates itself
-  kwidget_3d_right->UpdateVolumeRenderer( kv_data->imageVolumeRaw, kv_data->labelDataArray );
-  qVTK1->update();
-  qVTK2->update();
-  UpdateModel3D();
-}
-
-void interactiveMeanSeparation( const Mat& img, const Mat& phi, Mat& result, int threadKey )
-{
-  // This is accidentally multithreaded so you can segment multiple slices at once...
-  // uh... let's take advantage of that by giving windows unique names?
-
-  std::stringstream ss;
-  ss << "Segmenting Slice " << " ... Esc or 'q' to return to main interface";
-  string window_name = ss.str();
-  cout << ss << " " << threadKey << endl;
-  namedWindow( window_name,  WINDOW_AUTOSIZE);
-  imshow(window_name, img);
-  waitKey(1);
-  LevelSetCurve  LS( img, phi, string( window_name ) );
-  char c = 'c';
-  IplImage output   = IplImage(img);
-  cv::Mat imgToShow = img.clone();
-  cout<<"running a few iterations per key stroke... hit 'q' or 'Esc' to return to main interface " << endl;
-  while( c != 'q' && c != '\x1b') {
-    int its = 30;
-    LS.EvolveSparseField( its, &output );
-    cout << " . " ;
-
-    // waterMark("press 'q' to return to main app",imgToShow);
-    cvShowImage(window_name.c_str(), &output);
-    c = waitKey(0);
-  }
-  cout << endl;
-  cout << "returning to kviewer_desktop " << endl;
-  LS.getPhi(result);
-
-
-}
-
-void runMeanSeparationOnSlice( vtkImageData* image, vtkImageData* label, int sliceIndex )
-{
-  short *ptrLabel = static_cast<short*>(label->GetScalarPointer());
-  short *ptrImage = static_cast<short*>(image->GetScalarPointer());
-  int dimsLabel[3];
-  int dimsImage[3];
-  label->GetDimensions( dimsLabel );
-  image->GetDimensions( dimsImage );
-  int k = sliceIndex;
-  double imgRange[2], labelRange[2];
-  image->GetScalarRange( imgRange );
-  label->GetScalarRange( labelRange );
-
-  Mat img = cv::Mat( dimsImage[0], dimsImage[1], CV_32FC3 );
-  Mat phi = cv::Mat( dimsLabel[0], dimsLabel[1], CV_32F );
-  assert( phi.size() == img.size() &&  k < dimsLabel[2] );
-
-  for (int i = 0; i < dimsLabel[0]; i++)      {
-    for (int j = 0; j < dimsLabel[1]; j++)    {
-          long elemNum       = k * dimsLabel[0] * dimsLabel[1] + j * dimsLabel[1] + i;
-          short imgVal       = ptrImage[elemNum];
-          short phiVal       = ptrLabel[elemNum];
-          img.at<float>(i,j) = float( imgVal );
-          phi.at<float>(i,j) = float( phiVal > 0 );
-      }
-  }
-  phi  = (-phi+0.5)*2.5; // negative inside, positive outside
-  img  = (img - imgRange[0])* (1.0 / (imgRange[1]-imgRange[0]) );
-  Mat phi_new = Mat::zeros(phi.size(), phi.type() );
-  interactiveMeanSeparation( img, phi, phi_new, sliceIndex ); // do the sfls work
-  for (int i = 0; i < dimsLabel[0]; i++)      {
-    for (int j = 0; j < dimsLabel[1]; j++)    {
-          float phival       = ( phi_new.at<float>(i,j) < 0 ) * 1.0;
-          long elemNum       = k * dimsLabel[0] * dimsLabel[1] + j * dimsLabel[1] + i;
-          ptrLabel[elemNum]  = short( phival * labelRange[1] );
-     }
-  }
-
-}
-
-
-vtkSmartPointer<vtkImageData> Grow3DGlob( vtkImageData* input ) {
-  check_extents(input);
-  vtkSmartPointer<vtkImageContinuousDilate3D> dilate_filter;
-  dilate_filter = vtkSmartPointer<vtkImageContinuousDilate3D>::New();
-  dilate_filter->SetKernelSize(3,3,5);
-  dilate_filter->SetInput( input );
-  vtkSmartPointer<vtkImageGaussianSmooth> gaussian_smoother = vtkSmartPointer<vtkImageGaussianSmooth>::New();
-  gaussian_smoother->SetInputConnection( dilate_filter->GetOutputPort( ) );
-  gaussian_smoother->SetStandardDeviations( 0.25, 0.25, 1.0 );
-  gaussian_smoother->Update();
-  vtkSmartPointer<vtkImageData> output = vtkSmartPointer<vtkImageData>::New();
-  output = dilate_filter->GetOutput();
-  check_extents(output);
-  return output;
-}
-
-vtkSmartPointer<vtkImageData> Shrink3DGlob(   vtkImageData* input ) {
-  check_extents(input);
-  vtkSmartPointer<vtkImageContinuousErode3D> erode_filter;
-  erode_filter = vtkSmartPointer<vtkImageContinuousErode3D>::New();
-  erode_filter->SetKernelSize(3,3,5);
-  erode_filter->SetInput( input );
-  vtkSmartPointer<vtkImageGaussianSmooth> gaussian_smoother = vtkSmartPointer<vtkImageGaussianSmooth>::New();
-  gaussian_smoother->SetInputConnection( erode_filter->GetOutputPort( ) );
-  gaussian_smoother->SetStandardDeviations( 0.25, 0.25, 1.0 );
-  gaussian_smoother->Update();
-  vtkSmartPointer<vtkImageData> output = vtkSmartPointer<vtkImageData>::New();
-  output = erode_filter->GetOutput();
-  check_extents(output);
-  return output;
-}
-
-#endif

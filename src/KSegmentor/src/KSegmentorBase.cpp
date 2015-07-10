@@ -4,6 +4,7 @@
 #include "interactive_kurvolver.h"
 #include "vtkImageData.h"
 #include "KSandbox.h"
+#include <QDebug>
 #include <omp.h>
 #include <string>
 #include <sstream>
@@ -399,6 +400,30 @@ void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
             }
         }
     }
+}
+
+void KSegmentorBase::fillIntegralDuringPaste(int kFrom0, int kTo)
+{  
+  int step = (kTo > kFrom0 )*2 - 1;
+  int k = kFrom0+step;
+  while( (k != kTo) && (k != kFrom0 ) )
+  {    
+    copyIntegralDuringPaste(kFrom0,k);
+    k += step;
+  }
+
+  /*std::list<std::thread> jobs;
+  while ((k != idxTo) && (k != idxFrom))
+  {
+    jobs.push_back(std::thread(copySliceFromTo, label_map, idxFrom, k, image, imgMIN_in));
+    k += step;
+  }
+
+  while (!jobs.empty())
+  {
+    jobs.front().join();
+    jobs.pop_front();
+  }*/
 }
 
 KSegmentorBase::~KSegmentorBase()
