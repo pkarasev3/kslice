@@ -405,11 +405,15 @@ void KSegmentorBase::copyIntegralDuringPaste(int kFrom, int kTo)
 void KSegmentorBase::fillIntegralDuringPaste(int kFrom0, int kTo)
 {  
   int step = (kTo > kFrom0 )*2 - 1;
+  PRINT_AND_EVAL( step << kTo << kFrom0 << (kTo - kFrom0)*2 );
   int k = kFrom0+step;
-  while( (k != kTo) && (k != kFrom0 ) )
+  while( (k != kFrom0 ) )
   {    
+    PRINT_AND_EVAL(step << k<< kFrom0 << (kTo - kFrom0) * 2 );
     copyIntegralDuringPaste(kFrom0,k);
-    k += step;
+    if (k == kTo)
+      break;
+    k += step;    
   }
 
   /*std::list<std::thread> jobs;

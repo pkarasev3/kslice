@@ -56,6 +56,15 @@ using namespace vrcl;
 using std::vector;
 using std::string;
 
+void setup_init3D_timer(KViewer* arg)
+{
+  QTimer*  timer = new QTimer(arg);
+  auto bOK = timer->connect(timer, SIGNAL(timeout()), arg, SLOT(UpdateVolumeStatus())); Q_ASSERT(bOK);
+  timer->setSingleShot(true);
+  timer->setInterval(1000 * 1);
+  timer->start();
+}
+
 KViewer::KViewer(const KViewerOptions& kv_opts_in) {
 
     kv_opts = std::shared_ptr<KViewerOptions>(new KViewerOptions(kv_opts_in));
@@ -125,7 +134,7 @@ void KViewer::InitializeCircleCursor( )
 void KViewer::updatePaintBrushStatus(vtkObject*) {
     std::stringstream ss;
     std::stringstream toggle;
-    ss << "Brush Size: " << this->kv_opts->GetBrushSize( ) << ";  x,y keys to modify";
+    ss << "Brush Size: " << this->kv_opts->GetBrushSize( ) << ";  [,] keys to modify";
 
     if (!image_callback->Erase( )) {
         toggle << "Mode: Draw";

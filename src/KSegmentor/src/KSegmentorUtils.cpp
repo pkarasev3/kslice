@@ -67,10 +67,12 @@ void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
   int k = idxFrom + step;
   
   std::list<std::thread> jobs;
-  while ((k != idxTo) && (k != idxFrom))
+  while (k != idxFrom)
   {
     jobs.push_back( std::thread(copySliceFromTo,label_map, idxFrom, k, image, imgMIN_in) );
-    k += step;
+    if (k == idxTo)
+      break;
+    k += step;    
   }
 
    while(!jobs.empty()) 
