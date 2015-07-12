@@ -409,7 +409,6 @@ void KSegmentorBase::fillIntegralDuringPaste(int kFrom0, int kTo)
   int k = kFrom0+step;
   while( (k != kFrom0 ) )
   {    
-    PRINT_AND_EVAL(step << k<< kFrom0 << (kTo - kFrom0) * 2 );
     copyIntegralDuringPaste(kFrom0,k);
     if (k == kTo)
       break;
@@ -436,23 +435,3 @@ KSegmentorBase::~KSegmentorBase()
 
 
 }
-
-/**        Blyat'
-
-    vtkMetaImageWriter* labelWriter=  vtkMetaImageWriter::New();
-    labelWriter->SetInput(createVTKImageFromPointer<double>(this->ptrIntegral_Image,this->U_Integral_image->GetDimensions(), spc) );
-    labelWriter->SetFileName( "0-Integral0.mhd");
-    labelWriter->Write();
-
-    labelWriter->SetInput(this->U_Integral_image );
-    labelWriter->SetFileName( "0-IntegralImage0.mhd");
-    labelWriter->Write();
-
-    // want rad to be '10' for 512 . A 512x512 mri with xy spacing 0.3mm is 153.6000 across
-    // "10" pixels is 3mm in this context.
-//    segPointer->rad = 3.0 / std::max( segPointer->m_Spacing_mm[0],segPointer->m_Spacing_mm[1] ); // about 3mm in physical units
-//    segPointer->rad = std::min(7.0,segPointer->rad); // force non-huge radius if the spacing is retarded
-//    segPointer->rad = std::max(3.0, segPointer->rad); // force non-tiny radius if the spacing is retarded
-
-
-  */

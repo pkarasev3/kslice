@@ -47,12 +47,18 @@ KvtkImageInteractionCallback::~KvtkImageInteractionCallback( )
 
 KvtkImageInteractionCallback::KvtkImageInteractionCallback()
 {
+    using namespace std::placeholders;
     this->Window = NULL;
     this->m_paramWidget.reset(new KViewerParameterWidget); // = std::make_unique<KViewerParameterWidget>();
 
-    auto cb = std::bind(&KvtkImageInteractionCallback::notifyAllFromOptions,
-                         this,std::placeholders::_1);
-    m_paramWidget->setOptionsUpdateCallback(cb);
+    {
+      auto cb = std::bind(&KvtkImageInteractionCallback::notifyAllFromOptions,this,_1);
+      m_paramWidget->setOptionsUpdateCallback(cb);
+    }
+    {
+      auto cb = std::bind(&KvtkImageInteractionCallback::notifyViewDir,this,_1,_2,_3);
+      m_paramWidget->setViewDirUpdateCallback(cb);
+    }
 }
 
 void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
@@ -71,6 +77,27 @@ void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
 {
     this->satLUT_shared = lut;
     this->m_paramWidget->setSaturationLUT(satLUT_shared);
+}
+
+void KvtkImageInteractionCallback::notifyViewDir(bool r0, bool r1, bool r2)
+{
+    if( ! (r0 || r1 || r2 ) )
+      r0 = true;
+
+    if(r0) {
+      this->masterWindow->ResetRotation(0, 0, 1);
+      return; }
+
+    if (r1) {
+      this->masterWindow->ResetRotation(1, 0, 0);
+        return;
+    }
+
+    if (r2) {
+      this->masterWindow->ResetRotation(0, 1, 0);
+        return;
+    }
+
 }
 
 void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewerOptions> opts )

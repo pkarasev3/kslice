@@ -33,6 +33,8 @@ public:
   }
 
   void notifyAllFromOptions(std::shared_ptr<KViewerOptions> arg);
+
+  void notifyViewDir(bool r0, bool r1, bool r2); // mutually exclusive + left to right precedence order
   
   void SetOptions(std::shared_ptr<KViewerOptions> arg);
 

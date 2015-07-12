@@ -269,10 +269,10 @@ namespace vrcl
                 value_IK *= imageOK;
                 value_PK *= imageOK;
 
-                ptrCurrLabel[element3D] = value_IK;
+                ptrCurrLabel[element3D] = value_IK;//value_PK;
                 tmp.at<double>(j, i) = (phi_val <= 0.0)*255.0f;
                 tmpI.at<double>(j, i) = (imgSlice[elemNum]);
-                labelSlice[elemNum] = (double)/*value_PK*/value_IK;
+                labelSlice[elemNum] = (double)value_IK;
                 if ((value_PK == 0) && !(0 == value_IK)) {
                     if (value_IK != value_PK){
                         cout << "IK!=PK;  IK = " << value_IK << ", PK = " << value_PK << endl;
@@ -434,11 +434,11 @@ namespace vrcl
             unsigned short value_PK = ((unsigned short)(((phi_out > 0.95)
                 + (phi_out > 0.8) + (phi_out > 0.65)
                 + (phi_out > 0.5)) * labelRange[1] / 4.0));
-            unsigned short outputVal = value_IK + 0 * value_PK;
+            unsigned short outputVal = 1*value_IK + 0 * value_PK;
             // Argh, fine use the "bug fix/workaround", but nice to make
             // value_PK work to enable (1) accurate volume computation and  (2) better mesh model generation
             //       i.e. keep a range of values for phi instead of truncating like this
-            changeInLabel += fabs((double)((outputVal - ptrCurrLabel[idx]) > 1e-3));  // TODO: Isn't this a math typo ??
+            changeInLabel += (fabs((double)((outputVal - ptrCurrLabel[idx]))) > 1e-3);  // fixed?? TODO: Isn't this a math typo ??
             ptrCurrLabel[idx] = outputVal;
             mask[idx] = (double)(0 < outputVal); // d'oh, *update the mask!*
         }

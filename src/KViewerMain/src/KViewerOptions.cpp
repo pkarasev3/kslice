@@ -142,6 +142,7 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("paintBrushRad,p",po::value<int>(&paintBrushRad)->default_value(10),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
+      ("pasteAsMax,m", po::value<bool>(&m_bPasteAsMax)->default_value(true), "paste takes max (don't erase label)")
       ("ContRad,r",po::value<int>(&rad)->default_value(5),"radius used for active contour, default 5 pixels")
       ("Lambda,l",po::value<float>(&lambda)->default_value(0.5),"lambda, penalty for curvature of contour, default 0.5")
       ("help","print help");

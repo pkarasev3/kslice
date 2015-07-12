@@ -393,6 +393,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 break;
             case 'V': // Paste and Fill!
               kwidget_2d_left->FillLabelsFromTo(cache_idx1, slice_idx, kv_opts->multilabel_paste_mode);
+              UpdateVolumeStatus();
               break;
             case 's': // run "KSegmentor"
                 cout << "s key pressed: this-slice 2D segmentation " << endl;
@@ -401,7 +402,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             case 'a': // run "KSegmentor" // This can't be "S", because "shift" tends to generate the same 8bit code
                 // and we need capital letters for toggling the contrast levels
                 cout << "a key pressed: 3D segmentation " << endl;
-                kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode, false);
+                //kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode, false);
                 break;
             case '7':
                 kv_opts->segmentor_iters -= 5;
@@ -458,23 +459,14 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 cout << "m key pressed: toggling time-triggered updates " << endl;
                 kv_opts->time_triggered_seg_update = !kv_opts->time_triggered_seg_update;
                 break;
+            case '=':
             case 'e': // also '=' key, "equal" starts with e...
                 cout << "e key pressed: X-rotate 90 degrees " << endl;
-                ResetRotation(1, 0, 0);
-                if (this->m_RotX)
-                    kwidget_2d_left->InitializeTransform('x');
-                else
-                    kwidget_2d_left->InitializeTransform('x', -90);
-                this->m_RotX = !this->m_RotX;
+                ResetRotation(1, 0, 0);                
                 break;
             case 't':
                 cout << "t key pressed: Y-rotate 90 degrees " << endl;
-                ResetRotation(0, 1, 0);
-                if (this->m_RotY)
-                    kwidget_2d_left->InitializeTransform('y');
-                else
-                    kwidget_2d_left->InitializeTransform('y', -90);
-                this->m_RotY = !this->m_RotY;
+                ResetRotation(0, 1, 0);                
                 break;
             case 'z':
                 cout << "z key pressed: reset view! " << endl;
@@ -488,7 +480,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 break;
         }
 
-        if (keyPressed == 'e' || keyPressed == 't')
+        if (keyPressed == 'e' || keyPressed == 't' || keyPressed == '=' )
         {
             kwidget_2d_left->UpdateTransform( );
             this->UpdateImageInformation(kv_data->imageVolumeRaw);
@@ -509,6 +501,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
 }
 void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
 {
+
     bool doUpdate = false;
     if (this->m_RotX && !rotX)
     {
@@ -542,6 +535,24 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
         kwidget_2d_left->SelectActiveLabelMap(id);
     }
 
+    if( rotX && !rotY && !rotZ )
+    {
+      if (this->m_RotX)
+        kwidget_2d_left->InitializeTransform('x');
+      else
+        kwidget_2d_left->InitializeTransform('x', -90);
+      this->m_RotX = !this->m_RotX;
+    }
+    
+    if (!rotX && rotY && !rotZ)
+    {
+      if (this->m_RotY)
+        kwidget_2d_left->InitializeTransform('y');
+      else
+        kwidget_2d_left->InitializeTransform('y', -90);
+      this->m_RotY = !this->m_RotY;
+    }
+
 }
 
 void KViewer::mousePaintEvent(vtkObject* obj) 
@@ -549,13 +560,7 @@ void KViewer::mousePaintEvent(vtkObject* obj)
     bool bUpdateDone = false;
     int slice_idx = kwidget_2d_left->currentSliceIndex;
     int label_idx = kwidget_2d_left->activeLabelMapIndex;
-    t2 = clock();
-    if (kv_opts->time_triggered_seg_update && ((t2 - t1) > kv_opts->seg_time_interval*CLOCKS_PER_SEC))
-    {
-      kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode);
-      t1 = t2;
-      bUpdateDone = true;
-    }
+    
 
     if (this->image_callback->ButtonDown() && obj)
     {        
@@ -640,11 +645,21 @@ void KViewer::mousePaintEvent(vtkObject* obj)
                     }
                 }
             }
-            bUpdateDone = true;
+          
             //PKDebug
             //kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->PrintUpdateInfo();
         }
+        bUpdateDone = true;
     }
+
+    t2 = clock();
+    if (kv_opts->time_triggered_seg_update && ((t2 - t1) > kv_opts->seg_time_interval*CLOCKS_PER_SEC))
+    {
+      kwidget_2d_left->RunSegmentor(slice_idx, kv_opts->multilabel_sgmnt_mode);
+      t1 = t2;
+      bUpdateDone = true;
+    }
+
 
     if(bUpdateDone)  // painted or timer triggered
     {

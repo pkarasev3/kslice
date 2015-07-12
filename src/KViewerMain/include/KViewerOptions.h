@@ -49,6 +49,7 @@ public:
   float labelOpacity2D;
   bool  labelInterpolate;
   bool  writeCompressed;
+  bool  m_bPasteAsMax;
   bool  m_bUseEdgeBased;
   bool  m_bResampleImageAtStartupToCubicVoxels; // deprecated, don't do this here ...
   bool  time_triggered_seg_update;

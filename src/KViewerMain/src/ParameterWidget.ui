@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
-    <height>458</height>
+    <width>602</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,8 +48,8 @@
     <rect>
      <x>10</x>
      <y>0</y>
-     <width>581</width>
-     <height>451</height>
+     <width>582</width>
+     <height>521</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -64,6 +64,16 @@
       <property name="verticalSpacing">
        <number>2</number>
       </property>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>             ======== basic parameters  ========</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label">
         <property name="font">
@@ -160,7 +170,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -174,6 +184,16 @@
        </spacer>
       </item>
       <item row="7" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>             ======== advanced parameters ========</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
        <widget class="QLabel" name="label_3">
         <property name="font">
          <font>
@@ -186,7 +206,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QDoubleSpinBox" name="lambdaSmoothnessSpinbox">
         <property name="font">
          <font>
@@ -209,6 +229,32 @@
        </widget>
       </item>
       <item row="10" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="font">
+         <font>
+          <family>Tahoma</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>enable auto-run segmentor (as if s key is pressed)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QCheckBox" name="checkBoxEnableAutoTriggerSegmentor">
+        <property name="font">
+         <font>
+          <family>Tahoma</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>ON?</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
        <widget class="QLabel" name="label_5">
         <property name="font">
          <font>
@@ -221,7 +267,7 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <widget class="QDoubleSpinBox" name="autoTriggerContourSpinbox">
         <property name="font">
          <font>
@@ -243,7 +289,7 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
+      <item row="12" column="0">
        <widget class="QLabel" name="label_6">
         <property name="font">
          <font>
@@ -256,7 +302,7 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
+      <item row="12" column="1">
        <widget class="QDoubleSpinBox" name="labelOpacitySpinbox">
         <property name="font">
          <font>
@@ -281,7 +327,7 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
+      <item row="13" column="0">
        <widget class="QLabel" name="label_7">
         <property name="font">
          <font>
@@ -294,7 +340,7 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="1">
+      <item row="13" column="1">
        <widget class="QSpinBox" name="regionSizeRBACSpinBox">
         <property name="font">
          <font>
@@ -316,7 +362,7 @@
         </property>
        </widget>
       </item>
-      <item row="13" column="0">
+      <item row="14" column="0">
        <widget class="QLabel" name="label_10">
         <property name="font">
          <font>
@@ -329,7 +375,7 @@
         </property>
        </widget>
       </item>
-      <item row="13" column="1">
+      <item row="14" column="1">
        <widget class="QCheckBox" name="checkBoxCopyPasteAllLabels">
         <property name="font">
          <font>
@@ -342,7 +388,7 @@
         </property>
        </widget>
       </item>
-      <item row="14" column="0">
+      <item row="15" column="0">
        <widget class="QLabel" name="label_9">
         <property name="font">
          <font>
@@ -355,7 +401,7 @@
         </property>
        </widget>
       </item>
-      <item row="14" column="1">
+      <item row="15" column="1">
        <widget class="QCheckBox" name="checkBoxEvolveAllLabels">
         <property name="font">
          <font>
@@ -368,7 +414,7 @@
         </property>
        </widget>
       </item>
-      <item row="15" column="0">
+      <item row="16" column="0">
        <widget class="QLabel" name="label_8">
         <property name="font">
          <font>
@@ -381,7 +427,7 @@
         </property>
        </widget>
       </item>
-      <item row="15" column="1">
+      <item row="16" column="1">
        <widget class="QSpinBox" name="contourIterationsSpinBox">
         <property name="font">
          <font>
@@ -406,50 +452,65 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>             ======== basic parameters  ========</string>
+      <item row="5" column="0" colspan="2">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>60</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>             ======== advanced parameters ========</string>
+        <property name="title">
+         <string> -----&gt; View Direction:</string>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        <property name="flat">
+         <bool>false</bool>
         </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_12">
-        <property name="font">
-         <font>
-          <family>Tahoma</family>
-          <pointsize>10</pointsize>
-         </font>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
-        <property name="text">
-         <string>enable auto-run segmentor (as if s key is pressed)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QCheckBox" name="checkBoxEnableAutoTriggerSegmentor">
-        <property name="font">
-         <font>
-          <family>Tahoma</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>ON?</string>
-        </property>
+        <widget class="QWidget" name="">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>20</y>
+           <width>421</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QRadioButton" name="radioButton_View0">
+            <property name="text">
+             <string>Default</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_View1">
+            <property name="text">
+             <string>Rotated-1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_View2">
+            <property name="text">
+             <string>Rotated-2</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>

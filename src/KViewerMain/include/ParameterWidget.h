@@ -15,13 +15,16 @@ class KVIEWER_EXPORT  KViewerParameterWidget : public QObject, public Ui_KViewer
     Q_OBJECT
 
     std::function<void(std::shared_ptr<KViewerOptions>)> m_updateCallback;
+    std::function<void(bool,bool,bool)> m_viewCallback;
 
 public slots:
     void  updatedBasicParams();
+    void  updatedViewSelection();
 
 public:    
     KViewerParameterWidget& populateFromOptions(std::shared_ptr<KViewerOptions> opts);
     KViewerParameterWidget& setOptionsUpdateCallback(decltype(m_updateCallback) arg){m_updateCallback=arg; return *this;}
+    KViewerParameterWidget& setViewDirUpdateCallback(decltype(m_viewCallback) arg){  m_viewCallback  =arg; return *this; }
     
 public:
     KViewerParameterWidget();

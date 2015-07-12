@@ -30,6 +30,10 @@ KViewerParameterWidget::KViewerParameterWidget()
     <<connect(this->checkBoxEvolveAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxEnableAutoTriggerSegmentor,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     
+    <<connect(this->radioButton_View0, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection()))
+    <<connect(this->radioButton_View1, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection()))
+    <<connect(this->radioButton_View2, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection())) 
+    
     /**/; Q_ASSERT(!bOK.contains(false));
 }
 
@@ -87,6 +91,23 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
     this->m_dialog->show( );
 
     return *this;
+}
+
+void KViewerParameterWidget::updatedViewSelection( )
+{
+  auto buttons = QSet<QRadioButton*>() << radioButton_View0 << radioButton_View1 << radioButton_View2;
+  if(this->radioButton_View0->isChecked())
+    buttons.remove(radioButton_View0);
+  else if( radioButton_View1->isChecked() )
+    buttons.remove(radioButton_View1);
+  else if (radioButton_View2->isChecked())
+    buttons.remove(radioButton_View2);
+
+  for( auto b : buttons )
+    b->setChecked(false);
+  
+  m_viewCallback(radioButton_View0->isChecked(),radioButton_View1->isChecked(),radioButton_View2->isChecked());
+
 }
 
 void KViewerParameterWidget::updatedBasicParams( )

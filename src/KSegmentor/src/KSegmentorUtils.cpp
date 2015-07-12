@@ -61,7 +61,7 @@ namespace  vrcl
 
 
 void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
-  vtkImageData* image, double imgMIN_in)
+  vtkImageData* image, double imgMIN_in, bool bPasteAsMax)
 {
   int step = (idxTo > idxFrom) * 2 - 1;
   int k = idxFrom + step;
@@ -69,7 +69,7 @@ void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
   std::list<std::thread> jobs;
   while (k != idxFrom)
   {
-    jobs.push_back( std::thread(copySliceFromTo,label_map, idxFrom, k, image, imgMIN_in) );
+    jobs.push_back( std::thread(copySliceFromTo,label_map, idxFrom, k, image, imgMIN_in, bPasteAsMax) );
     if (k == idxTo)
       break;
     k += step;    
@@ -85,7 +85,7 @@ void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
 
 
 void copySliceFromTo(vtkImageData* label_map,int idxFrom,int idxTo,
-                     vtkImageData* image,double imgMIN_in)
+                     vtkImageData* image,double imgMIN_in,bool bPasteAsMax)
 {
     double imgMIN   = -std::numeric_limits<double>::max();
     short* ptrImage = nullptr;
@@ -106,7 +106,7 @@ void copySliceFromTo(vtkImageData* label_map,int idxFrom,int idxTo,
             long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[0] + i;
             short prevVal    = ptrLabel[elemNumTo];
             short newVal     = ptrLabel[elemNumFrom];
-
+            newVal           = ( bPasteAsMax ) ? std::max(newVal,prevVal) : newVal;
             if(ptrImage)
                 if(ptrImage[elemNumTo] < imgMIN_in)
                     newVal = 0;
