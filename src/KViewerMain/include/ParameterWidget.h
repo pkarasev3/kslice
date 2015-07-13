@@ -21,7 +21,8 @@ public slots:
     void  updatedBasicParams();
     void  updatedViewSelection();
 
-public:    
+public:   
+    //KViewerParameterWidget& populateFromViewXYZ(int x,int y, int z);
     KViewerParameterWidget& populateFromOptions(std::shared_ptr<KViewerOptions> opts);
     KViewerParameterWidget& setOptionsUpdateCallback(decltype(m_updateCallback) arg){m_updateCallback=arg; return *this;}
     KViewerParameterWidget& setViewDirUpdateCallback(decltype(m_viewCallback) arg){  m_viewCallback  =arg; return *this; }

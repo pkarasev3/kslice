@@ -98,6 +98,12 @@ void KWidget_2D_left::SetupRenderWindow( ) {
     qvtk->SetRenderWindow(window_alias);
     window_alias->GetInteractor( )->SetInteractorStyle(image_interactor_style);
 
+    { // do this b/c otherwise 'x' and 'y' keys do something bizarre/undesirable. 
+      image_interactor_style->SetXViewRightVector(image_interactor_style->GetZViewRightVector());
+      image_interactor_style->SetYViewRightVector(image_interactor_style->GetZViewRightVector());
+      image_interactor_style->SetXViewUpVector(image_interactor_style->GetZViewUpVector());
+      image_interactor_style->SetYViewUpVector(image_interactor_style->GetZViewUpVector());
+    }
 }
 
 void  KWidget_2D_left::InitializeTransform(char transform, float angle)

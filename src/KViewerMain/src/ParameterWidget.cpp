@@ -30,9 +30,9 @@ KViewerParameterWidget::KViewerParameterWidget()
     <<connect(this->checkBoxEvolveAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxEnableAutoTriggerSegmentor,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     
-    <<connect(this->radioButton_View0, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection()))
-    <<connect(this->radioButton_View1, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection()))
-    <<connect(this->radioButton_View2, SIGNAL(checked(bool)), this, SLOT(updatedViewSelection())) 
+    <<connect(this->radioButton_View0, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
+    <<connect(this->radioButton_View1, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
+    <<connect(this->radioButton_View2, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection())) 
     
     /**/; Q_ASSERT(!bOK.contains(false));
 }
@@ -55,6 +55,17 @@ KViewerParameterWidget& KViewerParameterWidget::setSaturationLUT(vtkWeakPointer<
     this->m_dialog->update();
     return *this;
 }
+
+//KViewerParameterWidget& KViewerParameterWidget::populateFromViewXYZ(int x, int y, int z)
+//{
+//  QString fnc = __FUNCTION__;
+//  PRINT_AND_EVAL( fnc << x << y << z);
+//  radioButton_View1->setChecked( (x>0) );
+//  radioButton_View2->setChecked( (y>1));
+//
+//  radioButton_View0->setChecked( (x==0) && (y==0) );
+//  return *this;
+//}
 
 KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_ptr<KViewerOptions> opts_in)
 {
@@ -94,18 +105,13 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
 }
 
 void KViewerParameterWidget::updatedViewSelection( )
-{
-  auto buttons = QSet<QRadioButton*>() << radioButton_View0 << radioButton_View1 << radioButton_View2;
-  if(this->radioButton_View0->isChecked())
-    buttons.remove(radioButton_View0);
-  else if( radioButton_View1->isChecked() )
-    buttons.remove(radioButton_View1);
-  else if (radioButton_View2->isChecked())
-    buttons.remove(radioButton_View2);
+{  
+  auto who_sent_it = sender();
+  PRINT_AND_EVAL( who_sent_it );
+  auto button_sender = dynamic_cast<QRadioButton*>(who_sent_it);
+  if( button_sender && !button_sender->isChecked() )
+    return;
 
-  for( auto b : buttons )
-    b->setChecked(false);
-  
   m_viewCallback(radioButton_View0->isChecked(),radioButton_View1->isChecked(),radioButton_View2->isChecked());
 
 }

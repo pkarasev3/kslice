@@ -1,7 +1,7 @@
 /////////////////////////////////////
 #define TOKEN_TO_STRING(TOK) # TOK
 #define STRINGIZE_TOKEN(TOK) TOKEN_TO_STRING(TOK)
-#define PRINT_AND_EVAL(X) qDebug()<<STRINGIZE_TOKEN(X)<<"="<<X;
+#define PRINT_AND_EVAL(X) {QString fnc=__FUNCTION__;qDebug()<<fnc<<": "<<STRINGIZE_TOKEN(X)<<"="<<X;}
 /////////////////////////////////////    Print the statement and its executed value.
 
 /////////////////////////////////////    Building Sub-Component   ///

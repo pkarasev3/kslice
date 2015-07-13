@@ -36,6 +36,8 @@ public:
 
   void notifyViewDir(bool r0, bool r1, bool r2); // mutually exclusive + left to right precedence order
   
+  void setViewDir(bool rotX, bool rotY, bool rotZ);
+
   void SetOptions(std::shared_ptr<KViewerOptions> arg);
 
   void SetSaturationLookupTable( vtkLookupTable* satLUT ) ;
@@ -59,6 +61,7 @@ private:
   bool erase;
   int indexSliceCopyFrom;
   int indexSlicePasteTo;
+  bool m_bInsideViewCallback;
   vtkRenderWindow*          Window;        // I don't own it, someone else cleans up
   vtkWeakPointer<vtkLookupTable>           satLUT_shared; // I don't own it, someone else cleans up
   KViewer*                  masterWindow;  // reverse handle on my source

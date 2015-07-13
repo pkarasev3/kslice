@@ -462,11 +462,27 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             case '=':
             case 'e': // also '=' key, "equal" starts with e...
                 cout << "e key pressed: X-rotate 90 degrees " << endl;
-                ResetRotation(1, 0, 0);                
+                ResetRotation(1, 0, 0); 
+                if (1)
+                {
+                  if (this->m_RotX)
+                    kwidget_2d_left->InitializeTransform('x');
+                  else
+                    kwidget_2d_left->InitializeTransform('x', -90);
+                  this->m_RotX = !this->m_RotX;
+                }                
                 break;
             case 't':
                 cout << "t key pressed: Y-rotate 90 degrees " << endl;
                 ResetRotation(0, 1, 0);                
+                if (1)
+                {
+                  if (this->m_RotY)
+                    kwidget_2d_left->InitializeTransform('y');
+                  else
+                    kwidget_2d_left->InitializeTransform('y', -90);
+                  this->m_RotY = !this->m_RotY;
+                }
                 break;
             case 'z':
                 cout << "z key pressed: reset view! " << endl;
@@ -475,13 +491,15 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             case 'u':
                 cout << "u key pressed: updating volume status and 3D view " << endl;
                 this->UpdateVolumeStatus( );
-                break;
+                break;            
             default:
                 break;
         }
 
+        std::cout.flush();
+
         if (keyPressed == 'e' || keyPressed == 't' || keyPressed == '=' )
-        {
+        {            
             kwidget_2d_left->UpdateTransform( );
             this->UpdateImageInformation(kv_data->imageVolumeRaw);
             for (size_t k = 0; k < kwidget_2d_left->multiLabelMaps.size( ); k++)
@@ -495,7 +513,11 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             kwidget_2d_left->m_SliderTrans->Translate(0, 0, currSliceOrigin);
             for (int k = 0; k < (int)kwidget_2d_left->multiLabelMaps.size( ); k++)
                 kwidget_2d_left->multiLabelMaps[k]->labelReslicer->SetResliceTransform(kwidget_2d_left->m_SliderTrans);
+
         }
+        if( QString("etz=").contains(keyPressed) )
+          this->image_callback->setViewDir(m_RotX, m_RotY, m_RotZ);
+                
     }
 
 }
@@ -521,9 +543,11 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
         doUpdate = true;
         this->m_RotZ = !this->m_RotZ;
     }
+    PRINT_AND_EVAL(doUpdate);
+    
     //Update transform
     if (doUpdate)
-    {
+    {        
         kwidget_2d_left->UpdateTransform( );
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         int id = kwidget_2d_left->activeLabelMapIndex;
@@ -532,26 +556,10 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
             kwidget_2d_left->SelectActiveLabelMap(k);
             this->UpdateVolumeStatus( );
         }
-        kwidget_2d_left->SelectActiveLabelMap(id);
+        kwidget_2d_left->SelectActiveLabelMap(id);        
     }
 
-    if( rotX && !rotY && !rotZ )
-    {
-      if (this->m_RotX)
-        kwidget_2d_left->InitializeTransform('x');
-      else
-        kwidget_2d_left->InitializeTransform('x', -90);
-      this->m_RotX = !this->m_RotX;
-    }
-    
-    if (!rotX && rotY && !rotZ)
-    {
-      if (this->m_RotY)
-        kwidget_2d_left->InitializeTransform('y');
-      else
-        kwidget_2d_left->InitializeTransform('y', -90);
-      this->m_RotY = !this->m_RotY;
-    }
+   
 
 }
 

@@ -53,7 +53,7 @@ void copySliceFromTo( vtkImageData* label_map, int idxFrom, int idxTo,
 KVIEWER_EXPORT
 void fillSliceFromTo(vtkImageData* label_map, int idxFrom, int idxTo,
                      vtkImageData* image = nullptr, double imageMin = -1e99,
-                     bool bPasteAsMax = false);
+                     bool bPasteAsMax = true);
 
 /** remove 3D islands: erode slightly, dilate a lot, AND this with original */
 vtkSmartPointer<vtkImageData>  removeImageOstrava( vtkImageData* img_dirty,

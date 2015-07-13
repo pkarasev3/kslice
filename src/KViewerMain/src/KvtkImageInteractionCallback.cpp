@@ -12,8 +12,8 @@ using namespace vrcl;
 using std::cout;
 using std::endl;
 
-namespace {
-
+namespace 
+{
 const char keyMinusBrushSize    ='[';
 const char keyPlusBrushSize     =']';
 
@@ -30,9 +30,43 @@ const char keyUpMinSatRange     ='H'; // shift *only min* up
 
 const char keyUpLabelOpacity    ='p';
 const char keyDownLabelOpacity  ='o';
-
-
 }
+
+class SignalBlocker
+{
+public:
+  SignalBlocker(QObject *obj)
+  {
+    insert( QList<QObject*>()<<obj );
+  }
+
+  SignalBlocker(QList<QObject*>  objects)
+  {
+    insert(objects);
+  }
+
+  void insert(QList<QObject*>  objects)
+  {
+    for (auto obj : objects)
+      m_objs.insert(obj, obj->signalsBlocked());
+    blockAll();
+  }
+
+  void blockAll() {
+    for( auto m_obj : m_objs.keys() )
+      m_obj->blockSignals(true);
+  }
+
+  ~SignalBlocker()
+  {
+    for( auto m_obj : m_objs.keys() )
+      m_obj->blockSignals( m_objs[m_obj] );
+  }
+
+private:
+  QMap<QObject*,bool> m_objs;
+  
+};
 
 KvtkImageInteractionCallback* KvtkImageInteractionCallback::New()
 {
@@ -59,6 +93,7 @@ KvtkImageInteractionCallback::KvtkImageInteractionCallback()
       auto cb = std::bind(&KvtkImageInteractionCallback::notifyViewDir,this,_1,_2,_3);
       m_paramWidget->setViewDirUpdateCallback(cb);
     }
+    m_bInsideViewCallback = false;
 }
 
 void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
@@ -79,25 +114,45 @@ void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
     this->m_paramWidget->setSaturationLUT(satLUT_shared);
 }
 
+void KvtkImageInteractionCallback::setViewDir(bool rotX, bool rotY, bool rotZ)
+{  
+  PRINT_AND_EVAL( QVector<int>()<<rotX<<rotY<<rotZ );
+  SignalBlocker tmp( QList<QObject*>() 
+    << m_paramWidget->radioButton_View0
+    << m_paramWidget->radioButton_View1
+    << m_paramWidget->radioButton_View2
+    );
+  m_paramWidget->radioButton_View1->setChecked( (rotX>0) );
+  m_paramWidget->radioButton_View2->setChecked( (rotY>0) );
+  m_paramWidget->radioButton_View0->setChecked( (rotY==0) && (rotX==0) );
+  
+}
+
 void KvtkImageInteractionCallback::notifyViewDir(bool r0, bool r1, bool r2)
 {
+    if(m_bInsideViewCallback)
+      return;
+    
+    m_bInsideViewCallback = true;
     if( ! (r0 || r1 || r2 ) )
       r0 = true;
 
-    if(r0) {
-      this->masterWindow->ResetRotation(0, 0, 1);
-      return; }
+    auto obj = this->Window->GetInteractor();
+    char key = '\0';
 
-    if (r1) {
-      this->masterWindow->ResetRotation(1, 0, 0);
-        return;
-    }
+    if (r0)
+      key = 'z';
 
-    if (r2) {
-      this->masterWindow->ResetRotation(0, 1, 0);
-        return;
-    }
-
+    if (r1)
+      key = 'e';
+    
+    if (r2)
+      key = 't';
+    
+    obj->SetKeyCode(key);
+    PRINT_AND_EVAL(QString().sprintf("%d,%d,%d,",r0,r1,r2)+QString()<<key);
+    this->masterWindow->handleGenericEvent(obj,0);
+    this->m_bInsideViewCallback = false;
 }
 
 void KvtkImageInteractionCallback::notifyAllFromOptions( std::shared_ptr<KViewerOptions> opts )
@@ -151,7 +206,10 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     if( (char)keyPressed == 'L' ) 
       keyChar = 'L';
 
-    switch ( keyChar ) {
+    bool bHandled = true;
+
+    switch ( keyChar ) 
+    {
     case keyMinusBrushSize:
       kv_opts->paintBrushRad = kv_opts->paintBrushRad-1;
       this->notifyChangeBrushSize(kv_opts->paintBrushRad);
@@ -230,18 +288,21 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
       // http://www.vtk.org/doc/release/5.0/html/a01650.html
       break;
     default:
+      bHandled = false;
       break;
     }
     if( bUpdatedSatLut ) {
       cout << "updated satLUT range: " << satLUT_shared->GetTableRange()[0]
            << ", " << satLUT_shared->GetTableRange()[1] << endl;
     }
+    PRINT_AND_EVAL(bHandled);
+    if (bHandled)
+      this->m_paramWidget->populateFromOptions(kv_opts);
   }
 
   // trigger the main window to update text displaying paintbrush info
   this->masterWindow->updatePaintBrushStatus( NULL );
-
-  m_paramWidget->populateFromOptions(kv_opts);
-
+    
+  
 
 }
