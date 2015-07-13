@@ -49,7 +49,7 @@
      <x>10</x>
      <y>0</y>
      <width>582</width>
-     <height>521</height>
+     <height>539</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -414,7 +414,7 @@
         </property>
        </widget>
       </item>
-      <item row="16" column="0">
+      <item row="17" column="0">
        <widget class="QLabel" name="label_8">
         <property name="font">
          <font>
@@ -427,7 +427,7 @@
         </property>
        </widget>
       </item>
-      <item row="16" column="1">
+      <item row="17" column="1">
        <widget class="QSpinBox" name="contourIterationsSpinBox">
         <property name="font">
          <font>
@@ -511,6 +511,35 @@
           </item>
          </layout>
         </widget>
+       </widget>
+      </item>
+      <item row="16" column="1">
+       <widget class="QCheckBox" name="checkBoxPasteAsMax">
+        <property name="font">
+         <font>
+          <family>Tahoma</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>ON?</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="16" column="0">
+       <widget class="QLabel" name="label_14">
+        <property name="font">
+         <font>
+          <family>Tahoma</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>paste as max value (don't erase existing)</string>
+        </property>
        </widget>
       </item>
      </layout>

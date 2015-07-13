@@ -29,6 +29,7 @@ KViewerParameterWidget::KViewerParameterWidget()
     <<connect(this->checkBoxCopyPasteAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxEvolveAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxEnableAutoTriggerSegmentor,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
+    <<connect(this->checkBoxPasteAsMax, SIGNAL(stateChanged(int)), this, SLOT(updatedBasicParams()), Qt::QueuedConnection)
     
     <<connect(this->radioButton_View0, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
     <<connect(this->radioButton_View1, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
@@ -96,6 +97,7 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
     this->checkBoxCopyPasteAllLabels->setChecked(opts.multilabel_paste_mode);
     this->checkBoxEvolveAllLabels->setChecked(opts.multilabel_sgmnt_mode);
     this->checkBoxEnableAutoTriggerSegmentor->setChecked(opts.time_triggered_seg_update);
+    this->checkBoxPasteAsMax->setChecked(opts.m_bPasteAsMax);
 
     this->m_dialog->update();
     this->m_dialog->raise();
@@ -138,9 +140,10 @@ void KViewerParameterWidget::updatedBasicParams( )
     opts->rad = this->regionSizeRBACSpinBox->value();
     opts->segmentor_iters = this->contourIterationsSpinBox->value();
 
-    opts->multilabel_paste_mode = this->checkBoxCopyPasteAllLabels->isChecked();
-    opts->multilabel_sgmnt_mode = this->checkBoxEvolveAllLabels->isChecked();
+    opts->multilabel_paste_mode     = this->checkBoxCopyPasteAllLabels->isChecked();
+    opts->multilabel_sgmnt_mode     = this->checkBoxEvolveAllLabels->isChecked();
     opts->time_triggered_seg_update = this->checkBoxEnableAutoTriggerSegmentor->isChecked();
+    opts->m_bPasteAsMax             = this->checkBoxPasteAsMax->isChecked();
 
     m_updateCallback(opts);
 }

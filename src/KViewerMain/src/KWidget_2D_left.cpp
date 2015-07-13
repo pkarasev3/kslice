@@ -486,14 +486,14 @@ void KWidget_2D_left::FillLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
   if (bPasteAll) {
     for (int k = 0; k < (int)multiLabelMaps.size(); k++) {
       double imgMIN = multiLabelMaps[k]->ksegmentor->m_SatRange[0];
-      fillSliceFromTo(multiLabelMaps[k]->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw,imgMIN);
+      fillSliceFromTo(multiLabelMaps[k]->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw,imgMIN,kv_opts->m_bPasteAsMax);
       //multiLabelMaps[k]->ksegmentor->fillIntegralDuringPaste(iFrom, iTo);
     }
   }
   else {
     kv_data->labelDataArray = multiLabelMaps[activeLabelMapIndex]->labelDataArray;
     double imgMIN = multiLabelMaps[activeLabelMapIndex]->ksegmentor->m_SatRange[0];
-    fillSliceFromTo(kv_data->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw, imgMIN);
+    fillSliceFromTo(kv_data->labelDataArray, iFrom, iTo, kv_data->imageVolumeRaw, imgMIN, kv_opts->m_bPasteAsMax);
     kv_data->labelDataArray->Modified();
     //multiLabelMaps[activeLabelMapIndex]->ksegmentor->fillIntegralDuringPaste(iFrom, iTo);
   }

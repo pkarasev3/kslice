@@ -128,10 +128,10 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
       ("Image,I",po::value<std::string>(&ImageArrayFilename)->default_value(""),"image volume file")
       ("Imax,n",po::value<int>(&maxIntensity)->default_value(0),"max image value for display")
       ("Imin,x",po::value<int>(&minIntensity)->default_value(0),"min image value for display")
-      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(40),"# of curve evolution update iterations")
+      ("CurveIters,C",po::value<int>(&segmentor_iters)->default_value(30),"# of curve evolution update iterations")
       ("MultiLabelPasteMode,P",po::value<int>(&multilabel_paste_mode)->default_value(0),"copy/paste, do all labels [1] or only active [0], or ?")
       ("MultiLabelSegmentMode,S",po::value<int>(&multilabel_sgmnt_mode)->default_value(0),"segmentor, do all labels [1] or only active [0], or ?")
-      ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.5),"2D label opacity initial. note that [o,p] keys adjust it live.")
+      ("labelOpacity2D,w",po::value<float>(&labelOpacity2D)->default_value(0.7),"2D label opacity initial. note that [o,p] keys adjust it live.")
       ("imgThreshWeight,W",po::value<float>(&m_ThreshWeight)->default_value(0.0),"image threshold weight (truncate label after segmentation)")
       ("time_triggered_seg_update,t",po::value<bool>(&time_triggered_seg_update)->default_value(0),"True or False (0,1), continous levelset integration?")
       ("verboseSave,V",po::value<bool>(&m_bVerboseSave)->default_value(false),"True or False (0,1), use verbose saving (slows things down)?")
@@ -140,11 +140,11 @@ void KViewerOptions::setFromArgs(int argc, char **argv){
        //currently not used
       // ("CustomSpeedImg,c",po::value<std::string>(&m_SpeedImageFileName)->default_value(""),"custom speed image")
       ("DrawSpreadOffViewPlane,d",po::value<int>(&m_DrawSpreadOffViewPlane)->default_value(0),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
-      ("paintBrushRad,p",po::value<int>(&paintBrushRad)->default_value(10),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
+      ("paintBrushRad,p",po::value<int>(&paintBrushRad)->default_value(12),"how much +/- from viewed slice to draw in (unobservable area off-plane)")
       ("ForceLargeU,U",po::value<bool>(&m_bForceLargeU)->default_value(false),"force a large U value. not very useful except seeing if you can align one label with another one.")
       ("pasteAsMax,m", po::value<bool>(&m_bPasteAsMax)->default_value(true), "paste takes max (don't erase label)")
       ("ContRad,r",po::value<int>(&rad)->default_value(5),"radius used for active contour, default 5 pixels")
-      ("Lambda,l",po::value<float>(&lambda)->default_value(0.5),"lambda, penalty for curvature of contour, default 0.5")
+      ("Lambda,l",po::value<float>(&lambda)->default_value(0.3),"lambda, penalty for curvature of contour, default 0.5")
       ("help","print help");
 
   po::variables_map vm;

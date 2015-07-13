@@ -106,11 +106,12 @@ void copySliceFromTo(vtkImageData* label_map,int idxFrom,int idxTo,
             long elemNumTo   = idxTo   * dims[0] * dims[1] + j * dims[0] + i;
             short prevVal    = ptrLabel[elemNumTo];
             short newVal     = ptrLabel[elemNumFrom];
-            newVal           = ( bPasteAsMax ) ? std::max(newVal,prevVal) : newVal;
+            
             if(ptrImage)
                 if(ptrImage[elemNumTo] < imgMIN_in)
                     newVal = 0;
-
+            
+            newVal = bPasteAsMax ? std::max(newVal, prevVal) : newVal;
             ptrLabel[elemNumTo] = newVal;
             num_changed  +=  ( newVal != prevVal );
       }
