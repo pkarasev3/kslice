@@ -98,7 +98,7 @@ void KWidget_2D_left::SetupRenderWindow( ) {
     qvtk->SetRenderWindow(window_alias);
     window_alias->GetInteractor( )->SetInteractorStyle(image_interactor_style);
 
-    { // do this b/c otherwise 'x' and 'y' keys do something bizarre/undesirable. 
+    { // do this b/c otherwise 'x' and 'y' keys do something bizarre/undesirable.
       image_interactor_style->SetXViewRightVector(image_interactor_style->GetZViewRightVector());
       image_interactor_style->SetYViewRightVector(image_interactor_style->GetZViewRightVector());
       image_interactor_style->SetXViewUpVector(image_interactor_style->GetZViewUpVector());
@@ -427,11 +427,18 @@ void KWidget_2D_left::SaveLabelsInternal(const std::stringstream& ss,
 
 }
 
-void KWidget_2D_left::SaveAsCurrentLabelMap(const std::string &fileName) {
+void KWidget_2D_left::SaveAsCurrentLabelMap(std::string fileName) {
     std::stringstream  ss;
     ss << fileName;
     unsigned int minLength = 5;
-    if (minLength > fileName.size( )) {
+    if (minLength > fileName.size( ))
+    {
+      ss.clear();
+      ss << this->kv_opts->ImageArrayFilename << "_";
+      fileName = ss.str();
+    }
+    if (minLength > fileName.size( ))
+    {
         ss.clear( );
         ss << "kslice_" << fileName;
     }
@@ -505,7 +512,7 @@ void KWidget_2D_left::FillLabelsFromTo(int iFrom, int iTo, bool bPasteAll)
 void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
 {
     if (slice_index < 0)
-        slice_index = currentSliceIndex;    
+        slice_index = currentSliceIndex;
 
     assert(0 < multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( ));
     double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( );
@@ -630,7 +637,7 @@ void KWidget_2D_left::AddNewLabelMap( )
 
     // give the label map handles to kv_opts, image volume, and this widget
     labelMap->RegisterSourceWidget(this, true);
-    
+
     multiLabelMaps.push_back(labelMap);            // bag it in the array
     activeLabelMapIndex = multiLabelMaps.size( ) - 1; // increment active index
 
@@ -645,10 +652,10 @@ void KWidget_2D_left::AddNewLabelMap( )
         raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
         raw_ptr->SetContRad(kv_opts->rad);   //set the radius used in active contour
         multiLabelMaps[activeLabelMapIndex]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
-        
+
         multiLabelMaps[activeLabelMapIndex]->ksegmentor->SetPlaneCenter(kv_opts->m_PlaneCenter);
         multiLabelMaps[activeLabelMapIndex]->ksegmentor->SetPlaneNormalVector(kv_opts->m_PlaneNormalVector);
-        double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( ); 
+        double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( );
         PRINT_AND_EVAL(UmaxInit);
 
         if (!(kv_opts->m_SpeedImageFileName.empty( )))

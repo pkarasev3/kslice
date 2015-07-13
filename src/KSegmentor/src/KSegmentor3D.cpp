@@ -64,9 +64,8 @@ namespace vrcl
         double Umax = 1.0;
         Umax = this->GetUmax( ); assert(Umax > 0);
         double Ustep = weight * (Umax) / 2.0;
-        if (fabs(Ustep) < 0.01) {
-            /*cout <<"whoa something is F'd, check Umax " << endl;*/ assert(1);
-        }
+        if (fabs(Ustep) < 0.01)
+            assert(1);
 
         double user_input = -Ustep * (value > 0.5) +
             Ustep * (value <= 0.5);
@@ -171,6 +170,32 @@ namespace vrcl
 
     }
 
+    void KSegmentor3D::VerboseSaveToPng(cv::Mat tmp, cv::Mat tmpI)
+    {
+      bool bSavePNG = false;
+      if (bSavePNG) {
+          std::stringstream ss, ssI;
+          ss << "label_slice_" << THREE_DIGITS(currSlice) << "_"
+              << THREE_DIGITS(save_count_per_slice[currSlice]) << "_"
+              << FIVE_DIGITS(num_actuated_voxels) << ".png";
+          ssI << "image_slice_" << THREE_DIGITS(currSlice) << ".png";
+          static std::vector<cv::Mat> chans(3); static cv::Mat tmpPng;
+          cv::flip(tmp.clone( ), tmp, 0); double dmin, dmax; cv::minMaxLoc(tmp, &dmin, &dmax);
+          cout << "min_label=" << dmin << ", max_label=" << dmax << ";  ";
+          for (int c = 0; c < 3; c++){ tmp.convertTo(chans[c], CV_8UC1); }
+          cv::merge(chans, tmpPng);
+          cout << "write to " << ss.str( ) << " result: " << cv::imwrite(ss.str( ), tmpPng) << endl;
+          cv::flip(tmpI.clone( ), tmpI, 0); cv::minMaxLoc(tmpI, &dmin, &dmax);
+          cout << "min_image=" << dmin << ", max_image=" << dmax << ";  ";
+          for (int c = 0; c < 3; c++){ tmpI.convertTo(chans[c], CV_8UC1); }
+          cv::merge(chans, tmpPng);
+          cout << "write to " << ssI.str( ) << " result: " << cv::imwrite(ssI.str( ), tmpPng) << endl;
+
+          save_count_per_slice[currSlice] += 1;
+          //saveMatToPNG( tmp, ss.str() );
+      }
+    }
+
     void KSegmentor3D::Update2D( )
     {
         this->integrateUserInput( );
@@ -216,7 +241,7 @@ namespace vrcl
                 U_I_slice[elemNum] = (double)ptrIntegral_Image[element3D];
                 maxU = std::max( maxU, U_I_slice[elemNum]);
                 minU = std::min( minU, U_I_slice[elemNum]);
-                
+
                 elemNum++;
             }
         }
@@ -264,7 +289,7 @@ namespace vrcl
                 unsigned short value_PK = ((unsigned short)(((phi_out > 0.95)
                     + (phi_out > 0.8) + (phi_out > 0.65)
                     + (phi_out > 0.5)) * labelRange[1] / 4.0));
-                
+
                 bool imageOK = (imgMinValue < ptrCurrImage[element3D]);
                 value_IK *= imageOK;
                 value_PK *= imageOK;
@@ -282,28 +307,7 @@ namespace vrcl
             }
         }
 
-        bool bSavePNG = false;
-        if (bSavePNG) {
-            std::stringstream ss, ssI;
-            ss << "label_slice_" << THREE_DIGITS(currSlice) << "_"
-                << THREE_DIGITS(save_count_per_slice[currSlice]) << "_"
-                << FIVE_DIGITS(num_actuated_voxels) << ".png";
-            ssI << "image_slice_" << THREE_DIGITS(currSlice) << ".png";
-            static std::vector<cv::Mat> chans(3); static cv::Mat tmpPng;
-            cv::flip(tmp.clone( ), tmp, 0); double dmin, dmax; cv::minMaxLoc(tmp, &dmin, &dmax);
-            cout << "min_label=" << dmin << ", max_label=" << dmax << ";  ";
-            for (int c = 0; c < 3; c++){ tmp.convertTo(chans[c], CV_8UC1); }
-            cv::merge(chans, tmpPng);
-            cout << "write to " << ss.str( ) << " result: " << cv::imwrite(ss.str( ), tmpPng) << endl;
-            cv::flip(tmpI.clone( ), tmpI, 0); cv::minMaxLoc(tmpI, &dmin, &dmax);
-            cout << "min_image=" << dmin << ", max_image=" << dmax << ";  ";
-            for (int c = 0; c < 3; c++){ tmpI.convertTo(chans[c], CV_8UC1); }
-            cv::merge(chans, tmpPng);
-            cout << "write to " << ssI.str( ) << " result: " << cv::imwrite(ssI.str( ), tmpPng) << endl;
-
-            save_count_per_slice[currSlice] += 1;
-            //saveMatToPNG( tmp, ss.str() );
-        }
+        VerboseSaveToPng(tmp, tmpI);
 
         cout << string("update2D in ") + string(__FILE__) + ":   Lz size: " << LL2D.Lz->length << endl;
 

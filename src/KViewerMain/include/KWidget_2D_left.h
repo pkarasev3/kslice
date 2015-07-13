@@ -78,7 +78,7 @@ public:
   void SaveCurrentLabelMap( );
 
   /** Save current label map to a specific filename */
-  void SaveAsCurrentLabelMap( const std::string &fileName );
+  void SaveAsCurrentLabelMap(std::string fileName );
 
 
   // Initialization

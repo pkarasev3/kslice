@@ -40,7 +40,8 @@ class  KSegmentor3D : public KSegmentorBase
 
         virtual void OnUserPaintsLabel();
 
-    private:
+        void VerboseSaveToPng(cv::Mat tmp, cv::Mat tmpI);
+private:
 
         KSegmentor3D(){}
         typedef KSegmentor3D Self;

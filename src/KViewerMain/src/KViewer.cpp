@@ -194,9 +194,9 @@ void KViewer::UpdateVolumeStatus( )
 
     std::string volumeDisplay;
     auto strFuture = std::async(std::launch::async,
-                     &getVolumeAsString_ret, 
+                     &getVolumeAsString_ret,
                      kv_opts->imageSpacing, kv_data->labelDataArray);
-    
+
     updatePaintBrushStatus(NULL);
 
     UpdateModel3D( );
@@ -323,7 +323,7 @@ void KViewer::MoveSlider(int shiftNumberOfSlices)
 auto KViewer::GetSegmentors() const -> std::vector<std::shared_ptr<KSegmentorBase>>
 {
     std::set<std::shared_ptr<KSegmentorBase>> segmentors;
-    for( auto mlm  :  kwidget_2d_left->multiLabelMaps) 
+    for( auto mlm  :  kwidget_2d_left->multiLabelMaps)
         segmentors.insert(mlm->ksegmentor);
     return decltype(GetSegmentors())(segmentors.begin(),segmentors.end());
 }
@@ -360,7 +360,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             keyPressed = 'v'; // pressing 'paste button' in QT took us here
         }
         else if (event == (unsigned long) 'V'){
-          keyPressed = 'V'; 
+          keyPressed = 'V';
         }
         else if (event == (unsigned long) '0'){
             keyPressed = '0';
@@ -385,7 +385,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                 kwidget_2d_left->SelectActiveLabelMap(label_idx + 1);
                 this->UpdateVolumeStatus( );
                 break;
-            case 'b': // update 3D                
+            case 'b': // update 3D
                 UpdateVolumeStatus( );
                 break;
             case 'v': // Paste!
@@ -462,7 +462,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             case '=':
             case 'e': // also '=' key, "equal" starts with e...
                 cout << "e key pressed: X-rotate 90 degrees " << endl;
-                ResetRotation(1, 0, 0); 
+                ResetRotation(1, 0, 0);
                 if (1)
                 {
                   if (this->m_RotX)
@@ -470,11 +470,11 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
                   else
                     kwidget_2d_left->InitializeTransform('x', -90);
                   this->m_RotX = !this->m_RotX;
-                }                
+                }
                 break;
             case 't':
                 cout << "t key pressed: Y-rotate 90 degrees " << endl;
-                ResetRotation(0, 1, 0);                
+                ResetRotation(0, 1, 0);
                 if (1)
                 {
                   if (this->m_RotY)
@@ -491,7 +491,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
             case 'u':
                 cout << "u key pressed: updating volume status and 3D view " << endl;
                 this->UpdateVolumeStatus( );
-                break;            
+                break;
             default:
                 break;
         }
@@ -499,7 +499,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
         std::cout.flush();
 
         if (keyPressed == 'e' || keyPressed == 't' || keyPressed == '=' )
-        {            
+        {
             kwidget_2d_left->UpdateTransform( );
             this->UpdateImageInformation(kv_data->imageVolumeRaw);
             for (size_t k = 0; k < kwidget_2d_left->multiLabelMaps.size( ); k++)
@@ -517,7 +517,7 @@ void KViewer::handleGenericEvent(vtkObject* obj, unsigned long event)
         }
         if( QString("etz=").contains(keyPressed) )
           this->image_callback->setViewDir(m_RotX, m_RotY, m_RotZ);
-                
+
     }
 
 }
@@ -544,10 +544,10 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
         this->m_RotZ = !this->m_RotZ;
     }
     PRINT_AND_EVAL(doUpdate);
-    
+
     //Update transform
     if (doUpdate)
-    {        
+    {
         kwidget_2d_left->UpdateTransform( );
         this->UpdateImageInformation(kv_data->imageVolumeRaw);
         int id = kwidget_2d_left->activeLabelMapIndex;
@@ -556,22 +556,22 @@ void KViewer::ResetRotation(bool rotX, bool rotY, bool rotZ)
             kwidget_2d_left->SelectActiveLabelMap(k);
             this->UpdateVolumeStatus( );
         }
-        kwidget_2d_left->SelectActiveLabelMap(id);        
+        kwidget_2d_left->SelectActiveLabelMap(id);
     }
 
-   
+
 
 }
 
-void KViewer::mousePaintEvent(vtkObject* obj) 
+void KViewer::mousePaintEvent(vtkObject* obj)
 {
     bool bUpdateDone = false;
     int slice_idx = kwidget_2d_left->currentSliceIndex;
     int label_idx = kwidget_2d_left->activeLabelMapIndex;
-    
+
 
     if (this->image_callback->ButtonDown() && obj)
-    {        
+    {
         vtkRenderWindowInteractor* imgWindowInteractor = vtkRenderWindowInteractor::SafeDownCast(obj);
         double event_pos[3];
 
@@ -590,13 +590,14 @@ void KViewer::mousePaintEvent(vtkObject* obj)
         event_PixCoord[1] = round(event_pos[1] / imageSpacing[1]);
         event_PixCoord[2] = slice_idx;
 
-        if (0 != event_PixCoord[0] && 0 != event_PixCoord[1])       {
+        if (0 != event_PixCoord[0] && 0 != event_PixCoord[1])
+        {
             // imgWidth: ACROSS, imgV: DOWN, when viewed from the vtk window
             int xmax = std::min(event_PixCoord[0] + kv_opts->paintBrushRad, (kv_opts->imgWidth - 1));
             int ymax = std::min(event_PixCoord[1] + kv_opts->paintBrushRad, (kv_opts->imgHeight - 1));
             int ymin = std::max(event_PixCoord[1] - kv_opts->paintBrushRad, 0);
             int xmin = std::max(event_PixCoord[0] - kv_opts->paintBrushRad, 0);
-            int z = event_PixCoord[2];
+            int z    = event_PixCoord[2];
             double image_range[2];
             kwidget_2d_left->color_HSV_LookupTable->GetTableRange(image_range);
             double paintSimilarityMinimum = (image_range[1] - image_range[0]) * kv_opts->paintBrushThreshold;
@@ -615,10 +616,11 @@ void KViewer::mousePaintEvent(vtkObject* obj)
                 for (int j = ymin; j <= ymax; j++) {
                     float distance = pow((i - event_PixCoord[0])*(i - event_PixCoord[0])*1.0 +
                         (j - event_PixCoord[1])*(j - event_PixCoord[1])*1.0, 0.5) + 1e-3;
-                    if (distance <= kv_opts->paintBrushRad) {
+                    if (distance <= kv_opts->paintBrushRad)
+                    {
                         float dRatio = pow((double)(kv_opts->paintBrushRad / (1.0 + distance)), (double)2.0);
-                        short imgMax = imgValAtClickPoint + paintSimilarityMinimum * dRatio;
-                        short imgMin = imgValAtClickPoint - paintSimilarityMinimum * dRatio;
+                        short imgMax = imgValAtClickPoint + 10*paintSimilarityMinimum * dRatio;
+                        short imgMin = imgValAtClickPoint -  1*paintSimilarityMinimum * dRatio;
 
                         int ds = kv_opts->m_DrawSpreadOffViewPlane;
                         int zmin = z - ds*floor(sqrt(kv_opts->paintBrushRad - distance));
@@ -653,7 +655,7 @@ void KViewer::mousePaintEvent(vtkObject* obj)
                     }
                 }
             }
-          
+
             //PKDebug
             //kwidget_2d_left->multiLabelMaps[label_idx]->ksegmentor->PrintUpdateInfo();
         }
@@ -671,7 +673,7 @@ void KViewer::mousePaintEvent(vtkObject* obj)
 
     if(bUpdateDone)  // painted or timer triggered
     {
-      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified();      
+      kwidget_2d_left->multiLabelMaps[label_idx]->label2D_shifter_scaler->Modified();
       qVTK1->update();
       qVTK2->update();
     }
