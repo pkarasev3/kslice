@@ -10,11 +10,14 @@ KViewerParameterWidget::KViewerParameterWidget()
     m_dialog.reset(new QDialog(nullptr) ); // = std::make_unique<QDialog>(nullptr);
     setupUi(m_dialog.get());
     QPoint current_loc = QCursor::pos();
-    m_dialog->setGeometry(30,400,m_dialog->width(),m_dialog->height());    
+    m_dialog->setGeometry(30,400,m_dialog->width(),m_dialog->height());
     m_dialog->show();
     AlwaysOnTop(*m_dialog);
 
     setOptionsUpdateCallback([](std::shared_ptr<KViewerOptions>){});
+    setViewDirUpdateCallback([](bool,bool,bool){ });
+    setStartAutoSegCallback( [](int,int,int){ } );
+    setStopAutoSegCallback(  [](){ } );
 
     //! @note{ valid ranges + stepsizes are defined via .ui file }
     auto bOK = QList<bool>()
@@ -30,11 +33,15 @@ KViewerParameterWidget::KViewerParameterWidget()
     <<connect(this->checkBoxEvolveAllLabels,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxEnableAutoTriggerSegmentor,SIGNAL(stateChanged(int)),this,SLOT(updatedBasicParams()), Qt::QueuedConnection)
     <<connect(this->checkBoxPasteAsMax, SIGNAL(stateChanged(int)), this, SLOT(updatedBasicParams()), Qt::QueuedConnection)
-    
+
     <<connect(this->radioButton_View0, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
     <<connect(this->radioButton_View1, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
-    <<connect(this->radioButton_View2, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection())) 
-    
+    <<connect(this->radioButton_View2, SIGNAL(toggled(bool)), this, SLOT(updatedViewSelection()))
+
+    <<connect(this->pushButton_AutoSegGoLeft,  SIGNAL(pressed()), this, SLOT(startAutoShiftAndSegment()))
+    <<connect(this->pushButton_AutoSegGoRight, SIGNAL(pressed()), this, SLOT(startAutoShiftAndSegment()))
+    <<connect(this->pushButton_AutoSegStop,    SIGNAL(pressed()), this, SLOT(stopAutoShiftAndSegment()))
+
     /**/; Q_ASSERT(!bOK.contains(false));
 }
 
@@ -56,17 +63,6 @@ KViewerParameterWidget& KViewerParameterWidget::setSaturationLUT(vtkWeakPointer<
     this->m_dialog->update();
     return *this;
 }
-
-//KViewerParameterWidget& KViewerParameterWidget::populateFromViewXYZ(int x, int y, int z)
-//{
-//  QString fnc = __FUNCTION__;
-//  PRINT_AND_EVAL( fnc << x << y << z);
-//  radioButton_View1->setChecked( (x>0) );
-//  radioButton_View2->setChecked( (y>1));
-//
-//  radioButton_View0->setChecked( (x==0) && (y==0) );
-//  return *this;
-//}
 
 KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_ptr<KViewerOptions> opts_in)
 {
@@ -91,6 +87,7 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
     this->autoTriggerContourSpinbox->setValue(opts.seg_time_interval);
     this->labelOpacitySpinbox->setValue(opts.labelOpacity2D);
     this->autoTriggerContourSpinbox->setValue(opts.seg_time_interval);
+
     this->regionSizeRBACSpinBox->setValue(opts.rad);
     this->contourIterationsSpinBox->setValue(opts.segmentor_iters);
 
@@ -107,7 +104,7 @@ KViewerParameterWidget& KViewerParameterWidget::populateFromOptions(std::shared_
 }
 
 void KViewerParameterWidget::updatedViewSelection( )
-{  
+{
   auto who_sent_it = sender();
   PRINT_AND_EVAL( who_sent_it );
   auto button_sender = dynamic_cast<QRadioButton*>(who_sent_it);
@@ -146,4 +143,30 @@ void KViewerParameterWidget::updatedBasicParams( )
     opts->m_bPasteAsMax             = this->checkBoxPasteAsMax->isChecked();
 
     m_updateCallback(opts);
+}
+
+void KViewerParameterWidget::startAutoShiftAndSegment()
+{
+    this->pushButton_AutoSegGoLeft->setEnabled(false);
+    this->pushButton_AutoSegGoRight->setEnabled(false);
+    this->pushButton_AutoSegStop->setEnabled(true);
+
+    int nSliceSteps   = this->spinBox_AutoShiftSteps->value();
+    int nSegmentSteps = this->spinBox_AutoShiftSteps->value();
+    int iDirection    = 0;
+    auto _sender      = sender();
+    if(_sender == pushButton_AutoSegGoLeft )
+        iDirection = -1;
+    if(_sender == pushButton_AutoSegGoRight )
+        iDirection = +1;
+
+    m_startAutoSegCallback( nSliceSteps, nSegmentSteps, iDirection );
+}
+
+void KViewerParameterWidget::stopAutoShiftAndSegment()
+{
+    this->pushButton_AutoSegGoLeft->setEnabled(true);
+    this->pushButton_AutoSegGoRight->setEnabled(true);
+    this->pushButton_AutoSegStop->setEnabled(false);
+    m_stopAutoSegCallback( );
 }

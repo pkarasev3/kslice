@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>616</width>
-    <height>580</height>
+    <width>766</width>
+    <height>697</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -49,7 +49,7 @@
      <x>10</x>
      <y>0</y>
      <width>742</width>
-     <height>623</height>
+     <height>679</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -193,7 +193,7 @@
         <property name="checkable">
          <bool>false</bool>
         </property>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>90</x>
@@ -384,7 +384,7 @@
          <double>0.010000000000000</double>
         </property>
         <property name="value">
-         <double>0.500000000000000</double>
+         <double>0.700000000000000</double>
         </property>
        </widget>
       </item>
@@ -553,13 +553,13 @@
         <property name="title">
          <string> -----&gt; Auto Shift + Segment:</string>
         </property>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>5</x>
            <y>21</y>
            <width>591</width>
-           <height>25</height>
+           <height>32</height>
           </rect>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -578,7 +578,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox">
+             <widget class="QSpinBox" name="spinBox_AutoShiftSteps">
               <property name="maximum">
                <number>1000</number>
               </property>
@@ -604,7 +604,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_2">
+             <widget class="QSpinBox" name="spinBox_AutoSegmentSteps">
               <property name="maximum">
                <number>1000</number>
               </property>
@@ -616,7 +616,7 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBoxEnableAutoTriggerSegmentor_2">
+           <widget class="QCheckBox" name="checkBox_CopyPasteDuringAutoStepSegment">
             <property name="font">
              <font>
               <family>Lucida Console</family>
@@ -636,25 +636,25 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <property name="geometry">
           <rect>
            <x>52</x>
            <y>50</y>
            <width>491</width>
-           <height>30</height>
+           <height>31</height>
           </rect>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButton_AutoSegGoLeft">
             <property name="text">
              <string>Go Left...</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="pushButton_AutoSegStop">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -670,7 +670,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pushButton_AutoSegGoRight">
             <property name="text">
              <string>Go Right...</string>
             </property>
@@ -709,7 +709,7 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <property name="standardButtons">
-       <set>QDialogButtonBox::Apply|QDialogButtonBox::RestoreDefaults</set>
+       <set>QDialogButtonBox::NoButton</set>
       </property>
       <property name="centerButtons">
        <bool>false</bool>
