@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <thread>
 
 #define SP( X )  vtkSmartPointer<X>
 using cv::Ptr;
@@ -518,42 +519,47 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     double UmaxInit = multiLabelMaps[activeLabelMapIndex]->ksegmentor->GetUmax( );
     cout << "Umax Init = " << UmaxInit << endl;
 
-    if (!bAllLabels)
+    std::set<int> label_indices;
+    label_indices.insert(activeLabelMapIndex);
+    if( bAllLabels ) {
+      for( int idx=0; idx < (int) multiLabelMaps.size(); idx++ ) 
+        label_indices.insert(idx);
+    }
+
+    double lowerBnd = satLUT->GetRange()[0];
+    double upperBnd = satLUT->GetRange()[1];
+    std::list<std::thread> jobs;
+
+    for( auto idx : label_indices )//if (!bAllLabels)
     {                 // update active label only
-        int label_idx = activeLabelMapIndex;
-        std::shared_ptr<KSegmentorBase> kseg = multiLabelMaps[label_idx]->ksegmentor;
-        double lowerBnd = satLUT->GetRange()[0];
-        double upperBnd = satLUT->GetRange()[1];
-        kseg->SetSaturationRange(lowerBnd,upperBnd);
-        kseg->setCurrIndex(slice_index);
-        kseg->setNumIterations(kv_opts->segmentor_iters);
+        auto job = [=]()
+        {
+          int label_idx = idx; //activeLabelMapIndex;
+          std::shared_ptr<KSegmentorBase> kseg = multiLabelMaps[label_idx]->ksegmentor;        
+          kseg->SetSaturationRange(lowerBnd,upperBnd);
+          kseg->setCurrIndex(slice_index);
+          kseg->setNumIterations(kv_opts->segmentor_iters);
+          kseg->PrintUpdateInfo( );
+          cout << "use2D ? " << use2D << endl;
 
-        kseg->PrintUpdateInfo( );
-
-        cout << "use2D ? " << use2D << endl;
-
-        if (use2D) {
-            kseg->SetEnergyLocalCV( );
-            kseg->Update2D( );
-        }
-        else {
-            kseg->SetEnergyChanVese( );
-            kseg->Update3D( );
-        }
+          if (use2D) {
+              kseg->SetEnergyLocalCV( );
+              kseg->Update2D( );
+          }
+          else {
+              kseg->SetEnergyChanVese( );
+              kseg->Update3D( );
+          }
+        };
+        job(); // jobs.push_back(std::thread(job));
     }
-    else
-    {            // update all labels at once
-        for (int label_idx = 0; label_idx < (int)multiLabelMaps.size( ); label_idx++)
-        { /** Note: not sure how thread-safe the lowlevel code of Update() is ... */
-            std::shared_ptr<KSegmentorBase> kseg = multiLabelMaps[label_idx]->ksegmentor;
-            kseg->setNumIterations(kv_opts->segmentor_iters);
-            kseg->setCurrIndex(slice_index);
-            if (use2D)
-                kseg->Update2D( );
-            else
-                kseg->Update3D( );
-        }
-    }
+    /*  // can't use threads due to static variables in sfm_rbacs
+    while( !jobs.empty() )
+    {
+      jobs.front().join();
+      jobs.pop_front();
+    }*/
+    
     UpdateMultiLabelMapDisplay( );
 }
 
