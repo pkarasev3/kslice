@@ -313,11 +313,12 @@ void KWidget_2D_left::Initialize(std::shared_ptr<KViewerOptions> kv_opts_input,
     }
 
 
-
+    bool bInitUfromLabel = !bNoInputLabelFiles && kv_opts->m_bInitUfromLabel ;
     for (int k = 0; k < (int)multiLabelMaps.size( ); k++)
     {
         vtkImageData* kthLabel = multiLabelMaps[k]->labelDataArray; assert(kthLabel->GetNumberOfPoints( ) == kv_data->imageVolumeRaw->GetNumberOfPoints( ));
-        KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw, kthLabel, !bNoInputLabelFiles);
+
+        KSegmentorBase* raw_ptr = KSegmentor3D::CreateSegmentor(kv_data->imageVolumeRaw, kthLabel, bInitUfromLabel);
         raw_ptr->SetLambda(kv_opts->lambda); //set the curvature penalty
         raw_ptr->SetContRad(kv_opts->rad);   //set the radius used in active contour
         multiLabelMaps[k]->ksegmentor = std::shared_ptr<KSegmentorBase>(raw_ptr);
@@ -713,139 +714,5 @@ SP(vtkImageData) KWidget_2D_left::GetActiveLabelMap( )
 
 
 
-#if 0        // Guillotine
 
 
-//IKChange
-//  if( (kv_opts->minIntensity < 0) || (kv_opts->maxIntensity < 0) ) {
-//    cout << "no min,max passed; setting default window: min,max of image." << endl;
-//    double minMaxImage[2];
-//    kv_data->imageVolumeRaw->GetScalarRange( minMaxImage );
-//    kv_opts->minIntensity = minMaxImage[0];
-//    kv_opts->maxIntensity = minMaxImage[1];
-//  }
-
-//New Prisoner
-//Currently not used
-/*if(! kv_opts_input->m_SpeedImageFileName.empty() ) {
-      cout << "trying to load speed image: " << kv_opts_input->m_SpeedImageFileName ;
-      if( ! reader->CanReadFile(kv_opts_input->m_SpeedImageFileName.c_str()) ) {
-      cout << " ... failed, could not read. " << endl;
-      } else {
-      multiLabelMaps[k]->ksegmentor->m_CustomSpeedImgPointer=static_cast<double*>(reader->GetOutput()->GetScalarPointer());
-      cout << " ... ok. " << endl;
-      }
-
-      }*/
-
-
-
-
-
-
-
-
-void KWidget_2D_left::SetupLabelDisplay()  {
-
-    // Begin Code for Transparent 2d ACL Slice
-    // Lookup Table for Label Map
-
-    //    kv_data->labelDataArray->Update();
-    //    this->labelLUT = create_default_labelLUT( kv_data->labelDataArray->GetScalarRange()[1] );
-    //    label2D_shifter_scaler = vtkSmartPointer<vtkImageShiftScale>::New();
-    //    label2D_shifter_scaler->SetInput( kv_data->labelDataArray );
-
-    //    labelReslicer=vtkSmartPointer<vtkImageReslice>::New();
-    //    labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );
-    //    labelReslicer->SetOutputDimensionality(2);  //drawing just a single slice
-    //    labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-    //    labelReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
-
-    //    vtkSmartPointer<vtkImageMapToColors> colorMapLabSlice = vtkSmartPointer<vtkImageMapToColors>::New();
-    //    colorMapLabSlice->SetLookupTable(labelLUT);
-
-    //    colorMapLabSlice->SetInputConnection( labelReslicer->GetOutputPort() );
-    //    colorMapLabSlice->Update();
-
-    //    labelActor2D = vtkSmartPointer<vtkImageActor>::New( );
-    //    labelActor2D->SetInput( colorMapLabSlice->GetOutput() );
-    //    labelActor2D->SetOpacity( kv_opts->labelOpacity2D );
-    //    labelActor2D->SetInterpolate( kv_opts->labelInterpolate );
-
-}
-// TODO: details of label display needs to use stuff in KInteractiveLabelMap
-// SetupLabelDisplay( );
-
-
-// this is bullshit
-//void UpdateActiveLabelMap(vtkSmartPointer<vtkImageData> label_image_data);
-
-//void KWidget_2D_left::UpdateActiveLabelMap(vtkSmartPointer<vtkImageData> label_image_data)
-//{
-//  // Gah, no we need to handle the UI crap here, not just receive data from elsewhere.
-//  // See the place where painting happens via mouse callback. That can send us an (x,y,z)
-//  // coord and we update the label map.
-
-//  // Need to make sure activeLabelMapIndex is initialized to 0 somewhere.
-//  //labelMaps[activeLabelMapIndex].UpdateLabelMap(label_image_data);
-
-//  // currentSliceIndex = labelMaps[activeLabelMapIndex].GetSliceNumber(); bullshit,
-//  // I'm the widget, the labelmap doesn't tell me what slice I'm on!
-
-//  qVTK_widget_left->update();
-//}
-
-
-//void KWidget_2D_left::UpdateLabelMap( vtkSmartPointer<vtkImageData>   label_image_data,
-//                                      vtkSmartPointer<vtkLookupTable> labelLUT ) {
-//  if( !labelLUT ) {
-//    labelLUT = create_default_labelLUT( label_image_data->GetScalarRange()[1] );
-//  }
-//  size_t ptr1 = (size_t) kv_data->labelDataArray_new.GetPointer();
-//  size_t ptr2 = (size_t) label_image_data.GetPointer();
-//  if( ptr2 != ptr1) {
-//    kv_data->labelDataArray_new = label_image_data;
-//    check_extents( kv_data->labelDataArray_new );
-//  }
-//  cout << " copied new to current ... " << endl;
-//  kv_data->PushLabelDataNewToCurrent( );
-//  check_extents( kv_data->labelDataArray );
-
-//  if( ((void *)label2D_shifter_scaler->GetInput()) != ((void *)kv_data->labelDataArray) ) {
-//    label2D_shifter_scaler->SetInput(kv_data->labelDataArray);
-//  }
-
-//  labelReslicer->SetInputConnection( label2D_shifter_scaler->GetOutputPort() );
-
-//  int Dimensionality_Single_Slice_2D = 2;
-//  labelReslicer->SetOutputDimensionality( Dimensionality_Single_Slice_2D );
-//  labelReslicer->SetResliceAxesDirectionCosines(1,0,0,    0,1,0,     0,0,1);
-//  int currentSlice = labelActor2D->GetSliceNumber( );
-//  currentSliceIndex = currentSlice;
-//  labelReslicer->SetResliceAxesOrigin(0,0,currentSliceIndex );
-
-//  vtkSmartPointer<vtkImageMapToColors> colorMapLabSlice =
-//                         vtkSmartPointer<vtkImageMapToColors>::New();
-//  colorMapLabSlice->SetLookupTable( labelLUT );
-//  colorMapLabSlice->SetInputConnection( labelReslicer->GetOutputPort() );
-//  colorMapLabSlice->Update();
-
-//  labelActor2D->SetInput( colorMapLabSlice->GetOutput() );
-//  labelActor2D->SetOpacity(     kv_opts->labelOpacity2D );
-//  labelActor2D->SetInterpolate( kv_opts->labelInterpolate );
-
-//  qVTK_widget_left->update( );
-//}
-
-//else
-// multiLabelMaps[activeLabelMapIndex]->ksegmentor = Ptr<KSegmentor>(new KSegmentor(kv_data->imageVolumeRaw,this->GetActiveLabelMap( ), this->currentSliceIndex)  );
-//not used at the moment
-/*vtkMetaImageReader*reader = vtkMetaImageReader::New();
-if( !kv_opts_input->m_SpeedImageFileName.empty() )
-{
-reader->SetFileName(kv_opts_input->m_SpeedImageFileName.c_str());
-reader->SetDataScalarTypeToDouble();
-reader->Update();
-}*/
-
-#endif

@@ -152,7 +152,7 @@ void KViewerParameterWidget::startAutoShiftAndSegment()
     this->pushButton_AutoSegStop->setEnabled(true);
 
     int nSliceSteps   = this->spinBox_AutoShiftSteps->value();
-    int nSegmentSteps = this->spinBox_AutoShiftSteps->value();
+    int nSegmentSteps = this->spinBox_AutoSegmentSteps->value();
     int iDirection    = 0;
     auto _sender      = sender();
     if(_sender == pushButton_AutoSegGoLeft )
@@ -160,7 +160,13 @@ void KViewerParameterWidget::startAutoShiftAndSegment()
     if(_sender == pushButton_AutoSegGoRight )
         iDirection = +1;
 
+    auto bAutoSegCP = checkBox_CopyPasteDuringAutoStepSegment->isChecked();
+    if(auto opts = m_kvopts.lock())
+      opts->m_bAutoShiftSegDoesCopyAndPaste = bAutoSegCP;
+
     m_startAutoSegCallback( nSliceSteps, nSegmentSteps, iDirection );
+
+    stopAutoShiftAndSegment();
 }
 
 void KViewerParameterWidget::stopAutoShiftAndSegment()

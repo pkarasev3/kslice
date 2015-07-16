@@ -6,6 +6,7 @@
 #include "KViewer.h"
 #include "KViewerOptions.h"
 #include <QDebug>
+#include <atomic>
 
 using cv::Ptr;
 using namespace vrcl;
@@ -93,7 +94,16 @@ KvtkImageInteractionCallback::KvtkImageInteractionCallback()
       auto cb = std::bind(&KvtkImageInteractionCallback::notifyViewDir,this,_1,_2,_3);
       m_paramWidget->setViewDirUpdateCallback(cb);
     }
+    {
+      auto cb = std::bind(&KvtkImageInteractionCallback::runAutoSeg, this, _1, _2, _3);
+      m_paramWidget->setStartAutoSegCallback(cb);
+    }
+    {
+      auto cb = std::bind(&KvtkImageInteractionCallback::stopAutoSeg, this);
+      m_paramWidget->setStopAutoSegCallback(cb);
+    }
     m_bInsideViewCallback = false;
+    m_stopFlag.store(0);
 }
 
 void KvtkImageInteractionCallback::SetOptions(std::shared_ptr<KViewerOptions> kv_opts)  {
@@ -112,6 +122,68 @@ void KvtkImageInteractionCallback::SetSaturationLookupTable(vtkLookupTable* lut)
 {
     this->satLUT_shared = lut;
     this->m_paramWidget->setSaturationLUT(satLUT_shared);
+}
+
+void KvtkImageInteractionCallback::runAutoSeg(int step_RL, int seg_iters, int direction)
+{
+  m_stopFlag.store(0);
+
+  auto interactor = Window->GetInteractor();
+  int k = 0;
+  for( int k=0; k<step_RL; k++ ) 
+  {
+    for( int s=0; s<seg_iters; s++ ) 
+    { 
+      std::cout << QString( ).sprintf("%d/%d shifts, %d/%d seg_iters.", k, step_RL, s, seg_iters).toStdString() << std::endl;
+      std::cout.flush();
+      std::cerr.flush();
+      interactor->SetKeyCode('s');
+      masterWindow->handleGenericEvent(interactor, 0);
+      if( m_stopFlag.load() )
+        return;      
+      Window->Render();
+      QApplication::processEvents(QEventLoop::AllEvents,20); // allow UI a chance to hit something
+    }
+    
+    auto F_copyAndPaste = [&](char arg)
+    {
+      if (this->kv_opts->m_bAutoShiftSegDoesCopyAndPaste)
+      {
+        interactor->SetKeyCode(arg);
+        this->Execute(interactor, vtkCommand::KeyPressEvent, nullptr);
+        masterWindow->handleGenericEvent(interactor,vtkCommand::KeyPressEvent);
+      }
+    };
+    F_copyAndPaste('c');
+
+    if (direction == 0) { Q_ASSERT(0); }
+    else if( direction < 0 )
+      interactor->SetKeyCode('q');
+    else if (direction > 0)
+      interactor->SetKeyCode('w');
+
+    this->Execute( interactor, vtkCommand::KeyPressEvent, nullptr);
+
+    F_copyAndPaste('v');
+    QApplication::processEvents(QEventLoop::AllEvents, 50); // allow UI a chance to hit something
+  }
+  
+
+  /*for(auto  item : m_segmentors)
+  {
+    auto segmentor = item.second.lock();
+    if(!segmentor)
+      continue;
+
+    
+  }*/
+
+}
+
+void KvtkImageInteractionCallback::stopAutoSeg()
+{
+  m_stopFlag.store(1);
+  PRINT_AND_EVAL( m_stopFlag.load() );
 }
 
 void KvtkImageInteractionCallback::setViewDir(bool rotX, bool rotY, bool rotZ)
@@ -197,7 +269,11 @@ void KvtkImageInteractionCallback::Execute(vtkObject *, unsigned long event, voi
     satLUT_shared->GetTableRange(satRange);
     double  stepSize                               = (satRange[1]-satRange[0])*0.01;
     vtkRenderWindowInteractor* imgWindowInteractor = this->Window->GetInteractor();
-    unsigned int keyPressed = *imgWindowInteractor->GetKeySym();
+    auto key_sym = imgWindowInteractor->GetKeySym();
+    unsigned int keyPressed = 0;
+    if(key_sym)
+      keyPressed = *key_sym;
+
     auto keyChar            = imgWindowInteractor->GetKeyCode();
     
     PRINT_AND_EVAL((char)keyPressed << keyChar << keyMinusBrushSize << (unsigned int)keyMinusBrushSize );

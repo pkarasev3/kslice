@@ -55,6 +55,8 @@ public:
   bool  time_triggered_seg_update;
   bool  m_bForceLargeU; // all clicks are high-magnitude
   bool  m_bVerboseSave; // save extra stuff like uk_*
+  bool  m_bAutoShiftSegDoesCopyAndPaste; // copy+paste before auto running 's' key?
+  bool  m_bInitUfromLabel; // should initializing with a label force a large "U" to be initialized?
   int   minIntensity;
   int   maxIntensity;
   int   m_DrawSpreadOffViewPlane;

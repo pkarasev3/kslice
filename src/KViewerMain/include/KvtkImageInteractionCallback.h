@@ -8,6 +8,7 @@
 #include "KViewerOptions.h"
 #include <vtkWeakPointer.h>
 #include <map>
+#include <atomic> 
 
 // forward declaration
 class KViewerParameterWidget;
@@ -37,6 +38,10 @@ public:
   void notifyViewDir(bool r0, bool r1, bool r2); // mutually exclusive + left to right precedence order
   
   void setViewDir(bool rotX, bool rotY, bool rotZ);
+
+  void runAutoSeg(int step_RL, int seg_iters, int direction);
+
+  void stopAutoSeg( );
 
   void SetOptions(std::shared_ptr<KViewerOptions> arg);
 
@@ -69,4 +74,5 @@ private:
   std::unique_ptr<KViewerParameterWidget> m_paramWidget;
 
   std::map<vrcl::KSegmentorBase*,std::weak_ptr<vrcl::KSegmentorBase>> m_segmentors;
+  std::atomic<int> m_stopFlag;
 };
