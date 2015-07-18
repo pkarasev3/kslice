@@ -408,7 +408,10 @@ void KWidget_2D_left::SaveLabelsInternal(const std::stringstream& ss,
         labelWriter->Write( );
         IFLOG(VERBOSE, cout << "Wrote label map to file: " << labelmap_filename << endl);
 
-        if (bSaveUserInput_U) {
+        // NOTE: SAVE THE POLYDATA TOO !!!
+
+        if (bSaveUserInput_U)
+        {
             vtkImageData* U_of_t = multiLabelMaps[label_idx]->ksegmentor->U_Integral_image;
             labelWriter->SetInput(U_of_t);
             labelWriter->SetFileName(("U_" + labelmap_filename).c_str( ));
@@ -429,7 +432,8 @@ void KWidget_2D_left::SaveLabelsInternal(const std::stringstream& ss,
 
 }
 
-void KWidget_2D_left::SaveAsCurrentLabelMap(std::string fileName) {
+void KWidget_2D_left::SaveAsCurrentLabelMap(std::string fileName)
+{
     std::stringstream  ss;
     ss << fileName;
     unsigned int minLength = 5;
@@ -448,13 +452,14 @@ void KWidget_2D_left::SaveAsCurrentLabelMap(std::string fileName) {
     SaveLabelsInternal(ss);
 }
 
-void KWidget_2D_left::SaveCurrentLabelMap( ) {
+void KWidget_2D_left::SaveCurrentLabelMap( )
+{
     IFLOG(VERBOSE, cout << "... attempting to write label map to file ... ")
         time_t seconds;
     seconds = time(NULL);
     std::stringstream  ss;
     ss << "KViewerSaved_LabelMap_" << seconds;
-    SaveLabelsInternal(ss, true, true);
+    SaveLabelsInternal(ss, 0, 0);
 }
 
 
@@ -523,7 +528,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
     std::set<int> label_indices;
     label_indices.insert(activeLabelMapIndex);
     if( bAllLabels ) {
-      for( int idx=0; idx < (int) multiLabelMaps.size(); idx++ ) 
+      for( int idx=0; idx < (int) multiLabelMaps.size(); idx++ )
         label_indices.insert(idx);
     }
 
@@ -536,7 +541,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
         auto job = [=]()
         {
           int label_idx = idx; //activeLabelMapIndex;
-          std::shared_ptr<KSegmentorBase> kseg = multiLabelMaps[label_idx]->ksegmentor;        
+          std::shared_ptr<KSegmentorBase> kseg = multiLabelMaps[label_idx]->ksegmentor;
           kseg->SetSaturationRange(lowerBnd,upperBnd);
           kseg->setCurrIndex(slice_index);
           kseg->setNumIterations(kv_opts->segmentor_iters);
@@ -560,7 +565,7 @@ void KWidget_2D_left::RunSegmentor(int slice_index, bool bAllLabels, bool use2D)
       jobs.front().join();
       jobs.pop_front();
     }*/
-    
+
     UpdateMultiLabelMapDisplay( );
 }
 

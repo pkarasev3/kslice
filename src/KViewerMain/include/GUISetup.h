@@ -14,6 +14,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 #include <QDesktopWidget>
+#include <QDir>
 #include <QDebug>
 #include "QVTKWidget.h"
 #include "qslider.h"
@@ -48,7 +49,7 @@ public:
   /** slice slider and min/max threshold sliders */
   QSlider *Slider, *maxThreshSlider, *minThreshSlider;
 
-  QPushButton *FillEraseButton, *ComputeVolumeButton, *RunSegmentButton, 
+  QPushButton *FillEraseButton, *ComputeVolumeButton, *RunSegmentButton,
               *SaveSegmentButton, *SaveAsButton,*CopyButton, *PasteButton,
               *NewLabelMapButton;
 
@@ -69,13 +70,13 @@ public:
 
     QPoint current_loc = QCursor::pos();
     auto desktop_size  = QApplication::desktop()->availableGeometry(current_loc);
-    
+
     GUI_WINDOW_WIDTH  = std::max(desktop_size.width()*3/4, (int) GUI_WINDOW_WIDTH);
     GUI_WINDOW_HEIGHT = std::max(desktop_size.height()*3/4,(int) GUI_WINDOW_HEIGHT);
     PRINT_AND_EVAL( GUI_WINDOW_WIDTH<<GUI_WINDOW_HEIGHT );
 
     GUI->setGeometry( desktop_size.width()/8,desktop_size.height()/8, GUI_WINDOW_WIDTH, GUI_WINDOW_HEIGHT);
-    
+
     /* Main Window Creation */
     centralwidget = new QWidget(GUI);
     centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
@@ -111,7 +112,7 @@ public:
     ComputeVolumeButton->setText("Update 3D and Volume");
     SaveSegmentButton= new QPushButton( GUI );
     SaveSegmentButton->setText("Save Label Map Timestamp");
-    
+
     SaveAsButton = new QPushButton( GUI );
     SaveAsButton->setText("Save Label Map As");
     CopyButton   = new QPushButton( GUI );
@@ -197,7 +198,9 @@ public:
     /* Line Edit, TODO: Move Saving functionality to menu */
     saveAsLineEdit = new QLineEdit( GUI );
     saveAsLineEdit->setObjectName(QString::fromUtf8("saveAsLineEdit"));
-    saveAsLineEdit->setText(QString::fromUtf8("Insert filename here..."));
+    auto tmp = QDir::currentPath() + "/label_saved";
+
+    saveAsLineEdit->setText( tmp );
 
 
     /* XML Layout Connections*/

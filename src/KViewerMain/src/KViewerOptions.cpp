@@ -59,6 +59,7 @@ void KViewerOptions::LoadImage( )
   QString path;
   path = QFileDialog::getOpenFileName( NULL,"Choose an Image file to open",data_path.c_str(),"*.mha" );
   this->ImageArrayFilename = path.toStdString();
+  this->ImageArrayPath = ExtractDirectory(path.toStdString());
 
   // request by Grant: save the last location, too lazy to click
   std::ofstream  cache_writer;
@@ -70,8 +71,8 @@ void KViewerOptions::LoadImage( )
 
 }
 
-void KViewerOptions::LoadLabel( const std::string& path ){
-
+void KViewerOptions::LoadLabel( const std::string& path )
+{
   vector<string>::iterator it = std::find(LabelArrayFilenames.begin(),LabelArrayFilenames.end(),path);
   if( it != LabelArrayFilenames.end() || LabelArrayFilenames.size()==0) {
     this->LabelArrayFilenames.push_back(path);

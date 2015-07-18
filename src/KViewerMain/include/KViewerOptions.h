@@ -43,6 +43,7 @@ public:
 
   std::vector<std::string> LabelArrayFilenames;
   std::string ImageArrayFilename;
+  std::string ImageArrayPath;
   std::string m_SpeedImageFileName;
 
   float modelOpacity3D;
