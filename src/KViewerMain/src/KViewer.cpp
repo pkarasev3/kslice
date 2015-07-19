@@ -193,9 +193,14 @@ void KViewer::UpdateVolumeStatus( )
     kv_data->labelDataArray = kwidget_2d_left->GetActiveLabelMap( );
 
     std::string volumeDisplay;
-    auto strFuture = std::async(std::launch::async,
-                     &getVolumeAsString_ret,
-                     kv_opts->imageSpacing, kv_data->labelDataArray);
+//    auto strFuture = std::async(std::launch::async,
+//                     &getVolumeAsString_ret,
+//                     kv_opts->imageSpacing, kv_data->labelDataArray);
+
+    //volumeDisplay = strFuture.get(); // unsafe to do this later... doh?
+    PRINT_AND_EVAL( " ... " );
+    volumeDisplay = getVolumeAsString_ret(kv_opts->imageSpacing,kv_data->labelDataArray);
+    PRINT_AND_EVAL( QString::fromStdString(volumeDisplay) );
 
     updatePaintBrushStatus(NULL);
 
@@ -205,7 +210,7 @@ void KViewer::UpdateVolumeStatus( )
     qVTK2->update( );
     qVTK1->setFocus( );
 
-    volumeDisplay = strFuture.get();
+//    volumeDisplay = strFuture.get();
     QString str = QString::fromStdString(volumeDisplay);
     volumeOfLabelmap->setText(str);
 }
@@ -251,7 +256,7 @@ void KViewer::LoadLabelMap( )
     QString path;
     kv_opts->LabelArrayFilenames.clear( );
 
-    QString initPath = kv_opts->ImageArrayPath;
+    QString initPath = QString::fromStdString(kv_opts->ImageArrayPath);
     path = QFileDialog::getOpenFileName(this, "Choose a file to open", initPath, "*.mha");
     kv_opts->LoadLabel(path.toStdString( )); // records the string names
     kwidget_2d_left->LoadMultiLabels(kv_opts->LabelArrayFilenames); // does the actual work
@@ -739,9 +744,8 @@ void KViewer::setupQVTKandData( )
     // Setup the 3D Widget: volume, label map(s), some user interaction objects
     kwidget_3d_right = std::shared_ptr<KWidget_3D_right>(new KWidget_3D_right(qVTK2));
     KWidget_3D_right::Initialize(kwidget_3d_right, kv_opts, kv_data);
-    kwidget_3d_right->PrintHelp( );
 
-    //Add additional labels to 3D view  - not very elegant, but it works...
+    //Add additional labels to 3D view
     if (kwidget_2d_left->multiLabelMaps.size( ) > 1)
     {
         for (int labnum = 1; labnum < (int)kwidget_2d_left->multiLabelMaps.size( ); labnum++)

@@ -96,7 +96,6 @@ void SetupLabelActor3D( std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::
     vtkSmartPointer<vtkDataSetMapper> labelMapper = vtkSmartPointer<vtkDataSetMapper>::New();
     labelMapper->SetInputConnection( labSurfNormals->GetOutputPort() );
 
-
     // TODO: display info on the surface mesh!
     labelMapper->SetImmediateModeRendering(1);
     labelMapper->Update();
@@ -165,9 +164,6 @@ void SaveTimestampedPolyData( vtkPolyData* polydata )
 void SetupRenderWindow( std::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
     //////////////////// Render Window Right : 3D Display /////////////////////////////
-    //vtkImageData* image = kwidget_3d_right->kv_data->imageVolumeRaw;
-    //vtkImageData* label = kwidget_3d_right->kv_data->labelDataArray;
-    //kwidget_3d_right->volRenView->UpdateDisplay( image, label );
 
     kwidget_3d_right->kv3DModelRenderer = vtkSmartPointer<vtkRenderer>::New();
 
@@ -175,9 +171,7 @@ void SetupRenderWindow( std::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
     kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeL);
     vtkVolume* volumeI = kwidget_3d_right->volRenView->volumeImage;
     kwidget_3d_right->kv3DModelRenderer->AddVolume(volumeI);
-    //kwidget_3d_right->kv3DModelRenderer->AddActor(kwidget_3d_right->labelActor3D);
     kwidget_3d_right->kv3DModelRenderer->SetBackground(0,0,0);
-
 
     kwidget_3d_right->renderWindowRight = vtkSmartPointer<vtkRenderWindow>::New();
     kwidget_3d_right->renderWindowRight->AddRenderer( kwidget_3d_right->kv3DModelRenderer );
@@ -194,8 +188,7 @@ void SetupRenderWindow( std::shared_ptr<KWidget_3D_right> kwidget_3d_right ) {
 
 }
 
-}  // end anonymous namespace ... todo: move to structs if we feel like it.
-// if we don't feel like it, then these should be member functions!
+}
 
 void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_source, unsigned int labNumber ) {
 
@@ -213,37 +206,30 @@ void KWidget_3D_right::UpdateSubVolumeExtractor( vtkImageData* new_subvolume_sou
 
 }
 
-void KWidget_3D_right::AddNewLabel(std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color){
+void KWidget_3D_right::AddNewLabel(
+  std::shared_ptr<KWidget_3D_right> kwidget_3d_right,
+  std::vector<double> color)
+{
     SetupSubVolumeExtractor( kwidget_3d_right );
     SetupLabelActor3D( kwidget_3d_right,color);
 }
 
+//void KWidget_3D_right::AddFocusPoint( int x, int y, int z )
+//{
+//    this->volRenView->AddFocusPoint( x,y,z);
+//}
 
-void KWidget_3D_right::AddFocusPoint( int x, int y, int z )
+void KWidget_3D_right::UpdateVolumeRenderer( vtkImageData* image, vtkImageData* label )
 {
-
-    this->volRenView->AddFocusPoint( x,y,z);
-
-}
-
-void KWidget_3D_right::UpdateVolumeRenderer( vtkImageData* image, vtkImageData* label ) {
-
     this->volRenView->UpdateDisplay( image, label );
     this->qVTK_widget_right->update( );
-
 }
 
 void KWidget_3D_right::Initialize( std::shared_ptr<KWidget_3D_right> kwidget_3d_right,
                                    std::shared_ptr<KViewerOptions> kv_opts_input,
-                                   std::shared_ptr<KDataWarehouse> kv_data_input ) {
+                                   std::shared_ptr<KDataWarehouse> kv_data_input )
+{
 
-
-    bool UseVolumeRender =true; // TODO: 3D view needs total rewrite,
-    // a) it doesn't support multiple levels at all
-    // b) it will be too slow to volume render multiple labels
-    // c) better idea: use x,y,z coords for colormap generation
-    // in conjunction with polydata actors
-    if(UseVolumeRender) {
         kwidget_3d_right->m_SliceIndex=0;
         // Turn off volume view temporarily for speed
         kwidget_3d_right->kv_opts = kv_opts_input; // grab options and state variables from KViewer main app.
@@ -279,10 +265,26 @@ void KWidget_3D_right::Initialize( std::shared_ptr<KWidget_3D_right> kwidget_3d_
         kwidget_3d_right->m_PlaneWidgetZ->GetTexturePlaneProperty()->SetOpacity(1);
         kwidget_3d_right->m_PlaneWidgetZ->DisplayTextOn();
         kwidget_3d_right->m_PlaneWidgetZ->UpdatePlacement();
+}
 
-    }
+void KWidget_3D_right::MoveSlice(int increment)
+{
+  if(m_SliceIndex+increment>=0)
+    m_SliceIndex+=increment;
+  m_PlaneWidgetZ->SetSlicePosition(m_SliceIndex*kv_opts->sliceZSpace);
+  m_PlaneWidgetZ->Modified();
+  m_PlaneWidgetZ->UpdatePlacement();
+}
+
+void KWidget_3D_right::MoveSliceTo(int index)
+{
+  m_SliceIndex=index;
+  m_PlaneWidgetZ->SetSlicePosition(kv_opts->sliderMin +m_SliceIndex*kv_opts->sliceZSpace);
+  //std::cout<<"slice3d:"<<kv_opts->sliderMin+m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
+  m_PlaneWidgetZ->Modified();
+  m_PlaneWidgetZ->UpdatePlacement();
 }
 
 KWidget_3D_right::KWidget_3D_right( QVTKWidget* qvtk_handle ) {  // must explicity call Initialize()!
-    this->qVTK_widget_right  = qvtk_handle;
+  this->qVTK_widget_right  = qvtk_handle;
 }

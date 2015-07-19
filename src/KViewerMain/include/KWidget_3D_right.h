@@ -13,11 +13,10 @@
 #include "vtkExtractVOI.h"
 #include "KViewerOptions.h"
 #include "KVolumeRenderView.h"
-#include "opencv2/core/core.hpp"
+//#include "opencv2/core/core.hpp"
 #include "vtkImagePlaneWidget.h"
 #include <memory>
 
-//using cv::Ptr;
 class QVTKWidget;
 struct KViewerOptions;
 struct KDataWarehouse;
@@ -34,11 +33,6 @@ public:
   ~KWidget_3D_right( ) { }
 
   typedef std::vector< std::pair< vtkLODActor*, vtkExtractVOI* > > LabelActorMap3DType;
-
-  /*  Member Pointers  */
-
-  /* Assume for now that these are grabbed by KViewerMain and/or the right
-             widge! (e.g. loose ownership of the render window, actors, etc )    */
 
   // whatever is shown in 3D, passes thru this renderer
   vtkSmartPointer<vtkRenderer>            kv3DModelRenderer;
@@ -59,7 +53,7 @@ public:
   // handles to data objects and file IO
   std::shared_ptr<KDataWarehouse>                  kv_data;
 
-  void AddFocusPoint( int x, int y, int z );
+  //void AddFocusPoint( int x, int y, int z );
 
   std::shared_ptr<KVolumeRenderView>               volRenView;
 
@@ -84,10 +78,6 @@ public:
                           std::shared_ptr<KViewerOptions> kv_opts,
                           std::shared_ptr<KDataWarehouse> kv_data );
 
-  /* Debug/Help */
-
-  void PrintHelp () { }
-
   unsigned int GetNumberOfLabels()
   {
       return multiLabelMaps3D.size();
@@ -99,24 +89,9 @@ public:
       return 0;
   }
 
-  void MoveSlice(int increment)
-  {
-      if(m_SliceIndex+increment>=0)
-         m_SliceIndex+=increment;
-      m_PlaneWidgetZ->SetSlicePosition(m_SliceIndex*kv_opts->sliceZSpace);
-        //std::cout<<"slice3d:"<<m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
-        m_PlaneWidgetZ->Modified();
-      m_PlaneWidgetZ->UpdatePlacement();
-  }
+  void MoveSlice(int increment);
 
-  void MoveSliceTo(int index)
-  {
-      m_SliceIndex=index;
-      m_PlaneWidgetZ->SetSlicePosition(kv_opts->sliderMin +m_SliceIndex*kv_opts->sliceZSpace);
-      //std::cout<<"slice3d:"<<kv_opts->sliderMin+m_SliceIndex*kv_opts->sliceZSpace<<std::endl;
-      m_PlaneWidgetZ->Modified();
-      m_PlaneWidgetZ->UpdatePlacement();
-  }
+  void MoveSliceTo(int index);
 
 
   static void AddNewLabel(std::shared_ptr<KWidget_3D_right> kwidget_3d_right,std::vector<double> color);
