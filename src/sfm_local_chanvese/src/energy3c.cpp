@@ -49,8 +49,7 @@ typedef int mwSignedIndex;
 #define MWINDEX_MIN   0UL
 #endif
 
-using std::vector;
-
+#if 0
 static double uin, uout, uuser, sumin, sumout,sumuser;
 double ain, aout, auser; // means
 static double sum2in, sum2out, varin, varout;      // variances
@@ -62,504 +61,206 @@ static double imgMin, imgMax,   binWidth;
 long numdims;
 double engEval;
 bool UseInitContour=1;
+#endif
+
+std::vector<double> uin_rgb(3, 0.0);
+std::vector<double> uout_rgb(3, 0.0);
+std::vector<double> sumin_rgb(3, 0.0);
+std::vector<double> sumout_rgb(3, 0.0);
+std::vector<double> ain_rgb(3, 0.0);
+std::vector<double> aout_rgb(3, 0.0);
 
 
-
-
-
-
-
-double *en_lrbac_vessel_yz_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
-    int x,y,z,idx,n;
-    double a,Fmax,u,v,I;
-
-    // allocate space for F
-    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
-
-    ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
-    while(Lz->curr != NULL){          //loop through list
-        x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
-        I = img[idx];
-
-        if(I>=dthresh){
-            if(Ain[idx] <0){
-                en_lrbac_vessel_cv_init_point(img,phi,idx,x,y,z,dims,rad,dthresh);
-            }
-            if(Ain[idx] >0) u = Sin[idx] /Ain[idx];
-            if(Aout[idx]>0) v = Sout[idx]/Aout[idx];
-            else v = u;
-
-            a = -(u-v)*((I-u)/Ain[idx]+(I-v)/Aout[idx]);
-            //a = ((I-u)*(I-u)/Ain[idx]-(I-v)*(I-v)/Aout[idx]);
-            kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-            if(fabs(a)>Fmax) Fmax = fabs(a);
-            F[n] = a;
-        }
-        else F[n] = 0;
-        ll_step(Lz); n++;       //next point
-    }
-
-    if(scale[0]==0) scale[0]=Fmax;
-
-    for(int j=0;j<Lz->length;j++){
-        F[j] = (1-lam)*F[j]/scale[0]+lam*kappa[j];
-    }
-    free(kappa);
-    return F;
+energy3c::energy3c()
+{
+	rad = 5;
+	nbins = 256;
+	UseInitContour = 1;
+	FVec.resize(128);
+	KappaVec.resize(128);
+	AiVec.resize(128);
+	AoVec.resize(128);
+	SiVec.resize(128);
+	SoVec.resize(128);
 }
 
-void en_lrbac_vessel_yz_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
-    double usum,vsum,au,av;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    if(img[idx]<dthresh) return;
-
-    usum=vsum=au=av=0;
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-    for(i=-irad;i<=irad;i++){
-        if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){
-            if((y+j)<0 | (y+j)>=DIMY) continue;
-            for(k=-irad;k<=irad;k++){
-                if((z+k)<0 | (z+k)>=DIMZ) continue;
-                ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                if(img[ridx]>dthresh){
-                    if(phi[ridx]<=0){
-                        usum += img[ridx]*gball[bidx];
-                        au   += gball[bidx];
-                    }
-                    else{
-                        vsum += img[ridx]*gball[bidx];
-                        av   += gball[bidx];
-                    }
-                }
-            }
-        }
-    }
-    Ain[idx] = au;   Aout[idx] = av;
-    Sin[idx] = usum; Sout[idx] = vsum;
-}
-
-void en_lrbac_vessel_yz_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
-    int x,y,z,idx;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-    ll_init(Lin2out);
-    while(Lin2out->curr != NULL){
-        x = Lin2out->curr->x; y = Lin2out->curr->y; z = Lin2out->curr->z; idx = Lin2out->curr->idx;
-        if(img[idx]>=dthresh){
-            for(i=-irad;i<=irad;i++){
-                if((x+i)<0 | (x+i)>=DIMX) continue;
-                for(j=-irad;j<=irad;j++){
-                    if((y+j)<0 | (y+j)>=DIMY) continue;
-                    for(k=-irad;k<=irad;k++){
-                        if((z+k)<0 | (z+k)>=DIMZ) continue;
-                        ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                        bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                        if(Ain[ridx]>=0)
-                        {
-                            Sin[ridx]  -= img[idx]*gball[bidx];
-                            Ain[ridx]  -= gball[bidx];
-                            Sout[ridx] += img[idx]*gball[bidx];
-                            Aout[ridx] += gball[bidx];
-                        }
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lin2out);
-    }
-    ll_init(Lout2in);
-    while(Lout2in->curr != NULL){
-        x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
-
-        if(img[idx]>=dthresh){
-            for(i=-irad;i<=irad;i++){
-                if((x+i)<0 | (x+i)>=DIMX) continue;
-                for(j=-irad;j<=irad;j++){
-                    if((y+j)<0 | (y+j)>=DIMY) continue;
-                    for(k=-irad;k<=irad;k++){
-                        if((z+k)<0 | (z+k)>=DIMZ) continue;
-                        ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                        bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                        if(Ain[ridx]>=0)
-                        {
-                            Sin[ridx]  += img[idx]*gball[bidx];
-                            Ain[ridx]  += gball[bidx];
-                            Sout[ridx] -= img[idx]*gball[bidx];
-                            Aout[ridx] -= gball[bidx];
-                        }
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lout2in);
-    }
-    if(uin>0)  uin  = sumin/ain;
-    if(uout>0) uout = sumout/aout;
-}
-
-double *en_lrbac_vessel_cv_compute(LL *Lz,double *phi, double *img, long *dims, double *scale, double lam, double rad, double dthresh){
-    int x,y,z,idx,n;
-    double a,Fmax,u,v,I;
-
-    // allocate space for F
-    double *F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) return NULL;
-    double *kappa = (double*)malloc(Lz->length*sizeof(double));if(kappa==NULL) return NULL;
-
-    ll_init(Lz); n=0; Fmax = 0.00001; //begining of list;
-    while(Lz->curr != NULL){          //loop through list
-        x = Lz->curr->x; y = Lz->curr->y; z = Lz->curr->z; idx = Lz->curr->idx;
-        I = img[idx];
-
-        if(I>=dthresh){
-            if(Ain[idx] <0){
-                en_lrbac_vessel_cv_init_point(img,phi,idx,x,y,z,dims,rad,dthresh);
-            }
-            if(Ain[idx] >0) u = Sin[idx] /Ain[idx];
-            if(Aout[idx]>0) v = Sout[idx]/Aout[idx];
-            else v = u;
-            a = (I-u)*(I-u)-(I-v)*(I-v);
-            kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-            if(fabs(a)>Fmax) Fmax = fabs(a);
-            F[n] = a;
-        }
-        else F[n] = 0;
-        ll_step(Lz); n++;       //next point
-    }
-
-    if(scale[0]==0) scale[0]=Fmax;
-
-    for(int j=0;j<Lz->length;j++){
-        F[j] = (1-lam)*F[j]/scale[0]+lam*kappa[j];
-    }
-    free(kappa);
-    return F;
-}
-
-void en_lrbac_vessel_cv_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad, double dthresh){
-    double usum,vsum,au,av;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    if(img[idx]<dthresh) return;
-
-    usum=vsum=au=av=0;
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-    for(i=-irad;i<=irad;i++){
-        if((x+i)<0 | (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){
-            if((y+j)<0 | (y+j)>=DIMY) continue;
-            for(k=-irad;k<=irad;k++){
-                if((z+k)<0 | (z+k)>=DIMZ) continue;
-                ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                if(img[ridx]>dthresh){
-                    if(phi[ridx]<=0){
-                        usum += img[ridx]*gball[bidx];
-                        au   += gball[bidx];
-                    }
-                    else{
-                        vsum += img[ridx]*gball[bidx];
-                        av   += gball[bidx];
-                    }
-                }
-            }
-        }
-    }
-    Ain[idx] = au;   Aout[idx] = av;
-    Sin[idx] = usum; Sout[idx] = vsum;
-}
-
-void en_lrbac_vessel_cv_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad, double dthresh){
-    int x,y,z,idx;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-    ll_init(Lin2out);
-    while(Lin2out->curr != NULL){
-        x = Lin2out->curr->x; y = Lin2out->curr->y; z = Lin2out->curr->z; idx = Lin2out->curr->idx;
-        if(img[idx]>=dthresh){
-            for(i=-irad;i<=irad;i++){
-                if((x+i)<0 | (x+i)>=DIMX) continue;
-                for(j=-irad;j<=irad;j++){
-                    if((y+j)<0 | (y+j)>=DIMY) continue;
-                    for(k=-irad;k<=irad;k++){
-                        if((z+k)<0 | (z+k)>=DIMZ) continue;
-                        ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                        bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                        if(Ain[ridx]>=0)
-                        {
-                            Sin[ridx]  -= img[idx]*gball[bidx];
-                            Ain[ridx]  -= gball[bidx];
-                            Sout[ridx] += img[idx]*gball[bidx];
-                            Aout[ridx] += gball[bidx];
-                        }
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lin2out);
-    }
-    ll_init(Lout2in);
-    while(Lout2in->curr != NULL){
-        x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
-
-        if(img[idx]>=dthresh){
-            for(i=-irad;i<=irad;i++){
-                if((x+i)<0 | (x+i)>=DIMX) continue;
-                for(j=-irad;j<=irad;j++){
-                    if((y+j)<0 | (y+j)>=DIMY) continue;
-                    for(k=-irad;k<=irad;k++){
-                        if((z+k)<0 | (z+k)>=DIMZ) continue;
-                        ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                        bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                        if(Ain[ridx]>=0)
-                        {
-                            Sin[ridx]  += img[idx]*gball[bidx];
-                            Ain[ridx]  += gball[bidx];
-                            Sout[ridx] -= img[idx]*gball[bidx];
-                            Aout[ridx] -= gball[bidx];
-                        }
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lout2in);
-    }
-    if(uin>0)  uin  = sumin/ain;
-    if(uout>0) uout = sumout/aout;
-}
-
-namespace {
-    static std::vector<double>  FVec(128);
-    static std::vector<double>  KappaVec(128);
-    static std::vector<double>  AiVec(128);
-    static std::vector<double>  AoVec(128);
-    static std::vector<double>  SiVec(128);
-    static std::vector<double>  SoVec(128);
-
-    bool CheckLevelSetSizes( int queryLength )
-    {
-        bool bDidResize = false;
-        int  initLength = FVec.size();
-        if( queryLength > initLength )
-        {
-            FVec.resize(queryLength * 2 + 128);
-            KappaVec.resize(queryLength * 2 + 128);
-            bDidResize = true;
-        }
-        return bDidResize;
-    }
-    bool CheckBinSizes( int queryLength )
-    {
-        bool bDidResize = false;
-        int  initLength = AiVec.size();
-        if( queryLength > initLength )
-        {
-            AiVec.resize(queryLength);
-            AoVec.resize(queryLength);
-            SiVec.resize(queryLength);
-            SoVec.resize(queryLength);
-            bDidResize = true;
-        }
-        return bDidResize;
-    }
-}
-
-void en_lrbac_init(LL *Lz,double *img,double *phi, long *dims, double rad){
-    int i;
-
-    //create ball
-    gball = en_lrbac_gball(rad);
-
-    int numel = NUMEL;
-    CheckBinSizes(numel);
-    Ain  = &(AiVec[0]);
-    Aout = &(AoVec[0]);
-    Sin  = &(SiVec[0]);
-    Sout = &(SoVec[0]);
-    //allocate memory for lookups
-//    if( NULL == Ain )
-//        Ain  = (double*)malloc(numel*sizeof(double)); if(Ain==NULL) return;
-//    if( NULL == Sin )
-//        Sin  = (double*)malloc(numel*sizeof(double)); if(Sin==NULL) return;
-//    if( NULL == Aout )
-//        Aout = (double*)malloc(numel*sizeof(double)); if(Aout==NULL) return;
-//    if( NULL == Sout )
-//        Sout = (double*)malloc(numel*sizeof(double)); if(Sout==NULL) return;
-
-    //poison "uninitialized" points
-    for(i=0;i<NUMEL;i++){
-        Ain[i] = -1;
-        Aout[i] = -1;
-        Sin[i] = -1;
-        Sout[i] = -1;
-    }
-}
-
-void en_lrbac_init_point(double* img, double* phi, int idx, int x, int y, int z, long *dims, double rad){
-    double usum,vsum,au,av;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    usum=vsum=au=av=0;
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-    for(i=-irad;i<=irad;i++){
-        if((x+i)<0 || (x+i)>=DIMX) continue;
-        for(j=-irad;j<=irad;j++){
-            if((y+j)<0 || (y+j)>=DIMY) continue;
-            for(k=-irad;k<=irad;k++){
-                if((z+k)<0 || (z+k)>=DIMZ) continue;
-                ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                if(phi[ridx]<=0){
-                    usum += img[ridx]*gball[bidx];
-                    au   += gball[bidx];
-                }
-                else{
-                    vsum += img[ridx]*gball[bidx];
-                    av   += gball[bidx];
-                }
-            }
-        }
-    }
-    Ain[idx] = au;   Aout[idx] = av;
-    Sin[idx] = usum; Sout[idx] = vsum;
-}
-
-void en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad){
-    int x,y,z,idx;
-    int i,j,k,irad,idia,ridx,bidx;
-
-    irad = (int)(floor(rad));
-    idia = irad*2+1;
-
-
-    ll_init(Lin2out);
-    while(Lin2out->curr != NULL){
-        x = Lin2out->curr->x; y = Lin2out->curr->y; z = Lin2out->curr->z; idx = Lin2out->curr->idx;
-
-        for(i=-irad;i<=irad;i++){
-            if((x+i)<0 | (x+i)>=DIMX) continue;
-            for(j=-irad;j<=irad;j++){
-                if((y+j)<0 | (y+j)>=DIMY) continue;
-                for(k=-irad;k<=irad;k++){
-                    if((z+k)<0 | (z+k)>=DIMZ) continue;
-                    ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                    bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                    if(Ain[ridx]>=0)
-                    {
-                        Sin[ridx]  -= img[idx]*gball[bidx];
-                        Ain[ridx]  -= gball[bidx];
-                        Sout[ridx] += img[idx]*gball[bidx];
-                        Aout[ridx] += gball[bidx];
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lin2out);
-    }
-    ll_init(Lout2in);
-    while(Lout2in->curr != NULL){
-        x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
-
-        for(i=-irad;i<=irad;i++){
-            if((x+i)<0 | (x+i)>=DIMX) continue;
-            for(j=-irad;j<=irad;j++){
-                if((y+j)<0 | (y+j)>=DIMY) continue;
-                for(k=-irad;k<=irad;k++){
-                    if((z+k)<0 | (z+k)>=DIMZ) continue;
-                    ridx = idx+(i*OFFX)+(j*OFFY)+(k*OFFZ);
-                    bidx = (j+irad)+((i+irad)*idia)+((k+irad)*idia*idia);
-
-                    if(Ain[ridx]>=0)
-                    {
-                        Sin[ridx]  += img[idx]*gball[bidx];
-                        Ain[ridx]  += gball[bidx];
-                        Sout[ridx] -= img[idx]*gball[bidx];
-                        Aout[ridx] -= gball[bidx];
-                    }
-                }
-            }
-        }
-        ll_remcurr_free(Lout2in);
-    }
-    if(uin>0)  uin  = sumin/ain;
-    if(uout>0) uout = sumout/aout;
-}
-
-void en_lrbac_destroy()
+energy3c::~energy3c()
 {
 
-    if(gball!=NULL) {
-        free(gball); gball = NULL; }
-  // Don't delete them, we're caching !
-//    if(Ain!=NULL) {
-//        free(Ain); Ain = NULL; }
-//    if(Aout!=NULL) {
-//        free(Aout); Aout = NULL; }
-//    if(Sin!=NULL) {
-//        free(Sin); Sin = NULL; }
-//    if(Sout!=NULL) {
-//        free(Sout); Sout = NULL; }
 }
 
-//double *en_custom_compute(LL* Lz, double* speedimg,double *phi,  long *dims,double *scale, double lam)
-//{
-//    int x,y,z,idx;
-//    double *F, *kappa;
-//    double a;
-//    // allocate space for F
-//    F = (double*)malloc(Lz->length*sizeof(double));    if(F==NULL) throw "Failed Allocating F!" ;
-//    kappa = (double*)malloc(Lz->length*sizeof(double)); if(kappa==NULL) throw "Failed Allocating kappa!" ;
-//    int n=0;
-//    ll_init(Lz);
-//    double Fmax = 0.001; //0.00001; //begining of list;
+void energy3c::SetRadius(double radius)
+{
+	this->rad = radius;
+}
 
 
-//    while(Lz->curr != NULL)
-//    {          //loop through list
-//        x = Lz->curr->x;
-//        y = Lz->curr->y;
-//        z = Lz->curr->z;
-//        idx = Lz->curr->idx;
-//        a = speedimg[idx];
-//        if(fabs(a)> Fmax)   Fmax = fabs(a);
-//        F[n] = -a;
-//        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-//        ll_step(Lz); n++;       //next point
-//    }
-//    if(scale[0]==0)
-//        scale[0] = Fmax;
-//        for(int j=0;j<Lz->length;j++){
-//            F[j] = F[j]/scale[0]+lam*kappa[j];
-//        }
-//    free(kappa);
-//    return F;
-//}
 
 
-double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
+
+bool energy3c::CheckLevelSetSizes(int queryLength)
+{
+	bool bDidResize = false;
+	int  initLength = FVec.size();
+	if (queryLength > initLength)
+	{
+		FVec.resize(queryLength * 2 + 128);
+		KappaVec.resize(queryLength * 2 + 128);
+		bDidResize = true;
+	}
+	return bDidResize;
+}
+bool energy3c::CheckBinSizes(int queryLength)
+{
+	bool bDidResize = false;
+	int  initLength = AiVec.size();
+	if (queryLength > initLength)
+	{
+		AiVec.resize(queryLength);
+		AoVec.resize(queryLength);
+		SiVec.resize(queryLength);
+		SoVec.resize(queryLength);
+		bDidResize = true;
+	}
+	return bDidResize;
+}
+
+
+void energy3c::en_lrbac_init(LL *Lz, double *img, float *phi, long *dims, double rad){
+	int i;
+
+	//create ball
+	gball = en_lrbac_gball(rad);
+
+	int numel = NUMEL;
+	CheckBinSizes(numel);
+	Ain = &(AiVec[0]);
+	Aout = &(AoVec[0]);
+	Sin = &(SiVec[0]);
+	Sout = &(SoVec[0]);
+	//allocate memory for lookups
+	//    if( NULL == Ain )
+	//        Ain  = (double*)malloc(numel*sizeof(double)); if(Ain==NULL) return;
+	//    if( NULL == Sin )
+	//        Sin  = (double*)malloc(numel*sizeof(double)); if(Sin==NULL) return;
+	//    if( NULL == Aout )
+	//        Aout = (double*)malloc(numel*sizeof(double)); if(Aout==NULL) return;
+	//    if( NULL == Sout )
+	//        Sout = (double*)malloc(numel*sizeof(double)); if(Sout==NULL) return;
+
+	//poison "uninitialized" points
+	for (i = 0; i<NUMEL; i++){
+		Ain[i] = -1;
+		Aout[i] = -1;
+		Sin[i] = -1;
+		Sout[i] = -1;
+	}
+}
+
+void energy3c::en_lrbac_init_point(double* img, float *phi, int idx, int x, int y, int z, long *dims, double rad){
+	double usum, vsum, au, av;
+	int i, j, k, irad, idia, ridx, bidx;
+
+	usum = vsum = au = av = 0;
+	irad = (int)(floor(rad));
+	idia = irad * 2 + 1;
+
+	for (i = -irad; i <= irad; i++){
+		if ((x + i)<0 || (x + i) >= DIMX) continue;
+		for (j = -irad; j <= irad; j++){
+			if ((y + j)<0 || (y + j) >= DIMY) continue;
+			for (k = -irad; k <= irad; k++){
+				if ((z + k)<0 || (z + k) >= DIMZ) continue;
+				ridx = idx + (i*OFFX) + (j*OFFY) + (k*OFFZ);
+				bidx = (j + irad) + ((i + irad)*idia) + ((k + irad)*idia*idia);
+
+				if (phi[ridx] <= 0){
+					usum += img[ridx] * gball[bidx];
+					au += gball[bidx];
+				}
+				else{
+					vsum += img[ridx] * gball[bidx];
+					av += gball[bidx];
+				}
+			}
+		}
+	}
+	Ain[idx] = au;   Aout[idx] = av;
+	Sin[idx] = usum; Sout[idx] = vsum;
+}
+
+void energy3c::en_lrbac_update(double* img, long *dims, LL *Lin2out, LL *Lout2in, double rad){
+	int x, y, z, idx;
+	int i, j, k, irad, idia, ridx, bidx;
+
+	irad = (int)(floor(rad));
+	idia = irad * 2 + 1;
+
+
+	ll_init(Lin2out);
+	while (Lin2out->curr != NULL){
+		x = Lin2out->curr->x; y = Lin2out->curr->y; z = Lin2out->curr->z; idx = Lin2out->curr->idx;
+
+		for (i = -irad; i <= irad; i++){
+			if (((x + i)<0) | ((x + i) >= DIMX)) continue;
+			for (j = -irad; j <= irad; j++){
+				if (((y + j)<0) | ((y + j) >= DIMY)) continue;
+				for (k = -irad; k <= irad; k++){
+					if (((z + k)<0) | ((z + k) >= DIMZ)) continue;
+					ridx = idx + (i*OFFX) + (j*OFFY) + (k*OFFZ);
+					bidx = (j + irad) + ((i + irad)*idia) + ((k + irad)*idia*idia);
+
+					if (Ain[ridx] >= 0)
+					{
+						Sin[ridx] -= img[idx] * gball[bidx];
+						Ain[ridx] -= gball[bidx];
+						Sout[ridx] += img[idx] * gball[bidx];
+						Aout[ridx] += gball[bidx];
+					}
+				}
+			}
+		}
+		ll_remcurr_free(Lin2out);
+	}
+	ll_init(Lout2in);
+	while (Lout2in->curr != NULL){
+		x = Lout2in->curr->x; y = Lout2in->curr->y; z = Lout2in->curr->z; idx = Lout2in->curr->idx;
+
+		for (i = -irad; i <= irad; i++){
+			if (((x + i)<0) | ((x + i) >= DIMX)) continue;
+			for (j = -irad; j <= irad; j++){
+				if (((y + j)<0) | ((y + j) >= DIMY)) continue;
+				for (k = -irad; k <= irad; k++){
+					if (((z + k)<0) | ((z + k) >= DIMZ)) continue;
+					ridx = idx + (i*OFFX) + (j*OFFY) + (k*OFFZ);
+					bidx = (j + irad) + ((i + irad)*idia) + ((k + irad)*idia*idia);
+
+					if (Ain[ridx] >= 0)
+					{
+						Sin[ridx] += img[idx] * gball[bidx];
+						Ain[ridx] += gball[bidx];
+						Sout[ridx] -= img[idx] * gball[bidx];
+						Aout[ridx] -= gball[bidx];
+					}
+				}
+			}
+		}
+		ll_remcurr_free(Lout2in);
+	}
+	if (uin>0)  uin = sumin / ain;
+	if (uout>0) uout = sumout / aout;
+}
+
+void energy3c::en_lrbac_destroy()
+{
+
+	if (gball != NULL) {
+		free(gball);
+		gball = NULL;
+	}
+}
+
+double *energy3c::en_edgebased_compute(LL *Lz, double *phi, double *img, long *dims,
                              double *scale, double lam, double rad, double ImgMin, double ImgMax )
 {
     int x,y,z,idx;
@@ -656,61 +357,55 @@ double *en_edgebased_compute(LL *Lz,double *phi, double *img, long *dims,
 
 
 
-double *en_lrbac_compute(LL *Lz,double *phi, double *img, long *dims,
-                         double *scale, double lam, double rad )
+double *energy3c::en_lrbac_compute(LL *Lz, float *phi, double *img, long *dims,
+	double *scale, double lam, double rad)
 {
-    int x,y,z,idx;
-    double *F, *kappa;
-	double a = 0; double u = 0; double v = 0; double I = 0;
+	int x, y, z, idx;
+	double *F, *kappa;
+	double a = 0.0; double I = 0.0;
+	double u = 0.0; double v = 0.0;
 
-    CheckLevelSetSizes( Lz->length );
-    F          = &(FVec[0]);
-    kappa      = &(KappaVec[0]);
-    assert( F     != NULL );
-    assert( kappa != NULL );
+	CheckLevelSetSizes(Lz->length);
+	F = &(FVec[0]);
+	kappa = &(KappaVec[0]);
+	assert(F != NULL);
+	assert(kappa != NULL);
 
 
-    ll_init(Lz);
-    int        n= 0;
-    double Fmax = 0.001; // why different from regular cv?
-    while(Lz->curr != NULL)
-    {          //loop through list
-        x = Lz->curr->x;
-        y = Lz->curr->y;
-        z = Lz->curr->z;
-        idx = Lz->curr->idx;
-        I = img[idx];
+	ll_init(Lz);
+	int        n = 0;
+	double Fmax = 0.001; //begining of list;
+	while (Lz->curr != NULL)
+	{          //loop through list
+		x = Lz->curr->x;
+		y = Lz->curr->y;
+		z = Lz->curr->z;
+		idx = Lz->curr->idx;
+		I = img[idx];
 
-        if(Ain[idx] <0)
-            en_lrbac_init_point(img,phi,idx,x,y,z,dims,rad);
+		if (Ain[idx] <0){
+			en_lrbac_init_point(img, phi, idx, x, y, z, dims, rad);
+		}
+		if (Ain[idx] >0) u = Sin[idx] / Ain[idx];
+		if (Aout[idx]>0) v = Sout[idx] / Aout[idx];
+		a = (I - u)*(I - u) - (I - v)*(I - v);
+		if (fabs(a)> Fmax)   Fmax = fabs(a);
+		F[n] = a;
+		kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
+		ll_step(Lz); n++;       //next point
+	}
+	// if(scale[0]==0)
+	scale[0] = Fmax;
+	for (int j = 0; j<Lz->length; j++){
+		F[j] = F[j] / scale[0] + lam*kappa[j];
+	}
 
-		if (Ain[idx] < 1e-12 )
-		{}//u = I;
-		else
-			u = Sin[idx] /Ain[idx];
-		if (Aout[idx] < 1e-12)
-		{}//v = I;
-		else
-			v = Sout[idx]/Aout[idx];
-		
-        a = (I-u)*(I-u)-(I-v)*(I-v);
-        if(fabs(a)> Fmax)   Fmax = fabs(a);
-        F[n] = a;
-        kappa[n] = en_kappa_pt(Lz->curr, phi, dims); //compute kappa
-        ll_step(Lz); n++;       //next point
-    }
-   // if(scale[0]==0)
-    scale[0] = Fmax;
-    for(int j=0;j<Lz->length;j++){
-        F[j] = F[j]/scale[0]+lam*kappa[j];
-    }
-
-    return F;
+	return F;
 }
 
 // allocates and populates memory for a 3D Gaussian,
 // size (floor(rad)*2+1)^3 centered in the middle with sigma = rad/2.
-double *en_lrbac_gball(double rad){
+double *energy3c:en_lrbac_gball(double rad){
     double *gball;
     int dia,dia2,i,j,k,idx;
     double cen,x2,y2,z2,sig2;

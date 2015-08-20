@@ -34,6 +34,8 @@ struct KSegmentorBase::SFM_vars
   double *Ain, *Aout, *Sin, *Sout; //local means
 };
 
+KSegmentor3D::KSegmentor3D() : energy3c(new energy3c) { }
+
 KSegmentor3D* KSegmentor3D::CreateSegmentor(vtkImageData *image, vtkImageData *label, bool contInit)
 {
   KSegmentor3D* seg3DPointer = new KSegmentor3D;
